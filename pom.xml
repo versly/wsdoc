@@ -1,0 +1,42 @@
+<!--
+  ~ Copyright (c) Taskdock, Inc. 2009-2010. All Rights Reserved.
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <name>Build Tools</name>
+    <description>
+        Support classes for the TaskDock REST build
+    </description>
+
+    <groupId>com.taskdock</groupId>
+    <artifactId>rest.buildtools</artifactId>
+    <packaging>jar</packaging>
+    <version>1.0-SNAPSHOT</version>
+    <url>http://www.taskdock.com</url>
+
+    <parent>
+        <groupId>com.taskdock</groupId>
+        <artifactId>rest</artifactId>
+        <version>1.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <version>3.0.3.RELEASE</version>
+        </dependency>
+
+        <!-- ISO 8601 date support fo dates -->
+        <dependency>
+            <groupId>joda-time</groupId>
+            <artifactId>joda-time</artifactId>
+            <version>1.6</version>
+        </dependency>
+    </dependencies>
+
+</project>
