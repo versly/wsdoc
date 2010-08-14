@@ -13,16 +13,14 @@ public class RestDocumentation {
 
     private Map<String, Resource> _resources = new LinkedHashMap();
 
+    public Collection<Resource> getResources() {
+        return _resources.values();
+    }
+
     public Resource getResourceDocumentation(String path) {
         if (!_resources.containsKey(path))
             _resources.put(path, new Resource(path));
         return _resources.get(path);
-    }
-
-    public void writePlainText(PrintStream stream) {
-        for (Resource resource : _resources.values()) {
-            resource.writePlainText(stream);
-        }
     }
 
     public class Resource {
@@ -34,100 +32,65 @@ public class RestDocumentation {
             this.path = path;
         }
 
+        public String getPath() {
+            return path;
+        }
+
+        public Collection<Method> getRequestMethodDocs() {
+            return _methods.values();
+        }
+
         public Method getMethodDocumentation(RequestMethod meth) {
             if (!_methods.containsKey(meth))
                 _methods.put(meth, new Method(meth));
             return _methods.get(meth);
         }
 
-        public void writePlainText(PrintStream stream) {
-            for (Method meth : _methods.values()) {
-                meth.writePlainText(stream);
-            }
-        }
-
         public class Method {
 
             private RequestMethod meth;
-            private RequestBody _requestBodyDocumentation = new RequestBody();
+            private JsonType _requestBody;
             private UrlSubstitutions _urlSubstitutions = new UrlSubstitutions();
-            private ResponseBody _responseBody = new ResponseBody();
+            private JsonType _responseBody;
 
             public Method(RequestMethod meth) {
                 this.meth = meth;
             }
 
-            public void writePlainText(PrintStream stream) {
-                stream.printf("%s %s\n", meth, path);
-                _requestBodyDocumentation.writePlainText(stream);
-                _urlSubstitutions.writePlainText(stream);
-                _responseBody.writePlainText(stream);
-                stream.println();
+            public RequestMethod getRequestMethod() {
+                return meth;
             }
 
-            public RequestBody getRequestBodyDocumentation() {
-                return _requestBodyDocumentation;
+            public JsonType getRequestBody() {
+                return _requestBody;
+            }
+
+            public void setRequestBody(JsonType body) {
+                _requestBody = body;
             }
 
             public Method.UrlSubstitutions getUrlSubstitutions() {
                 return _urlSubstitutions;
             }
 
-            public Method.ResponseBody getResponseBody() {
+            public JsonType getResponseBody() {
                 return _responseBody;
             }
 
-            public class RequestBody {
-
-                private JsonType _jsonType;
-
-                public void writePlainText(PrintStream stream) {
-                    if (_jsonType != null) {
-                        stream.print("  Request Body Format:");
-                        _jsonType.writePlainText(stream, 4);
-                        stream.println();
-                    }
-                }
-
-                public void setJsonValue(JsonType jsonType) {
-                    _jsonType = jsonType;
-                }
+            public void setResponseBody(JsonType body) {
+                _responseBody = body;
             }
 
             public class UrlSubstitutions {
 
-                private Map<String, JsonType> _jsonValues = new LinkedHashMap();
+                private Map<String, JsonType> _jsonTypes = new LinkedHashMap();
 
-                public void writePlainText(PrintStream stream) {
-                    if (_jsonValues.size() != 0) {
-                        stream.println("  URL Parameter Substitutions:");
-                        for (Map.Entry<String, ? extends JsonType> entry : _jsonValues.entrySet()) {
-                            stream.printf("    %s: ", entry.getKey());
-                            entry.getValue().writePlainText(stream, 6);
-                            stream.println();
-                        }
-                    }
+                public Map<String, JsonType> getSubstitutions() {
+                    return _jsonTypes;
                 }
 
                 public void addSubstitution(String pathSubName, JsonType jsonType) {
-                    _jsonValues.put(pathSubName, jsonType);
-                }
-            }
-
-            public class ResponseBody {
-
-                private JsonType _jsonType;
-
-                public void writePlainText(PrintStream stream) {
-                    if (_jsonType != null) {
-                        stream.print("  Response Body Format:");
-                        _jsonType.writePlainText(stream, 4);
-                        stream.println();
-                    }
-                }
-
-                public void setJsonValue(JsonType jsonType) {
-                    _jsonType = jsonType;
+                    _jsonTypes.put(pathSubName, jsonType);
                 }
             }
         }

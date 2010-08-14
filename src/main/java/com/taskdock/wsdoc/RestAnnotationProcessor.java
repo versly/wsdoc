@@ -4,6 +4,9 @@
 
 package com.taskdock.wsdoc;
 
+import freemarker.template.Configuration;
+import freemarker.template.DefaultObjectWrapper;
+import freemarker.template.Template;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,25 +17,66 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
+import javax.tools.Diagnostic;
+import javax.tools.FileObject;
+import javax.tools.JavaFileManager;
+import javax.tools.StandardLocation;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Writer;
 import java.util.*;
 
 @SupportedAnnotationTypes("com.taskdock.wsdoc.RestApiMountPoint")
 public class RestAnnotationProcessor extends AbstractProcessor {
 
-    private RestDocumentation _docs = new RestDocumentation();
-
     @Override
     public boolean process(Set<? extends TypeElement> supportedAnnotations, RoundEnvironment roundEnvironment) {
+
+        RestDocumentation docs = new RestDocumentation();
+
         for (Element e : roundEnvironment.getElementsAnnotatedWith(RequestMapping.class)) {
             if (e instanceof ExecutableElement) {
-                processRequestMappingMethod((ExecutableElement) e);
+                processRequestMappingMethod((ExecutableElement) e, docs);
             }
         }
-        _docs.writePlainText(System.out);
+
+        if (docs.getResources().size() > 0) {
+            Configuration conf = new Configuration();
+            conf.setClassForTemplateLoading(getClass(), "");
+            conf.setObjectWrapper(new DefaultObjectWrapper());
+            Writer out = null;
+            try {
+                Template template = conf.getTemplate("RestDocumentation.ftl");
+                Map root = new HashMap();
+                root.put("docs", docs);
+                FileObject file = getOutputFile();
+                out = file.openWriter();
+                template.process(root, out);
+                out.flush();
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE,
+                    String.format("Wrote REST docs for %s classes to %s", docs.getResources().size(), file.getName()));
+            } catch (Exception e) {
+                throw new RuntimeException(e); // TODO wrap in something nicer
+            }
+            finally {
+                if (out != null) {
+                    try {
+                        out.close();
+                    } catch (IOException ignored) {
+                        // ignored
+                    }
+                }
+            }
+        }
+
         return true;
     }
 
-    private void processRequestMappingMethod(ExecutableElement executableElement) {
+    private FileObject getOutputFile() throws IOException {
+        return this.processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, "", "rest-api.html");
+    }
+
+    private void processRequestMappingMethod(ExecutableElement executableElement, RestDocumentation docs) {
         TypeElement cls = (TypeElement) executableElement.getEnclosingElement();
         String path = getClassLevelUrlPath(cls);
 
@@ -40,7 +84,7 @@ public class RestAnnotationProcessor extends AbstractProcessor {
         path = addMethodPathComponent(executableElement, cls, path, anno);
         RequestMethod meth = getRequestMethod(executableElement, cls, anno);
 
-        RestDocumentation.Resource.Method doc = _docs.getResourceDocumentation(path).getMethodDocumentation(meth);
+        RestDocumentation.Resource.Method doc = docs.getResourceDocumentation(path).getMethodDocumentation(meth);
         buildParameterData(executableElement, doc);
         buildResponseFormat(executableElement.getReturnType(), doc);
     }
@@ -71,8 +115,7 @@ public class RestAnnotationProcessor extends AbstractProcessor {
     }
 
     private void buildRequestBody(VariableElement var, RestDocumentation.Resource.Method doc) {
-        RestDocumentation.Resource.Method.RequestBody bodyDoc = doc.getRequestBodyDocumentation();
-        bodyDoc.setJsonValue(newJsonType(var.asType()));
+        doc.setRequestBody(newJsonType(var.asType()));
     }
 
     private void buildPathVariables(List<VariableElement> pathVars, RestDocumentation.Resource.Method doc) {
@@ -112,7 +155,7 @@ public class RestAnnotationProcessor extends AbstractProcessor {
 
     private void buildResponseFormat(TypeMirror type, RestDocumentation.Resource.Method doc) {
         // TODO write REST docs provided in some sort of annotation or comment
-        doc.getResponseBody().setJsonValue(newJsonType(type));
+        doc.setResponseBody(newJsonType(type));
     }
 
     private RequestMethod getRequestMethod(ExecutableElement executableElement, TypeElement cls, RequestMapping anno) {
@@ -135,7 +178,7 @@ public class RestAnnotationProcessor extends AbstractProcessor {
 
     private String getClassLevelUrlPath(TypeElement cls) {
         RestApiMountPoint mountPoint = cls.getAnnotation(RestApiMountPoint.class);
-        String path = mountPoint.value();
+        String path = mountPoint == null ? "/" : mountPoint.value();
 
         RequestMapping clsAnno = cls.getAnnotation(RequestMapping.class);
         if (clsAnno == null || clsAnno.value().length == 0)

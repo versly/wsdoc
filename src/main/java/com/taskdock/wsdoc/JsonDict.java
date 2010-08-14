@@ -4,9 +4,7 @@
 
 package com.taskdock.wsdoc;
 
-import java.io.PrintStream;
-
-public class JsonDict extends AbstractJsonType {
+public class JsonDict implements JsonType {
 
     private JsonType keyType;
     private JsonType valType;
@@ -16,22 +14,11 @@ public class JsonDict extends AbstractJsonType {
         this.valType = valType;
     }
 
-    @Override
-    public void writePlainText(PrintStream stream, int indent) {
-        if (keyType instanceof JsonObject || valType instanceof JsonObject) {
-            stream.print("[ ");
-            keyType.writePlainText(stream, indent + 2);
-            stream.println("->");
-            valType.writePlainText(stream, indent + 2);
-            stream.println();
-            indent(stream, indent);
-            stream.print("]");
-        } else {
-            stream.print("[ ");
-            keyType.writePlainText(stream, indent + 2);
-            stream.print(" -> ");
-            valType.writePlainText(stream, indent + 2);
-            stream.print(" ]");
-        }
+    public JsonType getKeyType() {
+        return keyType;
+    }
+
+    public JsonType getValueType() {
+        return valType;
     }
 }

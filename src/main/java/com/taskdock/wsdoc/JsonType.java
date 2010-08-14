@@ -4,10 +4,6 @@
 
 package com.taskdock.wsdoc;
 
-import java.io.PrintStream;
-
 public interface JsonType {
-
-    void writePlainText(PrintStream stream, int indent);
 }
 

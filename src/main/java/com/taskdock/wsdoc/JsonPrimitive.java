@@ -4,7 +4,6 @@
 
 package com.taskdock.wsdoc;
 
-import java.io.PrintStream;
 import java.util.Date;
 import java.util.List;
 
@@ -42,9 +41,8 @@ public class JsonPrimitive implements JsonType {
         this.typeName = typeName;
     }
 
-    @Override
-    public void writePlainText(PrintStream stream, int indent) {
-        stream.print(typeName);
+    public String getTypeName() {
+        return typeName;
     }
 
     public void setRestrictions(List<String> restrictions) {
