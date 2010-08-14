@@ -24,6 +24,8 @@
             div.request-body { padding-bottom: 20px; }
             div.response-body { padding-bottom: 20px; }
 
+            div.body-title { width: 400px; border-bottom: 1px dashed gray; }
+
             div.body-contents { font-family: monospace; }
             div.json-field { padding-left: 15px; }
             span.json-field-name { font-weight: bold; }
