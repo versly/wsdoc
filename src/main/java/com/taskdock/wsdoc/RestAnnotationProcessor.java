@@ -40,7 +40,8 @@ import java.util.*;
 //   - combine class-level and method-level annotations properly
 //   - MethodNameResolver
 //   - plural RequestMapping value support (i.e., two paths bound to one method)
-@SupportedAnnotationTypes("com.taskdock.wsdoc.RestApiMountPoint")
+//   - support for methods not marked with @RequestMapping whose class does have a @RequestMapping annotation
+@SupportedAnnotationTypes("org.springframework.web.bind.annotation.RequestMapping")
 public class RestAnnotationProcessor extends AbstractProcessor {
 
     @Override
