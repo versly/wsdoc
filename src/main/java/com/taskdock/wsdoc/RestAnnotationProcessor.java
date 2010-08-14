@@ -19,13 +19,27 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 import javax.tools.Diagnostic;
 import javax.tools.FileObject;
-import javax.tools.JavaFileManager;
 import javax.tools.StandardLocation;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.*;
 
+/**
+ * Generates an HTML documentation file describing the REST / JSON endpoints as defined with the
+ * Spring {@link org.springframework.web.bind.annotation.RequestMapping} annotation. Outputs to
+ * <code>rest-api.html</code> in the top of the classes directory.
+ */
+// TODO:
+//   - @RequestParam
+//   - @CookieValue
+//   - @RequestHeader
+//   - @RequestMapping.headers
+//   - @RequestMapping.params
+//   - @ResponseStatus
+//   - free-form comments
+//   - combine class-level and method-level annotations properly
+//   - MethodNameResolver
+//   - plural RequestMapping value support (i.e., two paths bound to one method)
 @SupportedAnnotationTypes("com.taskdock.wsdoc.RestApiMountPoint")
 public class RestAnnotationProcessor extends AbstractProcessor {
 
@@ -276,7 +290,7 @@ public class RestAnnotationProcessor extends AbstractProcessor {
                     primitive.setRestrictions(enumConstants);
                     return primitive;
                 } else {
-                    return buildType(element, o);
+                    return buildType(element);
                 }
             }
         }
@@ -294,13 +308,10 @@ public class RestAnnotationProcessor extends AbstractProcessor {
                 if (isInstanceOf(iface, type))
                     return true;
             }
-            if (isInstanceOf(typeElement.getSuperclass(), type))
-                return true;
-
-            return false;
+            return isInstanceOf(typeElement.getSuperclass(), type);
         }
 
-        private JsonObject buildType(TypeElement element, Void o) {
+        private JsonObject buildType(TypeElement element) {
             JsonObject json = new JsonObject();
             buildTypeContents(json, element);
             return json;
@@ -359,10 +370,7 @@ public class RestAnnotationProcessor extends AbstractProcessor {
                     && executableElement.getParameters().size() == 0))
                 return false;
 
-            if (executableElement.getAnnotation(JsonIgnore.class) != null)
-                return false;
-
-            return true;
+            return executableElement.getAnnotation(JsonIgnore.class) == null;
         }
 
         @Override

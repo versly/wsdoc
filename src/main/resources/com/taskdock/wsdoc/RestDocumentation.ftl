@@ -4,23 +4,6 @@
 
 <#-- @ftlvariable name="docs" type="com.taskdock.wsdoc.RestDocumentation" -->
 
-<#include "JsonPrimitive.ftl">
-<#include "JsonObject.ftl">
-<#include "JsonDict.ftl">
-<#include "JsonArray.ftl">
-
-<#macro render_json json>
-    <#if json.class.name == "com.taskdock.wsdoc.JsonPrimitive">
-        <@render_json_primitive json/>
-    <#elseif json.class.name == "com.taskdock.wsdoc.JsonObject">
-        <@render_json_object json/>
-    <#elseif json.class.name == "com.taskdock.wsdoc.JsonArray">
-        <@render_json_array json/>
-    <#elseif json.class.name == "com.taskdock.wsdoc.JsonDict">
-        <@render_json_dict json/>
-    </#if>
-</#macro>
-
 <html>
     <head>
         <title>REST Endpoint Documentation</title>
@@ -107,3 +90,61 @@
         </#list>
     </body>
 </html>
+
+<#macro render_json json>
+    <#if json.class.name == "com.taskdock.wsdoc.JsonPrimitive">
+        <@render_json_primitive json/>
+    <#elseif json.class.name == "com.taskdock.wsdoc.JsonObject">
+        <@render_json_object json/>
+    <#elseif json.class.name == "com.taskdock.wsdoc.JsonArray">
+        <@render_json_array json/>
+    <#elseif json.class.name == "com.taskdock.wsdoc.JsonDict">
+        <@render_json_dict json/>
+    </#if>
+</#macro>
+
+<#macro render_json_array json>
+    <#-- @ftlvariable name="json" type="com.taskdock.wsdoc.JsonArray" -->
+
+    <span class="json-array">[
+        <@render_json json.elementType />
+    ]</span>
+</#macro>
+
+<#macro render_json_dict json>
+    <#-- @ftlvariable name="json" type="com.taskdock.wsdoc.JsonDict" -->
+
+    <span class="json-dict">[
+        <@render_json json.keyType/>
+        -&gt;
+        <@render_json json.valueType/>
+    ]</span>
+</#macro>
+
+<#macro render_json_primitive json>
+    <#-- @ftlvariable name="json" type="com.taskdock.wsdoc.JsonPrimitive" -->
+
+    <span class="json-primitive-type">${json.typeName}</span>
+    <#if json.restrictions??>
+        <div class="json-primitive-restrictions">
+            one of [ <#list json.restrictions as restricton>
+                ${restricton}<#if restricton_has_next>, </#if>
+            </#list> ]</div>
+    </#if>
+</#macro>
+
+<#macro render_json_object json>
+    <#-- @ftlvariable name="json" type="com.taskdock.wsdoc.JsonObject" -->
+
+    <span class="json-object">{
+    <div class="json-fields">
+        <#list json.fields as field>
+            <div class="json-field">
+                <span class="json-field-name">${field.fieldName}</span>
+                <@render_json field.fieldType/>
+            </div>
+        </#list>
+    </div>
+    </span>
+    }
+</#macro>
