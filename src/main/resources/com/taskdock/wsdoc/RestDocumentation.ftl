@@ -9,15 +9,15 @@
 <#include "JsonDict.ftl">
 <#include "JsonArray.ftl">
 
-<#macro render_json json indent>
+<#macro render_json json>
     <#if json.class.name == "com.taskdock.wsdoc.JsonPrimitive">
         <@render_json_primitive json/>
     <#elseif json.class.name == "com.taskdock.wsdoc.JsonObject">
-        <@render_json_object json indent/>
+        <@render_json_object json/>
     <#elseif json.class.name == "com.taskdock.wsdoc.JsonArray">
-        <@render_json_array json indent/>
+        <@render_json_array json/>
     <#elseif json.class.name == "com.taskdock.wsdoc.JsonDict">
-        <@render_json_dict json indent/>
+        <@render_json_dict json/>
     </#if>
 </#macro>
 
@@ -63,7 +63,7 @@
                                 <#list subs?keys as key>
                                     <tr>
                                         <td class="url-sub-key">${key}</td>
-                                        <td class="url-sub-expected-type"><@render_json subs[key] 0/></td>
+                                        <td class="url-sub-expected-type"><@render_json subs[key]/></td>
                                     </tr>
                                 </#list>
                             </table>
@@ -73,14 +73,14 @@
                     <#if (methodDoc.requestBody??)>
                         <div class="request-body">
                             <div class="body-title">Request Body</div>
-                            <div class="body-contents"><@render_json methodDoc.requestBody 0/></div>
+                            <div class="body-contents"><@render_json methodDoc.requestBody/></div>
                         </div>
                     </#if>
 
                     <#if (methodDoc.responseBody??)>
                         <div class="response-body">
                             <div class="body-title">Response Body</div>
-                            <div class="body-contents"><@render_json methodDoc.responseBody 0/></div>
+                            <div class="body-contents"><@render_json methodDoc.responseBody/></div>
                         </div>
                     </#if>
                 </div>
