@@ -6,8 +6,9 @@ package com.taskdock.wsdoc;
 
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import java.io.PrintStream;
-import java.util.*;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class RestDocumentation {
 

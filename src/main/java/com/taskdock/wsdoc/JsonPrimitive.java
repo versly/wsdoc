@@ -4,10 +4,10 @@
 
 package com.taskdock.wsdoc;
 
+import org.joda.time.DateTime;
+
 import java.util.Date;
 import java.util.List;
-
-import org.joda.time.DateTime;
 
 public class JsonPrimitive implements JsonType {
 
