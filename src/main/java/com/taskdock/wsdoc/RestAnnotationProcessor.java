@@ -4,9 +4,6 @@
 
 package com.taskdock.wsdoc;
 
-import freemarker.template.Configuration;
-import freemarker.template.DefaultObjectWrapper;
-import freemarker.template.Template;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,7 +18,7 @@ import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 import java.io.IOException;
-import java.io.Writer;
+import java.io.ObjectOutputStream;
 import java.util.*;
 
 /**
@@ -44,6 +41,8 @@ import java.util.*;
 @SupportedAnnotationTypes("org.springframework.web.bind.annotation.RequestMapping")
 public class RestAnnotationProcessor extends AbstractProcessor {
 
+    static final String SERIALIZED_RESOURCE_LOCATION = "web-service-api.ser";
+
     @Override
     public boolean process(Set<? extends TypeElement> supportedAnnotations, RoundEnvironment roundEnvironment) {
 
@@ -56,27 +55,22 @@ public class RestAnnotationProcessor extends AbstractProcessor {
         }
 
         if (docs.getResources().size() > 0) {
-            Configuration conf = new Configuration();
-            conf.setClassForTemplateLoading(getClass(), "");
-            conf.setObjectWrapper(new DefaultObjectWrapper());
-            Writer out = null;
+            ObjectOutputStream oos = null;
             try {
-                Template template = conf.getTemplate("RestDocumentation.ftl");
-                Map root = new HashMap();
-                root.put("docs", docs);
                 FileObject file = getOutputFile();
-                out = file.openWriter();
-                template.process(root, out);
-                out.flush();
+                oos = new ObjectOutputStream(file.openOutputStream());
+                oos.writeObject(docs);
+                oos.flush();
                 processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE,
-                    String.format("Wrote REST docs for %s classes to %s", docs.getResources().size(), file.getName()));
+                    String.format("Wrote REST docs for %s classes to %s", docs.getResources().size(),
+                        file.getName()));
             } catch (Exception e) {
                 throw new RuntimeException(e); // TODO wrap in something nicer
             }
             finally {
-                if (out != null) {
+                if (oos != null) {
                     try {
-                        out.close();
+                        oos.close();
                     } catch (IOException ignored) {
                         // ignored
                     }
@@ -88,7 +82,7 @@ public class RestAnnotationProcessor extends AbstractProcessor {
     }
 
     private FileObject getOutputFile() throws IOException {
-        return this.processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, "", "rest-api.html");
+        return this.processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, "", SERIALIZED_RESOURCE_LOCATION);
     }
 
     private void processRequestMappingMethod(ExecutableElement executableElement, RestDocumentation docs) {

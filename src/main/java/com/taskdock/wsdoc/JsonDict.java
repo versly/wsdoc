@@ -4,7 +4,9 @@
 
 package com.taskdock.wsdoc;
 
-public class JsonDict implements JsonType {
+import java.io.Serializable;
+
+public class JsonDict implements JsonType, Serializable {
 
     private JsonType keyType;
     private JsonType valType;

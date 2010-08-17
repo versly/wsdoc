@@ -2,7 +2,7 @@
 ~ Copyright (c) Taskdock, Inc. 2009-2010. All Rights Reserved.
 -->
 
-<#-- @ftlvariable name="docs" type="com.taskdock.wsdoc.RestDocumentation" -->
+<#-- @ftlvariable name="docs" type="java.util.List<com.taskdock.wsdoc.RestDocumentation>" -->
 
 <html>
     <head>
@@ -36,58 +36,61 @@
     <body>
 
         <div class="section-title">Overview</div>
-        <#list docs.resources as resource>
-            <div class="resource-summary">
-                <span class="resource-summary-path">${resource.path}</span>
-                <div>
-                    <#list resource.requestMethodDocs?sort_by("requestMethod") as methodDoc>
-                        <a href="#${methodDoc.requestMethod}_${resource.path}">${methodDoc.requestMethod}</a>
-                    </#list>
+        <#list docs as doc>
+            <#list doc.resources as resource>
+                <div class="resource-summary">
+                    <span class="resource-summary-path">${resource.path}</span>
+                    <div>
+                        <#list resource.requestMethodDocs?sort_by("requestMethod") as methodDoc>
+                            <a href="#${methodDoc.requestMethod}_${resource.path}">${methodDoc.requestMethod}</a>
+                        </#list>
+                    </div>
                 </div>
-            </div>
+            </#list>
         </#list>
 
+        <#list docs as doc>
+            <#list doc.resources as resource>
+                <#list resource.requestMethodDocs as methodDoc>
+                    <a id="${methodDoc.requestMethod}_${resource.path}"/>
+                    <div class="resource">
+                        <div class="resource-header">
+                            <span class="method">${methodDoc.requestMethod}</span>
+                            <span class="path">${resource.path}</span>
+                        </div>
 
-        <#list docs.resources as resource>
-            <#list resource.requestMethodDocs as methodDoc>
-                <a id="${methodDoc.requestMethod}_${resource.path}"/>
-                <div class="resource">
-                    <div class="resource-header">
-                        <span class="method">${methodDoc.requestMethod}</span>
-                        <span class="path">${resource.path}</span>
+                        <#assign subs=methodDoc.urlSubstitutions.substitutions>
+                        <#if (subs?keys?size > 0)>
+                            <div class="url-subs">
+                                <table>
+                                    <thead>
+                                        <tr><td>URL Substitution Key</td><td>Expected Type</td></tr>
+                                    </thead>
+                                    <#list subs?keys as key>
+                                        <tr>
+                                            <td class="url-sub-key">${key}</td>
+                                            <td class="url-sub-expected-type"><@render_json subs[key]/></td>
+                                        </tr>
+                                    </#list>
+                                </table>
+                            </div>
+                        </#if>
+
+                        <#if (methodDoc.requestBody??)>
+                            <div class="request-body">
+                                <div class="body-title">Request Body</div>
+                                <div class="body-contents"><@render_json methodDoc.requestBody/></div>
+                            </div>
+                        </#if>
+
+                        <#if (methodDoc.responseBody??)>
+                            <div class="response-body">
+                                <div class="body-title">Response Body</div>
+                                <div class="body-contents"><@render_json methodDoc.responseBody/></div>
+                            </div>
+                        </#if>
                     </div>
-
-                    <#assign subs=methodDoc.urlSubstitutions.substitutions>
-                    <#if (subs?keys?size > 0)>
-                        <div class="url-subs">
-                            <table>
-                                <thead>
-                                    <tr><td>URL Substitution Key</td><td>Expected Type</td></tr>
-                                </thead>
-                                <#list subs?keys as key>
-                                    <tr>
-                                        <td class="url-sub-key">${key}</td>
-                                        <td class="url-sub-expected-type"><@render_json subs[key]/></td>
-                                    </tr>
-                                </#list>
-                            </table>
-                        </div>
-                    </#if>
-
-                    <#if (methodDoc.requestBody??)>
-                        <div class="request-body">
-                            <div class="body-title">Request Body</div>
-                            <div class="body-contents"><@render_json methodDoc.requestBody/></div>
-                        </div>
-                    </#if>
-
-                    <#if (methodDoc.responseBody??)>
-                        <div class="response-body">
-                            <div class="body-title">Response Body</div>
-                            <div class="body-contents"><@render_json methodDoc.responseBody/></div>
-                        </div>
-                    </#if>
-                </div>
+                </#list>
             </#list>
         </#list>
     </body>

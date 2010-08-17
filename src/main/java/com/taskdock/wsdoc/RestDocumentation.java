@@ -6,11 +6,12 @@ package com.taskdock.wsdoc;
 
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class RestDocumentation {
+public class RestDocumentation implements Serializable {
 
     private Map<String, Resource> _resources = new LinkedHashMap();
 
@@ -24,7 +25,7 @@ public class RestDocumentation {
         return _resources.get(path);
     }
 
-    public class Resource {
+    public class Resource implements Serializable {
 
         private String path;
         private Map<RequestMethod, Method> _methods = new LinkedHashMap();
@@ -47,7 +48,7 @@ public class RestDocumentation {
             return _methods.get(meth);
         }
 
-        public class Method {
+        public class Method implements Serializable {
 
             private RequestMethod meth;
             private JsonType _requestBody;
@@ -82,7 +83,7 @@ public class RestDocumentation {
                 _responseBody = body;
             }
 
-            public class UrlSubstitutions {
+            public class UrlSubstitutions implements Serializable {
 
                 private Map<String, JsonType> _jsonTypes = new LinkedHashMap();
 

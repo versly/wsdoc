@@ -4,7 +4,9 @@
 
 package com.taskdock.wsdoc;
 
-public class JsonArray implements JsonType {
+import java.io.Serializable;
+
+public class JsonArray implements JsonType, Serializable {
     private JsonType elementType;
 
     public JsonArray(JsonType elementType) {

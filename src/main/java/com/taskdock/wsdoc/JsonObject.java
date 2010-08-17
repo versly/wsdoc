@@ -4,11 +4,12 @@
 
 package com.taskdock.wsdoc;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class JsonObject implements JsonType {
+public class JsonObject implements JsonType, Serializable {
 
     private List<JsonField> _fields = new ArrayList();
 
@@ -24,7 +25,7 @@ public class JsonObject implements JsonType {
         return _fields;
     }
 
-    public class JsonField<T extends JsonType> {
+    public class JsonField<T extends JsonType> implements Serializable {
 
         private String fieldName;
         private T fieldType;

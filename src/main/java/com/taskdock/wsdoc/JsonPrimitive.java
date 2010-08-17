@@ -6,10 +6,11 @@ package com.taskdock.wsdoc;
 
 import org.joda.time.DateTime;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
-public class JsonPrimitive implements JsonType {
+public class JsonPrimitive implements JsonType, Serializable {
 
     private String typeName;
     private List<String> restrictions;
