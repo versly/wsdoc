@@ -6,7 +6,7 @@ package com.taskdock.wsdoc;
 
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import java.io.Serializable;
+import java.io.*;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -23,6 +23,28 @@ public class RestDocumentation implements Serializable {
         if (!_resources.containsKey(path))
             _resources.put(path, new Resource(path));
         return _resources.get(path);
+    }
+
+    /**
+     * Read and return a serialized {@link RestDocumentation} instance from <code>in</code>,
+     * as serialized by {@link #toStream}.
+     */
+    public static RestDocumentation fromStream(InputStream in)
+        throws IOException, ClassNotFoundException {
+        ObjectInputStream ois = null;
+        try {
+            ois = new ObjectInputStream(in);
+            return (RestDocumentation) ois.readObject();
+        } finally {
+            if (ois != null)
+                ois.close();
+        }
+    }
+
+    public void toStream(OutputStream out) throws IOException {
+        ObjectOutputStream oos = new ObjectOutputStream(out);
+        oos.writeObject(this);
+        oos.flush();
     }
 
     public class Resource implements Serializable {
@@ -54,6 +76,7 @@ public class RestDocumentation implements Serializable {
             private JsonType _requestBody;
             private UrlSubstitutions _urlSubstitutions = new UrlSubstitutions();
             private JsonType _responseBody;
+            private String _commentText;
 
             public Method(RequestMethod meth) {
                 this.meth = meth;
@@ -81,6 +104,14 @@ public class RestDocumentation implements Serializable {
 
             public void setResponseBody(JsonType body) {
                 _responseBody = body;
+            }
+
+            public String getCommentText() {
+                return _commentText;
+            }
+
+            public void setCommentText(String text) {
+                _commentText = text;
             }
 
             public class UrlSubstitutions implements Serializable {

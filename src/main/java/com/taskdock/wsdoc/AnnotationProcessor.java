@@ -17,8 +17,7 @@ import javax.lang.model.type.*;
 import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.util.*;
 
 /**
@@ -33,44 +32,48 @@ import java.util.*;
 //   - @RequestMapping.headers
 //   - @RequestMapping.params
 //   - @ResponseStatus
-//   - free-form comments
 //   - combine class-level and method-level annotations properly
 //   - MethodNameResolver
 //   - plural RequestMapping value support (i.e., two paths bound to one method)
 //   - support for methods not marked with @RequestMapping whose class does have a @RequestMapping annotation
 @SupportedAnnotationTypes("org.springframework.web.bind.annotation.RequestMapping")
-public class RestAnnotationProcessor extends AbstractProcessor {
+public class AnnotationProcessor extends AbstractProcessor {
 
-    static final String SERIALIZED_RESOURCE_LOCATION = "web-service-api.ser";
+    RestDocumentation docs = new RestDocumentation();
+    private boolean _isComplete = false;
 
     @Override
     public boolean process(Set<? extends TypeElement> supportedAnnotations, RoundEnvironment roundEnvironment) {
 
-        RestDocumentation docs = new RestDocumentation();
+        // short-circuit if there are multiple rounds
+        if (_isComplete)
+            return true;
 
+        Collection<String> processedPackageNames = new LinkedHashSet<String>();
         for (Element e : roundEnvironment.getElementsAnnotatedWith(RequestMapping.class)) {
             if (e instanceof ExecutableElement) {
-                processRequestMappingMethod((ExecutableElement) e, docs);
+                addPackageName(processedPackageNames, e);
+                processRequestMappingMethod((ExecutableElement) e);
             }
         }
 
         if (docs.getResources().size() > 0) {
-            ObjectOutputStream oos = null;
+
+            OutputStream fout = null;
             try {
                 FileObject file = getOutputFile();
-                oos = new ObjectOutputStream(file.openOutputStream());
-                oos.writeObject(docs);
-                oos.flush();
+                boolean exists = new File(file.getName()).exists();
+                fout = file.openOutputStream();
+                docs.toStream(fout);
                 processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE,
-                    String.format("Wrote REST docs for %s classes to %s", docs.getResources().size(),
-                        file.getName()));
+                    String.format("Wrote REST docs for %s endpoints to %s file at %s", 
+                        docs.getResources().size(), exists ? "existing" : "new", file.getName()));
             } catch (Exception e) {
                 throw new RuntimeException(e); // TODO wrap in something nicer
-            }
-            finally {
-                if (oos != null) {
+            } finally {
+                if (fout != null) {
                     try {
-                        oos.close();
+                        fout.close();
                     } catch (IOException ignored) {
                         // ignored
                     }
@@ -78,14 +81,19 @@ public class RestAnnotationProcessor extends AbstractProcessor {
             }
         }
 
+        _isComplete = true;
         return true;
     }
 
-    private FileObject getOutputFile() throws IOException {
-        return this.processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, "", SERIALIZED_RESOURCE_LOCATION);
+    private void addPackageName(Collection<String> processedPackageNames, Element e) {
+        processedPackageNames.add(processingEnv.getElementUtils().getPackageOf(e).getQualifiedName().toString());
     }
 
-    private void processRequestMappingMethod(ExecutableElement executableElement, RestDocumentation docs) {
+    private FileObject getOutputFile() throws IOException {
+        return this.processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, "", Utils.SERIALIZED_RESOURCE_LOCATION);
+    }
+
+    private void processRequestMappingMethod(ExecutableElement executableElement) {
         TypeElement cls = (TypeElement) executableElement.getEnclosingElement();
         String path = getClassLevelUrlPath(cls);
 
@@ -94,6 +102,7 @@ public class RestAnnotationProcessor extends AbstractProcessor {
         RequestMethod meth = getRequestMethod(executableElement, cls, anno);
 
         RestDocumentation.Resource.Method doc = docs.getResourceDocumentation(path).getMethodDocumentation(meth);
+        doc.setCommentText(processingEnv.getElementUtils().getDocComment(executableElement));
         buildParameterData(executableElement, doc);
         buildResponseFormat(executableElement.getReturnType(), doc);
     }
@@ -182,7 +191,7 @@ public class RestAnnotationProcessor extends AbstractProcessor {
                 "The RequestMapping annotation for %s.%s is not parseable. Exactly one value is required.",
                     cls.getQualifiedName(), executableElement.getSimpleName()));
         else
-            return joinPaths(path, anno.value()[0]);
+            return Utils.joinPaths(path, anno.value()[0]);
     }
 
     private String getClassLevelUrlPath(TypeElement cls) {
@@ -193,21 +202,11 @@ public class RestAnnotationProcessor extends AbstractProcessor {
         if (clsAnno == null || clsAnno.value().length == 0)
             return path;
         else if (clsAnno.value().length == 1)
-            return joinPaths(path, clsAnno.value()[0]);
+            return Utils.joinPaths(path, clsAnno.value()[0]);
         else
             throw new IllegalStateException(String.format(
                 "The RequestMapping annotation of class %s has multiple value strings. Only zero or one value is supported",
                     cls.getQualifiedName()));
-    }
-
-    private String joinPaths(String lhs, String rhs) {
-        while (lhs.endsWith("/"))
-            lhs = lhs.substring(0, lhs.length() - 1);
-
-        while (rhs.startsWith("/"))
-            rhs = rhs.substring(1);
-
-        return lhs + "/" + rhs;
     }
 
     private class TypeVisitorImpl implements TypeVisitor<JsonType,Void> {

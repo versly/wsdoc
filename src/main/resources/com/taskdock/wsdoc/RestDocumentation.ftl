@@ -14,6 +14,7 @@
 
             div.resource { border-top: 1px solid gray; padding-top: 5px; margin-top: 15px; }
             div.resource-header { font-family: monospace; font-size: 18px; font-weight: bold; padding-bottom: 15px; }
+            div.resource-docs { padding-bottom: 20px; }
 
             div.url-subs { padding-bottom: 20px; }
             div.url-subs table { width: 400px; border-spacing: 0px; }
@@ -58,6 +59,12 @@
                             <span class="method">${methodDoc.requestMethod}</span>
                             <span class="path">${resource.path}</span>
                         </div>
+
+                        <#if (methodDoc.commentText??)>
+                            <div class="resource-docs">
+                                ${methodDoc.commentText}
+                            </div>
+                        </#if>
 
                         <#assign subs=methodDoc.urlSubstitutions.substitutions>
                         <#if (subs?keys?size > 0)>
