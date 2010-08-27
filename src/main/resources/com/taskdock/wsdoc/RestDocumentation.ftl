@@ -30,8 +30,9 @@
             div.body-contents { font-family: monospace; }
             div.json-field { padding-left: 15px; }
             span.json-field-name { font-weight: bold; }
-            div.json-field span.json-primitive-type { color: gray; }
+            span.json-primitive-type { color: gray; }
             div.json-primitive-restrictions { color: gray; padding-left: 30px; }
+            div.json-field-comment { color: gray; padding-left: 30px; }
         </style>
     </head>
     <body>
@@ -154,6 +155,9 @@
             <div class="json-field">
                 <span class="json-field-name">${field.fieldName}</span>
                 <@render_json field.fieldType/>
+                <#if field.commentText??>
+                    <div class="json-field-comment">${field.commentText}</div>
+                </#if>
             </div>
         </#list>
     </div>

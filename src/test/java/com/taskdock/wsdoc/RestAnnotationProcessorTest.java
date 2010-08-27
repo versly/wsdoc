@@ -39,7 +39,10 @@ public class RestAnnotationProcessorTest {
             lines += line + "\n";
         }
 
-        Assert.assertTrue("expected 'JavaDoc comment' in doc string; got: \n" + lines, lines.contains("JavaDoc comment"));
+        Assert.assertTrue("expected 'JavaDoc comment' in doc string; got: \n" + lines,
+            lines.contains("JavaDoc comment"));
+        Assert.assertTrue("expected \"exciting return value's date\" in doc string; got: \n" + lines,
+            lines.contains("exciting return value's date"));
     }
 
     private void runAnnotationProcessor() throws URISyntaxException {

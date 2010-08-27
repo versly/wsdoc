@@ -342,14 +342,17 @@ public class AnnotationProcessor extends AbstractProcessor {
                     return; // couldn't find a replacement -- must be a generics-capable type with no generics info
             }
 
+            String docComment = processingEnv.getElementUtils().getDocComment(executableElement);
             if (type instanceof DeclaredType) {
                 TypeElement element = (TypeElement) ((DeclaredType) type).asElement();
                 for (TypeParameterElement generic : element.getTypeParameters()) {
                     concreteTypes.add(_typeArguments.get(generic.getSimpleName()));
                 }
-                o.addField(beanName, newJsonType((DeclaredType) type, concreteTypes));
+                o.addField(beanName, newJsonType((DeclaredType) type, concreteTypes))
+                    .setCommentText(docComment);
             } else {
-                o.addField(beanName, newJsonType(type));
+                o.addField(beanName, newJsonType(type))
+                    .setCommentText(docComment);
             }
         }
 

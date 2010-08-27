@@ -20,8 +20,17 @@ public class RestDocEndpoint {
      * This is an exciting JavaDoc comment
      */
     @RequestMapping(value = "foo/{dateParam}", method = RequestMethod.GET)
-    public Map<String,List<Date>> methodWithJavadocAndInterestingArgs(HttpServletRequest req, 
+    public Map<String,List<ExcitingReturnValue>> methodWithJavadocAndInterestingArgs(HttpServletRequest req,
         @PathVariable java.util.Date dateParam) {
         return null;
+    }
+
+    public class ExcitingReturnValue {
+        /**
+         * The exciting return value's date!
+         */
+        public Date getDate() {
+            return null;
+        }
     }
 }

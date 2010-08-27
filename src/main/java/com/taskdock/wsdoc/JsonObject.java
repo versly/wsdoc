@@ -29,6 +29,7 @@ public class JsonObject implements JsonType, Serializable {
 
         private String fieldName;
         private T fieldType;
+        private String commentText;
 
         public JsonField(String fieldName, T value) {
             this.fieldName = fieldName;
@@ -41,6 +42,14 @@ public class JsonObject implements JsonType, Serializable {
 
         public T getFieldType() {
             return fieldType;
+        }
+
+        public void setCommentText(String commentText) {
+            this.commentText = commentText;
+        }
+
+        public String getCommentText() {
+            return commentText;
         }
     }
 }
