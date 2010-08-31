@@ -6,6 +6,7 @@ package com.taskdock.wsdoc;
 
 import freemarker.template.TemplateException;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import javax.tools.*;
@@ -17,16 +18,23 @@ import java.util.Collections;
 
 public class RestAnnotationProcessorTest {
 
+    private File buildDir;
+
+    @Before
+    public void setUp() {
+        buildDir = new File(System.getProperty("java.io.tmpdir"));
+        System.setProperty("com.taskdock.wsdoc.outputFile", buildDir + "/test-wsdoc-out.html");
+    }
+
     @Test
     public void basicTest() throws Exception {
         runAnnotationProcessor();
         buildOutput();
-
         assertOutput();
     }
 
     private void buildOutput() throws ClassNotFoundException, IOException, TemplateException {
-        InputStream in = new FileInputStream(Utils.SERIALIZED_RESOURCE_LOCATION);
+        InputStream in = new FileInputStream(new File(buildDir, Utils.SERIALIZED_RESOURCE_LOCATION));
         new RestDocAssembler().writeDocumentation(Collections.singletonList(RestDocumentation.fromStream(in)));
     }
 
@@ -45,11 +53,12 @@ public class RestAnnotationProcessorTest {
             lines.contains("exciting return value's date"));
     }
 
-    private void runAnnotationProcessor() throws URISyntaxException {
+    private void runAnnotationProcessor() throws URISyntaxException, IOException {
         AnnotationProcessor processor = new AnnotationProcessor();
 
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
+        fileManager.setLocation(StandardLocation.CLASS_OUTPUT, Collections.singletonList(buildDir));
         JavaFileObject file = new SimpleJavaFileObject(new URI("string:///com/taskdock/wsdoc/RestDocEndpoint.java"),
                 JavaFileObject.Kind.SOURCE) {
             @Override
