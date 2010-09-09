@@ -36,6 +36,8 @@ import java.util.*;
 //   - MethodNameResolver
 //   - plural RequestMapping value support (i.e., two paths bound to one method)
 //   - support for methods not marked with @RequestMapping whose class does have a @RequestMapping annotation
+//   - currently, when a class has multiple methods for the same path with different params (or different headers etc.),
+//     we still only list one entry in the overview section. Should this change?
 @SupportedAnnotationTypes("org.springframework.web.bind.annotation.RequestMapping")
 public class AnnotationProcessor extends AbstractProcessor {
 

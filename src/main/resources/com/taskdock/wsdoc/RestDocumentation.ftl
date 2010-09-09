@@ -57,9 +57,18 @@
                     <a id="${methodDoc.requestMethod}_${resource.path}"/>
                     <div class="resource">
                         <div class="resource-header">
-                            <span class="method">${methodDoc.requestMethod}</span>
-                            <span class="path">${resource.path}</span>
-
+                                <span class="method">${methodDoc.requestMethod}</span>
+                                <span class="path">${resource.path}</span><#t>
+                                <#-- append any URL parameters to the end of the main banner -->
+                                <#assign params=methodDoc.urlParameters.fields><#t>
+                                <#if (params?keys?size > 0)><#t>
+                                    ?<#list params?keys as key><#t>
+                                        <span class="url-param-key">${key}</span><#t>
+                                        =<#t>
+                                        <span class="url-param-expected-type"><@render_json params[key]/></span><#t>
+                                        <#if key_has_next>&</#if><#t>
+                                    </#list><#t>
+                                </#if><#t>
                         </div>
 
                         <#if (methodDoc.commentText??)>
@@ -79,23 +88,6 @@
                                         <tr>
                                             <td class="url-info-key">${key}</td>
                                             <td class="url-info-expected-type"><@render_json subs[key]/></td>
-                                        </tr>
-                                    </#list>
-                                </table>
-                            </div>
-                        </#if>
-
-                        <#assign params=methodDoc.urlParameters.fields>
-                        <#if (params?keys?size > 0)>
-                            <div class="url-info">
-                                <table>
-                                    <thead>
-                                        <tr><td>URL Parameter</td><td>Expected Type</td></tr>
-                                    </thead>
-                                    <#list params?keys as key>
-                                        <tr>
-                                            <td class="url-info-key">${key}</td>
-                                            <td class="url-info-expected-type"><@render_json params[key]/></td>
                                         </tr>
                                     </#list>
                                 </table>
@@ -136,49 +128,45 @@
 
 <#macro render_json_array json>
     <#-- @ftlvariable name="json" type="com.taskdock.wsdoc.JsonArray" -->
-
-    <span class="json-array">[
-        <@render_json json.elementType />
-    ]</span>
+    <span class="json-array">[<#t>
+        <@render_json json.elementType /><#t>
+    ]</span><#t>
 </#macro>
 
 <#macro render_json_dict json>
     <#-- @ftlvariable name="json" type="com.taskdock.wsdoc.JsonDict" -->
-
-    <span class="json-dict">[
-        <@render_json json.keyType/>
-        -&gt;
-        <@render_json json.valueType/>
-    ]</span>
+    <span class="json-dict">[<#t>
+        <@render_json json.keyType/><#t>
+        -&gt;<#t>
+        <@render_json json.valueType/><#t>
+    ]</span><#t>
 </#macro>
 
 <#macro render_json_primitive json>
     <#-- @ftlvariable name="json" type="com.taskdock.wsdoc.JsonPrimitive" -->
-
-    <span class="json-primitive-type">${json.typeName}</span>
-    <#if json.restrictions??>
-        <div class="json-primitive-restrictions">
-            one of [ <#list json.restrictions as restricton>
-                ${restricton}<#if restricton_has_next>, </#if>
-            </#list> ]</div>
-    </#if>
+    <span class="json-primitive-type">${json.typeName}</span><#t>
+    <#if json.restrictions??><#t>
+        <div class="json-primitive-restrictions"><#t>
+            one of [ <#list json.restrictions as restricton><#t>
+                ${restricton}<#if restricton_has_next>, </#if><#t>
+            </#list> ]</div><#t>
+    </#if><#t>
 </#macro>
 
 <#macro render_json_object json>
     <#-- @ftlvariable name="json" type="com.taskdock.wsdoc.JsonObject" -->
-
-    <span class="json-object">{
-    <div class="json-fields">
-        <#list json.fields as field>
-            <div class="json-field">
-                <span class="json-field-name">${field.fieldName}</span>
-                <@render_json field.fieldType/>
-                <#if field.commentText??>
-                    <div class="json-field-comment">${field.commentText}</div>
-                </#if>
-            </div>
-        </#list>
-    </div>
-    </span>
+    <span class="json-object">{<#t>
+    <div class="json-fields"><#t>
+        <#list json.fields as field><#t>
+            <div class="json-field"><#t>
+                <span class="json-field-name">${field.fieldName}</span><#t>
+                <@render_json field.fieldType/><#t>
+                <#if field.commentText??><#t>
+                    <div class="json-field-comment">${field.commentText}</div><#t>
+                </#if><#t>
+            </div><#t>
+        </#list><#t>
+    </div><#t>
+    </span><#t>
     }
 </#macro>
