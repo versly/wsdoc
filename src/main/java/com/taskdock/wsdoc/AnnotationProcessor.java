@@ -150,6 +150,8 @@ public class AnnotationProcessor extends AbstractProcessor {
             // some sort of object... walk it
             DeclaredType type = (DeclaredType) typeMirror;
             return newJsonType(type, type.getTypeArguments());
+        } else if (typeMirror.getKind() == TypeKind.VOID) {
+            return null;
         } else {
             throw new UnsupportedOperationException(typeMirror.toString());
         }
@@ -172,7 +174,6 @@ public class AnnotationProcessor extends AbstractProcessor {
     }
 
     private void buildResponseFormat(TypeMirror type, RestDocumentation.Resource.Method doc) {
-        // TODO write REST docs provided in some sort of annotation or comment
         doc.setResponseBody(newJsonType(type));
     }
 
