@@ -104,7 +104,7 @@ public class AnnotationProcessor extends AbstractProcessor {
         path = addMethodPathComponent(executableElement, cls, path, anno);
         RequestMethod meth = getRequestMethod(executableElement, cls, anno);
 
-        RestDocumentation.Resource.Method doc = docs.getResourceDocumentation(path).getMethodDocumentation(meth);
+        RestDocumentation.Resource.Method doc = docs.getResourceDocumentation(path).newMethodDocumentation(meth);
         doc.setCommentText(processingEnv.getElementUtils().getDocComment(executableElement));
         buildParameterData(executableElement, doc);
         buildResponseFormat(executableElement.getReturnType(), doc);

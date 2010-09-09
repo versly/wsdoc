@@ -83,6 +83,12 @@ public class RestAnnotationProcessorTest {
             output.contains("Note: this endpoint expects a multipart"));
     }
 
+    @Test
+    public void assertOverriddenPaths() {
+        Assert.assertTrue("expected multiple voidreturn sections; got: \n" + output,
+            output.indexOf("<a id=\"/mount/voidreturn") != output.lastIndexOf("<a id=\"/mount/voidreturn")); 
+    }
+
     private static void runAnnotationProcessor(File buildDir) throws URISyntaxException, IOException {
         AnnotationProcessor processor = new AnnotationProcessor();
 

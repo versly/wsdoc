@@ -44,7 +44,7 @@
                     <span class="resource-summary-path">${resource.path}</span>
                     <div>
                         <#list resource.requestMethodDocs?sort_by("requestMethod") as methodDoc>
-                            <a href="#${methodDoc.requestMethod}_${resource.path}">${methodDoc.requestMethod}</a>
+                            <a href="#${methodDoc.key}">${methodDoc.requestMethod}</a>
                         </#list>
                     </div>
                 </div>
@@ -54,7 +54,7 @@
         <#list docs as doc>
             <#list doc.resources as resource>
                 <#list resource.requestMethodDocs as methodDoc>
-                    <a id="${methodDoc.requestMethod}_${resource.path}"/>
+                    <a id="${methodDoc.key}"/>
                     <div class="resource">
                         <div class="resource-header">
                                 <span class="method">${methodDoc.requestMethod}</span>

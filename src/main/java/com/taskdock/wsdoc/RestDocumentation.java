@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import java.io.*;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.Map;
 
 public class RestDocumentation implements Serializable {
@@ -50,7 +51,7 @@ public class RestDocumentation implements Serializable {
     public class Resource implements Serializable {
 
         private String path;
-        private Map<RequestMethod, Method> _methods = new LinkedHashMap();
+        private Collection<Method> _methods = new LinkedList();
 
         public Resource(String path) {
             this.path = path;
@@ -61,13 +62,19 @@ public class RestDocumentation implements Serializable {
         }
 
         public Collection<Method> getRequestMethodDocs() {
-            return _methods.values();
+            return _methods;
         }
 
-        public Method getMethodDocumentation(RequestMethod meth) {
-            if (!_methods.containsKey(meth))
-                _methods.put(meth, new Method(meth));
-            return _methods.get(meth);
+        /**
+         * Creates and returns a new {@link Method} instance, and adds it to
+         * the current resource location. If this is invoked multiple times
+         * with the same argument, multiple distinct {@link Method} objects
+         * will be returned.
+         */
+        public Method newMethodDocumentation(RequestMethod meth) {
+            Method method = new Method(meth);
+            _methods.add(method);
+            return method;
         }
 
         public class Method implements Serializable {
@@ -126,6 +133,17 @@ public class RestDocumentation implements Serializable {
 
             public void setMultipartRequest(boolean multipart) {
                 _isMultipartRequest = multipart;
+            }
+
+            /**
+             * An HTML-safe, textual key that uniquely identifies this endpoint.
+             */
+            public String getKey() {
+                String key = path + "_" + meth.name();
+                for (String param : _urlParameters.getFields().keySet()) {
+                    key += "_" + param;
+                }
+                return key;
             }
 
             public class UrlFields implements Serializable {
