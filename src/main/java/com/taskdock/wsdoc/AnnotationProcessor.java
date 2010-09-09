@@ -30,15 +30,11 @@ import java.util.*;
 // TODO:
 //   - @CookieValue
 //   - @RequestHeader
-//   - @RequestMapping.headers
-//   - @RequestMapping.params
 //   - @ResponseStatus
 //   - combine class-level and method-level annotations properly
 //   - MethodNameResolver
 //   - plural RequestMapping value support (i.e., two paths bound to one method)
 //   - support for methods not marked with @RequestMapping whose class does have a @RequestMapping annotation
-//   - currently, when a class has multiple methods for the same path with different params (or different headers etc.),
-//     we still only list one entry in the overview section. Should this change?
 @SupportedAnnotationTypes("org.springframework.web.bind.annotation.RequestMapping")
 public class AnnotationProcessor extends AbstractProcessor {
 
@@ -114,6 +110,9 @@ public class AnnotationProcessor extends AbstractProcessor {
 
         // only process @RequestBody, @PathVariable and @RequestParam parameters for now.
         // TODO Consider expanding this to include other Spring REST annotations.
+
+        // We can safely ignore @RequestMapping.params, as Spring requires that a @RequestParam exists
+        // for each entry listed in this list. I expect that this might be the same for @RequestMapping.headers
 
         scanForMultipart(executableElement, doc);
         buildPathVariables(executableElement, doc);
