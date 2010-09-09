@@ -78,6 +78,7 @@ public class RestDocumentation implements Serializable {
             private UrlFields _urlParameters = new UrlFields();
             private JsonType _responseBody;
             private String _commentText;
+            private boolean _isMultipartRequest;
 
             public Method(RequestMethod meth) {
                 this.meth = meth;
@@ -117,6 +118,14 @@ public class RestDocumentation implements Serializable {
 
             public void setCommentText(String text) {
                 _commentText = text;
+            }
+
+            public boolean isMultipartRequest() {
+                return _isMultipartRequest;
+            }
+
+            public void setMultipartRequest(boolean multipart) {
+                _isMultipartRequest = multipart;
             }
 
             public class UrlFields implements Serializable {

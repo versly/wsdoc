@@ -77,6 +77,12 @@
                             </div>
                         </#if>
 
+                        <#if methodDoc.multipartRequest>
+                            <div class="multipart-notice">
+                                Note: this endpoint expects a multipart request body.
+                            </div>
+                        </#if>
+
                         <#assign subs=methodDoc.urlSubstitutions.fields>
                         <#if (subs?keys?size > 0)>
                             <div class="url-info">

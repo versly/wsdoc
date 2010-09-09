@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
@@ -114,14 +115,28 @@ public class AnnotationProcessor extends AbstractProcessor {
         // only process @RequestBody, @PathVariable and @RequestParam parameters for now.
         // TODO Consider expanding this to include other Spring REST annotations.
 
+        scanForMultipart(executableElement, doc);
+        buildPathVariables(executableElement, doc);
+        buildUrlParameters(executableElement, doc);
+        buildRequestBodies(executableElement, doc);
+    }
+
+    private void scanForMultipart(ExecutableElement executableElement, RestDocumentation.Resource.Method doc) {
+        for (VariableElement var : executableElement.getParameters()) {
+            TypeMirror varType = var.asType();
+            if (varType.toString().startsWith(MultipartHttpServletRequest.class.getName())) {
+                doc.setMultipartRequest(true);
+                return;
+            }
+        }
+    }
+
+    private void buildRequestBodies(ExecutableElement executableElement, RestDocumentation.Resource.Method doc) {
         List<VariableElement> requestBodies = new ArrayList<VariableElement>();
         for (VariableElement var : executableElement.getParameters()) {
             if (var.getAnnotation(org.springframework.web.bind.annotation.RequestBody.class) != null)
                 requestBodies.add(var);
         }
-
-        buildPathVariables(executableElement, doc);
-        buildUrlParameters(executableElement, doc);
 
         if (requestBodies.size() > 1)
             throw new IllegalStateException(String.format(

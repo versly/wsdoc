@@ -80,7 +80,7 @@ public class RestAnnotationProcessorTest {
     @Test
     public void assertMultipart() {
         Assert.assertTrue("expected multipart info docs; got: \n" + output,
-            output.contains("multipart"));
+            output.contains("Note: this endpoint expects a multipart"));
     }
 
     private static void runAnnotationProcessor(File buildDir) throws URISyntaxException, IOException {
