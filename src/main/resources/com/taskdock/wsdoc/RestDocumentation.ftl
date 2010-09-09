@@ -134,18 +134,18 @@
 
 <#macro render_json_array json>
     <#-- @ftlvariable name="json" type="com.taskdock.wsdoc.JsonArray" -->
-    <span class="json-array">[<#t>
-        <@render_json json.elementType /><#t>
-    ]</span><#t>
+    <span class="json-array">[
+        <@render_json json.elementType />
+    ]</span>
 </#macro>
 
 <#macro render_json_dict json>
     <#-- @ftlvariable name="json" type="com.taskdock.wsdoc.JsonDict" -->
-    <span class="json-dict">[<#t>
-        <@render_json json.keyType/><#t>
-        -&gt;<#t>
-        <@render_json json.valueType/><#t>
-    ]</span><#t>
+    <span class="json-dict">[
+        <@render_json json.keyType/>
+        -&gt;
+        <@render_json json.valueType/>
+    ]</span>
 </#macro>
 
 <#macro render_json_primitive json>
@@ -161,17 +161,17 @@
 
 <#macro render_json_object json>
     <#-- @ftlvariable name="json" type="com.taskdock.wsdoc.JsonObject" -->
-    <span class="json-object">{<#t>
-    <div class="json-fields"><#t>
-        <#list json.fields as field><#t>
-            <div class="json-field"><#t>
-                <span class="json-field-name">${field.fieldName}</span><#t>
-                <@render_json field.fieldType/><#t>
-                <#if field.commentText??><#t>
-                    <div class="json-field-comment">${field.commentText}</div><#t>
-                </#if><#t>
-            </div><#t>
-        </#list><#t>
+    <span class="json-object">{
+    <div class="json-fields">
+        <#list json.fields as field>
+            <div class="json-field">
+                <span class="json-field-name">${field.fieldName}</span>
+                <@render_json field.fieldType/>
+                <#if field.commentText??>
+                    <div class="json-field-comment">${field.commentText}</div>
+                </#if>
+            </div>
+        </#list>
     </div><#t>
     </span><#t>
     }
