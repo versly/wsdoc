@@ -16,11 +16,11 @@
             div.resource-header { font-family: monospace; font-size: 18px; font-weight: bold; padding-bottom: 15px; }
             div.resource-docs { padding-bottom: 20px; }
 
-            div.url-subs { padding-bottom: 20px; }
-            div.url-subs table { width: 400px; border-spacing: 0px; }
-            div.url-subs thead td { border-bottom: 1px dashed gray; }
-            .url-sub-key { font-family: monospace; }
-            .url-sub-expected-type { font-family: monospace; }
+            div.url-info { padding-bottom: 20px; }
+            div.url-info table { width: 400px; border-spacing: 0px; }
+            div.url-info thead td { border-bottom: 1px dashed gray; }
+            .url-info-key { font-family: monospace; }
+            .url-info-expected-type { font-family: monospace; }
 
             div.request-body { padding-bottom: 20px; }
             div.response-body { padding-bottom: 20px; }
@@ -59,6 +59,7 @@
                         <div class="resource-header">
                             <span class="method">${methodDoc.requestMethod}</span>
                             <span class="path">${resource.path}</span>
+
                         </div>
 
                         <#if (methodDoc.commentText??)>
@@ -67,17 +68,34 @@
                             </div>
                         </#if>
 
-                        <#assign subs=methodDoc.urlSubstitutions.substitutions>
+                        <#assign subs=methodDoc.urlSubstitutions.fields>
                         <#if (subs?keys?size > 0)>
-                            <div class="url-subs">
+                            <div class="url-info">
                                 <table>
                                     <thead>
                                         <tr><td>URL Substitution Key</td><td>Expected Type</td></tr>
                                     </thead>
                                     <#list subs?keys as key>
                                         <tr>
-                                            <td class="url-sub-key">${key}</td>
-                                            <td class="url-sub-expected-type"><@render_json subs[key]/></td>
+                                            <td class="url-info-key">${key}</td>
+                                            <td class="url-info-expected-type"><@render_json subs[key]/></td>
+                                        </tr>
+                                    </#list>
+                                </table>
+                            </div>
+                        </#if>
+
+                        <#assign params=methodDoc.urlParameters.fields>
+                        <#if (params?keys?size > 0)>
+                            <div class="url-info">
+                                <table>
+                                    <thead>
+                                        <tr><td>URL Parameter</td><td>Expected Type</td></tr>
+                                    </thead>
+                                    <#list params?keys as key>
+                                        <tr>
+                                            <td class="url-info-key">${key}</td>
+                                            <td class="url-info-expected-type"><@render_json params[key]/></td>
                                         </tr>
                                     </#list>
                                 </table>

@@ -8,6 +8,7 @@ import org.codehaus.jackson.annotate.JsonIgnore;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
@@ -26,7 +27,6 @@ import java.util.*;
  * <code>rest-api.html</code> in the top of the classes directory.
  */
 // TODO:
-//   - @RequestParam
 //   - @CookieValue
 //   - @RequestHeader
 //   - @RequestMapping.headers
@@ -109,19 +109,17 @@ public class AnnotationProcessor extends AbstractProcessor {
 
     private void buildParameterData(ExecutableElement executableElement, RestDocumentation.Resource.Method doc) {
 
-        // only process @RequestBody and @PathVariable parameters for now.
+        // only process @RequestBody, @PathVariable and @RequestParam parameters for now.
         // TODO Consider expanding this to include other Spring REST annotations.
+
         List<VariableElement> requestBodies = new ArrayList<VariableElement>();
-        List<VariableElement> pathVars = new ArrayList<VariableElement>();
         for (VariableElement var : executableElement.getParameters()) {
             if (var.getAnnotation(org.springframework.web.bind.annotation.RequestBody.class) != null)
                 requestBodies.add(var);
-            if (var.getAnnotation(PathVariable.class) != null)
-                pathVars.add(var);
         }
 
-        if (pathVars.size() > 0)
-            buildPathVariables(pathVars, doc);
+        buildPathVariables(executableElement, doc);
+        buildUrlParameters(executableElement, doc);
 
         if (requestBodies.size() > 1)
             throw new IllegalStateException(String.format(
@@ -136,10 +134,30 @@ public class AnnotationProcessor extends AbstractProcessor {
         doc.setRequestBody(newJsonType(var.asType()));
     }
 
-    private void buildPathVariables(List<VariableElement> pathVars, RestDocumentation.Resource.Method doc) {
-        RestDocumentation.Resource.Method.UrlSubstitutions subs = doc.getUrlSubstitutions();
-        for (VariableElement pathVar : pathVars) {
-            subs.addSubstitution(pathVar.getSimpleName().toString(), newJsonType(pathVar.asType()));
+    private void buildPathVariables(ExecutableElement executableElement, RestDocumentation.Resource.Method doc) {
+        RestDocumentation.Resource.Method.UrlFields subs = doc.getUrlSubstitutions();
+
+        for (VariableElement var : executableElement.getParameters()) {
+            PathVariable pathVar = var.getAnnotation(PathVariable.class);
+            if (pathVar != null) {
+                addUrlField(subs, var, pathVar.value());
+            }
+        }
+    }
+
+    private void addUrlField(RestDocumentation.Resource.Method.UrlFields subs, VariableElement var, String annoValue) {
+        String name = (annoValue == null || annoValue.isEmpty()) ? var.getSimpleName().toString() : annoValue;
+        subs.addField(name, newJsonType(var.asType()));
+    }
+
+    private void buildUrlParameters(ExecutableElement executableElement, RestDocumentation.Resource.Method doc) {
+        RestDocumentation.Resource.Method.UrlFields subs = doc.getUrlParameters();
+
+        for (VariableElement var : executableElement.getParameters()) {
+            RequestParam reqParam = var.getAnnotation(RequestParam.class);
+            if (reqParam != null) {
+                addUrlField(subs, var, reqParam.value());
+            }
         }
     }
 

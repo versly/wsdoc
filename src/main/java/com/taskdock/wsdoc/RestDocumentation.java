@@ -74,7 +74,8 @@ public class RestDocumentation implements Serializable {
 
             private RequestMethod meth;
             private JsonType _requestBody;
-            private UrlSubstitutions _urlSubstitutions = new UrlSubstitutions();
+            private UrlFields _urlSubstitutions = new UrlFields();
+            private UrlFields _urlParameters = new UrlFields();
             private JsonType _responseBody;
             private String _commentText;
 
@@ -94,8 +95,12 @@ public class RestDocumentation implements Serializable {
                 _requestBody = body;
             }
 
-            public Method.UrlSubstitutions getUrlSubstitutions() {
+            public UrlFields getUrlSubstitutions() {
                 return _urlSubstitutions;
+            }
+
+            public UrlFields getUrlParameters() {
+                return _urlParameters;
             }
 
             public JsonType getResponseBody() {
@@ -114,16 +119,16 @@ public class RestDocumentation implements Serializable {
                 _commentText = text;
             }
 
-            public class UrlSubstitutions implements Serializable {
+            public class UrlFields implements Serializable {
 
                 private Map<String, JsonType> _jsonTypes = new LinkedHashMap();
 
-                public Map<String, JsonType> getSubstitutions() {
+                public Map<String, JsonType> getFields() {
                     return _jsonTypes;
                 }
 
-                public void addSubstitution(String pathSubName, JsonType jsonType) {
-                    _jsonTypes.put(pathSubName, jsonType);
+                public void addField(String name, JsonType jsonType) {
+                    _jsonTypes.put(name, jsonType);
                 }
             }
         }

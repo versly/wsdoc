@@ -5,8 +5,11 @@
 package com.taskdock.wsdoc;
 
 import freemarker.template.TemplateException;
+import junit.framework.JUnit4TestAdapter;
+import junit.framework.TestSuite;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import javax.tools.*;
@@ -18,42 +21,69 @@ import java.util.Collections;
 
 public class RestAnnotationProcessorTest {
 
-    private File buildDir;
+    private static String output;
 
-    @Before
-    public void setUp() {
-        buildDir = new File(System.getProperty("java.io.tmpdir"));
+    public static TestSuite suite() {
+        TestSuite suite = new TestSuite();
+        suite.addTest(new JUnit4TestAdapter(RestAnnotationProcessorTest.class));
+        return suite;
+    }
+
+    @BeforeClass
+    public static void setUp() throws IOException, URISyntaxException, ClassNotFoundException, TemplateException {
+        File buildDir = new File(System.getProperty("java.io.tmpdir"));
         System.setProperty("com.taskdock.wsdoc.outputFile", buildDir + "/test-wsdoc-out.html");
+        runAnnotationProcessor(buildDir);
+        buildOutput(buildDir);
+        readOutput();
     }
 
-    @Test
-    public void basicTest() throws Exception {
-        runAnnotationProcessor();
-        buildOutput();
-        assertOutput();
+    private static void readOutput() throws IOException {
+        InputStream in;
+        in = new FileInputStream(RestDocAssembler.getOutputFile());
+        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+        output = "";
+        for (String line = null; (line = reader.readLine()) != null; ) {
+            output += line + "\n";
+        }
     }
 
-    private void buildOutput() throws ClassNotFoundException, IOException, TemplateException {
+    private static void buildOutput(File buildDir) throws ClassNotFoundException, IOException, TemplateException {
         InputStream in = new FileInputStream(new File(buildDir, Utils.SERIALIZED_RESOURCE_LOCATION));
         new RestDocAssembler().writeDocumentation(Collections.singletonList(RestDocumentation.fromStream(in)));
     }
 
-    private void assertOutput() throws IOException {
-        InputStream in;
-        in = new FileInputStream(RestDocAssembler.getOutputFile());
-        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-        String lines = "";
-        for (String line = null; (line = reader.readLine()) != null; ) {
-            lines += line + "\n";
-        }
-
-        Assert.assertTrue("expected 'JavaDoc comment' in doc string; got: \n" + lines,
-            lines.contains("JavaDoc comment"));
-        Assert.assertTrue("expected \"exciting return value's date\" in doc string; got: \n" + lines,
-            lines.contains("exciting return value's date"));
+    @Test
+    public void assertJavaDocComments() {
+        Assert.assertTrue("expected 'JavaDoc comment' in doc string; got: \n" + output,
+            output.contains("JavaDoc comment"));
     }
 
-    private void runAnnotationProcessor() throws URISyntaxException, IOException {
+    @Test
+    public void assertReturnValueComments() {
+        Assert.assertTrue("expected \"exciting return value's date\" in doc string; got: \n" + output,
+            output.contains("exciting return value's date"));
+    }
+
+    @Test
+    public void assertPathVariableWithOverriddenName() {
+        Assert.assertTrue("expected \"dateParam\" in doc string; got: \n" + output,
+            output.contains("dateParam"));
+    }
+
+    @Test
+    public void assertParams() {
+        Assert.assertTrue("expected param0 and param1 in docs; got: \n" + output,
+            output.contains(">param0<") && output.contains(">param1<"));
+    }
+
+    @Test
+    public void assertMultipart() {
+        Assert.assertTrue("expected multipart info docs; got: \n" + output,
+            output.contains("multipart"));
+    }
+
+    private static void runAnnotationProcessor(File buildDir) throws URISyntaxException, IOException {
         AnnotationProcessor processor = new AnnotationProcessor();
 
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
