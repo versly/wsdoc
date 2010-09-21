@@ -353,12 +353,12 @@ public class AnnotationProcessor extends AbstractProcessor {
 
             for (Element e : element.getEnclosedElements()) {
                 if (e instanceof ExecutableElement) {
-                    addFieldFromBeanGetter(o, (ExecutableElement) e);
+                    addFieldFromBeanMethod(o, (ExecutableElement) e);
                 }
             }
         }
 
-        private void addFieldFromBeanGetter(JsonObject o, ExecutableElement executableElement) {
+        private void addFieldFromBeanMethod(JsonObject o, ExecutableElement executableElement) {
             if (!isJsonBeanGetter(executableElement))
                 return;
 
@@ -399,7 +399,10 @@ public class AnnotationProcessor extends AbstractProcessor {
                 return false;
 
             if (!(executableElement.getSimpleName().toString().startsWith("get")
-                    && executableElement.getParameters().size() == 0))
+                    || executableElement.getSimpleName().toString().startsWith("is")))
+                return false;
+
+            if (executableElement.getParameters().size() > 0)
                 return false;
 
             return executableElement.getAnnotation(JsonIgnore.class) == null;

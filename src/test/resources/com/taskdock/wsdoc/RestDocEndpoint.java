@@ -49,5 +49,8 @@ public class RestDocEndpoint {
         public Date getDate() {
             return null;
         }
+
+        public void setDate(Date date) { // here to exercise a setter bug
+        }
     }
 }
