@@ -205,14 +205,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 
     private boolean isJsonPrimitive(TypeMirror typeMirror) {
         return (typeMirror.getKind().isPrimitive()
-            || typeMirror.toString().startsWith("java.lang")
-            || typeMirror.toString().startsWith(UUID.class.getName())
-            || typeMirror.toString().startsWith(URL.class.getName())
-            || typeMirror.toString().startsWith(Date.class.getName())
-            || typeMirror.toString().startsWith(java.sql.Date.class.getName())
-            || typeMirror.toString().startsWith(Timestamp.class.getName())
-            || typeMirror.toString().startsWith(Time.class.getName())
-            || typeMirror.toString().startsWith("org.joda"));
+            || JsonPrimitive.isPrimitive(typeMirror.toString()));
     }
 
     private void buildResponseFormat(TypeMirror type, RestDocumentation.Resource.Method doc) {

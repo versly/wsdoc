@@ -93,7 +93,7 @@ public class RestAnnotationProcessorTest {
     public void assertUuidIsNotTraversedInto() {
         Assert.assertFalse("leastSignificantBits field (member field of UUID class) should not be in output",
             output.contains("leastSignificantBits"));
-        Assert.assertFalse("expected uuid type somewhere in doc",
+        Assert.assertTrue("expected uuid type somewhere in doc",
             output.contains("json-primitive-type\">uuid<"));
     }
 
