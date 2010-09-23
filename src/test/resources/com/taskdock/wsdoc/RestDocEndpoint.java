@@ -7,6 +7,7 @@ package com.taskdock.wsdoc;
 import java.util.Map;
 import java.util.List;
 import java.util.Date;
+import java.util.UUID;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -40,6 +41,11 @@ public class RestDocEndpoint {
 
     @RequestMapping(value = "multipart", method = RequestMethod.GET)
     public void methodWithVoidReturn(MultipartHttpServletRequest req) {
+    }
+
+    @RequestMapping(value = "uuidReturn", method = RequestMethod.GET)
+    public UUID uuidReturn(MultipartHttpServletRequest req) {
+        return null;
     }
 
     public class ExcitingReturnValue {

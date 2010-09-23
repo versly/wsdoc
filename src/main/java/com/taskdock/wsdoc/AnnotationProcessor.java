@@ -20,6 +20,9 @@ import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 import java.io.*;
+import java.net.URL;
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.util.*;
 
 /**
@@ -203,7 +206,12 @@ public class AnnotationProcessor extends AbstractProcessor {
     private boolean isJsonPrimitive(TypeMirror typeMirror) {
         return (typeMirror.getKind().isPrimitive()
             || typeMirror.toString().startsWith("java.lang")
-            || typeMirror.toString().startsWith("java.util.Date")
+            || typeMirror.toString().startsWith(UUID.class.getName())
+            || typeMirror.toString().startsWith(URL.class.getName())
+            || typeMirror.toString().startsWith(Date.class.getName())
+            || typeMirror.toString().startsWith(java.sql.Date.class.getName())
+            || typeMirror.toString().startsWith(Timestamp.class.getName())
+            || typeMirror.toString().startsWith(Time.class.getName())
             || typeMirror.toString().startsWith("org.joda"));
     }
 

@@ -89,6 +89,14 @@ public class RestAnnotationProcessorTest {
             output.indexOf("<a id=\"/mount/voidreturn") != output.lastIndexOf("<a id=\"/mount/voidreturn")); 
     }
 
+    @Test
+    public void assertUuidIsNotTraversedInto() {
+        Assert.assertFalse("leastSignificantBits field (member field of UUID class) should not be in output",
+            output.contains("leastSignificantBits"));
+        Assert.assertFalse("expected uuid type somewhere in doc",
+            output.contains("json-primitive-type\">uuid<"));
+    }
+
     private static void runAnnotationProcessor(File buildDir) throws URISyntaxException, IOException {
         AnnotationProcessor processor = new AnnotationProcessor();
 
