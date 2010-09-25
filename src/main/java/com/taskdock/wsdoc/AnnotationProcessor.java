@@ -365,8 +365,9 @@ public class AnnotationProcessor extends AbstractProcessor {
 
             TypeMirror type = executableElement.getReturnType();
             String methodName = executableElement.getSimpleName().toString();
-            String beanName = methodName.substring(4, methodName.length());
-            beanName = methodName.substring(3, 4).toLowerCase() + beanName;
+            int trimLength = methodName.startsWith("is") ? 2 : 3;
+            String beanName = methodName.substring(trimLength + 1, methodName.length());
+            beanName = methodName.substring(trimLength, trimLength + 1).toLowerCase() + beanName;
 
             // loop over the element's generic types, and build a concrete list from the owning context
             List<DeclaredType> concreteTypes = new ArrayList();
