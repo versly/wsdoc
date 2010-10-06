@@ -2,7 +2,7 @@
  * Copyright (c) Taskdock, Inc. 2009-2010. All Rights Reserved.
  */
 
-package com.taskdock.wsdoc;
+package com.taskdock.rest.wsdoc;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,9 +20,6 @@ import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 import java.io.*;
-import java.net.URL;
-import java.sql.Time;
-import java.sql.Timestamp;
 import java.util.*;
 
 /**

@@ -2,7 +2,7 @@
  * Copyright (c) Taskdock, Inc. 2009-2010. All Rights Reserved.
  */
 
-package com.taskdock.wsdoc;
+package com.taskdock.rest.wsdoc;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;

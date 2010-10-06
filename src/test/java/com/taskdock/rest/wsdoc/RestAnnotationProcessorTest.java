@@ -2,13 +2,12 @@
  * Copyright (c) Taskdock, Inc. 2009-2010. All Rights Reserved.
  */
 
-package com.taskdock.wsdoc;
+package com.taskdock.rest.wsdoc;
 
 import freemarker.template.TemplateException;
 import junit.framework.JUnit4TestAdapter;
 import junit.framework.TestSuite;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -32,7 +31,7 @@ public class RestAnnotationProcessorTest {
     @BeforeClass
     public static void setUp() throws IOException, URISyntaxException, ClassNotFoundException, TemplateException {
         File buildDir = new File(System.getProperty("java.io.tmpdir"));
-        System.setProperty("com.taskdock.wsdoc.outputFile", buildDir + "/test-wsdoc-out.html");
+        System.setProperty("com.taskdock.rest.wsdoc.outputFile", buildDir + "/test-wsdoc-out.html");
         runAnnotationProcessor(buildDir);
         buildOutput(buildDir);
         readOutput();
