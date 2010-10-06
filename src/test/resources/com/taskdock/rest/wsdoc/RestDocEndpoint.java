@@ -4,18 +4,17 @@
 
 package com.taskdock.rest.wsdoc;
 
-import java.util.Map;
-import java.util.List;
-import java.util.Date;
-import java.util.UUID;
-
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @RestApiMountPoint("/mount")
 public class RestDocEndpoint {
