@@ -31,7 +31,7 @@ public class RestAnnotationProcessorTest {
     @BeforeClass
     public static void setUp() throws IOException, URISyntaxException, ClassNotFoundException, TemplateException {
         File buildDir = new File(System.getProperty("java.io.tmpdir"));
-        System.setProperty("com.taskdock.rest.wsdoc.outputFile", buildDir + "/test-wsdoc-out.html");
+        System.setProperty(RestDocAssembler.OUTPUT_FILE_PROPERTY, buildDir + "/test-wsdoc-out.html");
         runAnnotationProcessor(buildDir);
         buildOutput(buildDir);
         readOutput();

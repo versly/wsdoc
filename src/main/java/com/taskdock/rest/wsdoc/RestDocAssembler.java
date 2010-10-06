@@ -21,7 +21,8 @@ import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
 public class RestDocAssembler {
-
+    public static final String OUTPUT_FILE_PROPERTY = RestDocAssembler.class.getPackage().getName() + ".outputFile";
+    
     public static void main(String... args) throws IOException, ClassNotFoundException, TemplateException {
         List<RestDocumentation> docs = new LinkedList<RestDocumentation>();
         for (String arg : args) {
@@ -62,6 +63,6 @@ public class RestDocAssembler {
     }
 
     static File getOutputFile() {
-        return new File(System.getProperty("com.taskdock.wsdoc.outputFile", "web-service-api.html"));
+        return new File(System.getProperty(OUTPUT_FILE_PROPERTY, "web-service-api.html"));
     }
 }
