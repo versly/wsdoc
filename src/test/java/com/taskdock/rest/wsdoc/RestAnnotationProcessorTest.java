@@ -7,9 +7,11 @@ package com.taskdock.rest.wsdoc;
 import freemarker.template.TemplateException;
 import junit.framework.JUnit4TestAdapter;
 import junit.framework.TestSuite;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import javax.tools.*;
 import java.io.*;
@@ -19,8 +21,8 @@ import java.util.Collection;
 import java.util.Collections;
 
 public class RestAnnotationProcessorTest {
-
     private static String output;
+    private static final TemporaryFolder tmpFolder = new TemporaryFolder();
 
     public static TestSuite suite() {
         TestSuite suite = new TestSuite();
@@ -30,11 +32,17 @@ public class RestAnnotationProcessorTest {
 
     @BeforeClass
     public static void setUp() throws IOException, URISyntaxException, ClassNotFoundException, TemplateException {
-        File buildDir = new File(System.getProperty("java.io.tmpdir"));
-        System.setProperty(RestDocAssembler.OUTPUT_FILE_PROPERTY, buildDir + "/test-wsdoc-out.html");
-        runAnnotationProcessor(buildDir);
-        buildOutput(buildDir);
+        tmpFolder.create();
+        File tmpDir = tmpFolder.getRoot();
+        System.setProperty(RestDocAssembler.OUTPUT_FILE_PROPERTY, tmpDir + "/test-wsdoc-out.html");
+        runAnnotationProcessor(tmpDir);
+        buildOutput(tmpDir);
         readOutput();
+    }
+
+    @AfterClass
+    public static void tearDown() {
+        tmpFolder.delete();
     }
 
     private static void readOutput() throws IOException {
