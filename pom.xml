@@ -49,6 +49,12 @@
             <version>2.5</version>
             <scope>compile</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.versly</groupId>
+            <artifactId>office-diff</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
 </project>
