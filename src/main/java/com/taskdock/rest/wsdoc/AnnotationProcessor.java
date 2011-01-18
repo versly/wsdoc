@@ -347,6 +347,9 @@ public class AnnotationProcessor extends AbstractProcessor {
         }
 
         private void buildTypeContents(JsonObject o, TypeElement element) {
+            if ("org.springframework.web.servlet.ModelAndView".equals(element.getQualifiedName().toString())) {
+                return;
+            }
             DeclaredType sup = (DeclaredType) element.getSuperclass();
             if (!isJsonPrimitive(sup))
                 buildTypeContents(o, (TypeElement) sup.asElement());
