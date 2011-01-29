@@ -95,6 +95,7 @@ public class AnnotationProcessor extends AbstractProcessor {
     }
 
     private void processRequestMappingMethod(ExecutableElement executableElement) {
+        System.out.println("Processing request mapping method: " + executableElement.toString());
         TypeElement cls = (TypeElement) executableElement.getEnclosingElement();
         String path = getClassLevelUrlPath(cls);
 
@@ -250,8 +251,10 @@ public class AnnotationProcessor extends AbstractProcessor {
         public TypeVisitorImpl(TypeElement type, List<? extends TypeMirror> typeArguments) {
             List<? extends TypeParameterElement> generics = type.getTypeParameters();
             for (int i = 0; i < generics.size(); i++) {
-                _typeArguments.put(generics.get(i).getSimpleName(),
-                    typeArguments.isEmpty() ? null : (DeclaredType) typeArguments.get(i));
+                DeclaredType value =
+                        (typeArguments.isEmpty() || !(typeArguments.get(i) instanceof DeclaredType)) ?
+                                null : (DeclaredType) typeArguments.get(i);
+                _typeArguments.put(generics.get(i).getSimpleName(), value);
             }
         }
 
