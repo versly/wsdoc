@@ -215,7 +215,7 @@ public class AnnotationProcessor extends AbstractProcessor {
     private RequestMethod getRequestMethod(ExecutableElement executableElement, TypeElement cls, RequestMapping anno) {
         if (anno.method().length != 1)
             throw new IllegalStateException(String.format(
-                "The RequestMapping annotation for %s.%s is not parseable. Exactly one method is required.",
+                "The RequestMapping annotation for %s.%s is not parseable. Exactly one request method (GET/POST/etc) is required.",
                     cls.getQualifiedName(), executableElement.getSimpleName()));
         else
             return anno.method()[0];
