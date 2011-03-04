@@ -189,6 +189,8 @@ public class AnnotationProcessor extends AbstractProcessor {
             return newJsonType(type, type.getTypeArguments());
         } else if (typeMirror.getKind() == TypeKind.VOID) {
             return null;
+        } else if (typeMirror.getKind() == TypeKind.ARRAY) {
+            return newJsonType(((ArrayType)typeMirror).getComponentType());
         } else {
             throw new UnsupportedOperationException(typeMirror.toString());
         }
