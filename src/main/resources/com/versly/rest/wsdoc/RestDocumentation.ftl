@@ -1,5 +1,5 @@
 <!--
-~ Copyright (c) Taskdock, Inc. 2009-2010. All Rights Reserved.
+~ Copyright (c) Versly, Inc. 2009-2010. All Rights Reserved.
 -->
 
 <#-- @ftlvariable name="docs" type="java.util.List<com.versly.rest.wsdoc.RestDocumentation>" -->
