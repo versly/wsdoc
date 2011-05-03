@@ -2,7 +2,7 @@
  * Copyright (c) Taskdock, Inc. 2009-2010. All Rights Reserved.
  */
 
-package com.taskdock.rest.wsdoc;
+package com.versly.rest.wsdoc;
 
 public class Utils {
     static final String SERIALIZED_RESOURCE_LOCATION = "web-service-api.ser";

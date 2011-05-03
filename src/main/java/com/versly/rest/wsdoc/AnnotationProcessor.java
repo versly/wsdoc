@@ -2,7 +2,7 @@
  * Copyright (c) Taskdock, Inc. 2009-2010. All Rights Reserved.
  */
 
-package com.taskdock.rest.wsdoc;
+package com.versly.rest.wsdoc;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.springframework.web.bind.annotation.PathVariable;

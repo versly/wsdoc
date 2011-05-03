@@ -2,7 +2,7 @@
 ~ Copyright (c) Taskdock, Inc. 2009-2010. All Rights Reserved.
 -->
 
-<#-- @ftlvariable name="docs" type="java.util.List<com.taskdock.rest.wsdoc.RestDocumentation>" -->
+<#-- @ftlvariable name="docs" type="java.util.List<com.versly.rest.wsdoc.RestDocumentation>" -->
 
 <html>
     <head>
@@ -121,26 +121,26 @@
 </html>
 
 <#macro render_json json>
-    <#if json.class.name == "com.taskdock.rest.wsdoc.JsonPrimitive">
+    <#if json.class.name == "com.versly.rest.wsdoc.JsonPrimitive">
         <@render_json_primitive json/>
-    <#elseif json.class.name == "com.taskdock.rest.wsdoc.JsonObject">
+    <#elseif json.class.name == "com.versly.rest.wsdoc.JsonObject">
         <@render_json_object json/>
-    <#elseif json.class.name == "com.taskdock.rest.wsdoc.JsonArray">
+    <#elseif json.class.name == "com.versly.rest.wsdoc.JsonArray">
         <@render_json_array json/>
-    <#elseif json.class.name == "com.taskdock.rest.wsdoc.JsonDict">
+    <#elseif json.class.name == "com.versly.rest.wsdoc.JsonDict">
         <@render_json_dict json/>
     </#if>
 </#macro>
 
 <#macro render_json_array json>
-<#-- @ftlvariable name="json" type="com.taskdock.rest.wsdoc.JsonArray" -->
+<#-- @ftlvariable name="json" type="com.versly.rest.wsdoc.JsonArray" -->
     <span class="json-array">[
         <@render_json json.elementType />
     ]</span>
 </#macro>
 
 <#macro render_json_dict json>
-<#-- @ftlvariable name="json" type="com.taskdock.rest.wsdoc.JsonDict" -->
+<#-- @ftlvariable name="json" type="com.versly.rest.wsdoc.JsonDict" -->
     <span class="json-dict">[
         <@render_json json.keyType/>
         -&gt;
@@ -149,7 +149,7 @@
 </#macro>
 
 <#macro render_json_primitive json>
-<#-- @ftlvariable name="json" type="com.taskdock.rest.wsdoc.JsonPrimitive" -->
+<#-- @ftlvariable name="json" type="com.versly.rest.wsdoc.JsonPrimitive" -->
     <span class="json-primitive-type">${json.typeName}</span><#t>
     <#if json.restrictions??><#t>
         <div class="json-primitive-restrictions"><#t>
@@ -160,7 +160,7 @@
 </#macro>
 
 <#macro render_json_object json>
-<#-- @ftlvariable name="json" type="com.taskdock.rest.wsdoc.JsonObject" -->
+<#-- @ftlvariable name="json" type="com.versly.rest.wsdoc.JsonObject" -->
     <span class="json-object">{
     <div class="json-fields">
         <#list json.fields as field>
