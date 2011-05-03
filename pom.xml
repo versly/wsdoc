@@ -7,15 +7,13 @@
 
     <modelVersion>4.0.0</modelVersion>
     <name>REST Build Tools</name>
-    <description>
-        Support classes for the TaskDock REST build
-    </description>
+    <description>Support classes for the Versly REST build</description>
 
     <groupId>com.versly</groupId>
     <artifactId>rest.buildtools</artifactId>
     <packaging>jar</packaging>
     <version>1.0-SNAPSHOT</version>
-    <url>http://www.taskdock.com</url>
+    <url>http://www.versly.com</url>
 
     <parent>
         <groupId>com.versly</groupId>
