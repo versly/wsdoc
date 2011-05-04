@@ -54,12 +54,15 @@ public class RestDocAssembler {
         } finally {
             if (out != null) {
                 try {
+                    System.err.printf("Closing 1...");
                     out.close();
+                    System.err.printf("Close done 1");
                 } catch (IOException ignored) {
                     // ignored
                 }
             }
         }
+        System.err.printf("All done 1");
     }
 
     static File getOutputFile() {

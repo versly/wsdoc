@@ -67,9 +67,10 @@ public class AnnotationProcessor extends AbstractProcessor {
                 fout = file.openOutputStream();
                 docs.toStream(fout);
                 processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE,
-                    String.format("Wrote REST docs for %s endpoints to %s file at %s", 
-                        docs.getResources().size(), exists ? "existing" : "new", file.getName()));
+                        String.format("Wrote REST docs for %s endpoints to %s file at %s",
+                                docs.getResources().size(), exists ? "existing" : "new", file.getName()));
             } catch (Exception e) {
+                e.printStackTrace();
                 throw new RuntimeException(e); // TODO wrap in something nicer
             } finally {
                 if (fout != null) {
@@ -81,8 +82,6 @@ public class AnnotationProcessor extends AbstractProcessor {
                 }
             }
         }
-
-        _isComplete = true;
         return true;
     }
 
@@ -91,6 +90,8 @@ public class AnnotationProcessor extends AbstractProcessor {
     }
 
     private FileObject getOutputFile() throws IOException {
+        System.err.println("Getting output file...");
+        new Exception().printStackTrace();
         return this.processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, "", Utils.SERIALIZED_RESOURCE_LOCATION);
     }
 
@@ -142,7 +143,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 
         if (requestBodies.size() > 1)
             throw new IllegalStateException(String.format(
-                "Method %s in class %s has multiple @RequestBody params",
+                    "Method %s in class %s has multiple @RequestBody params",
                     executableElement.getSimpleName(), executableElement.getEnclosingElement()));
 
         if (requestBodies.size() == 1)
@@ -207,7 +208,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 
     private boolean isJsonPrimitive(TypeMirror typeMirror) {
         return (typeMirror.getKind().isPrimitive()
-            || JsonPrimitive.isPrimitive(typeMirror.toString()));
+                || JsonPrimitive.isPrimitive(typeMirror.toString()));
     }
 
     private void buildResponseFormat(TypeMirror type, RestDocumentation.Resource.Method doc) {
@@ -217,7 +218,7 @@ public class AnnotationProcessor extends AbstractProcessor {
     private RequestMethod getRequestMethod(ExecutableElement executableElement, TypeElement cls, RequestMapping anno) {
         if (anno.method().length != 1)
             throw new IllegalStateException(String.format(
-                "The RequestMapping annotation for %s.%s is not parseable. Exactly one request method (GET/POST/etc) is required.",
+                    "The RequestMapping annotation for %s.%s is not parseable. Exactly one request method (GET/POST/etc) is required.",
                     cls.getQualifiedName(), executableElement.getSimpleName()));
         else
             return anno.method()[0];
@@ -226,7 +227,7 @@ public class AnnotationProcessor extends AbstractProcessor {
     private String addMethodPathComponent(ExecutableElement executableElement, TypeElement cls, String path, RequestMapping anno) {
         if (anno == null || anno.value().length != 1)
             throw new IllegalStateException(String.format(
-                "The RequestMapping annotation for %s.%s is not parseable. Exactly one value is required.",
+                    "The RequestMapping annotation for %s.%s is not parseable. Exactly one value is required.",
                     cls.getQualifiedName(), executableElement.getSimpleName()));
         else
             return Utils.joinPaths(path, anno.value()[0]);
@@ -243,7 +244,7 @@ public class AnnotationProcessor extends AbstractProcessor {
             return Utils.joinPaths(path, clsAnno.value()[0]);
         else
             throw new IllegalStateException(String.format(
-                "The RequestMapping annotation of class %s has multiple value strings. Only zero or one value is supported",
+                    "The RequestMapping annotation of class %s has multiple value strings. Only zero or one value is supported",
                     cls.getQualifiedName()));
     }
 
@@ -299,12 +300,12 @@ public class AnnotationProcessor extends AbstractProcessor {
 
                 TypeMirror elem = declaredType.getTypeArguments().get(0);
                 return new JsonArray(elem.accept(this, o));
-                
+
             } else if (isInstanceOf(declaredType, Map.class)) {
 
                 if (declaredType.getTypeArguments().size() == 0) {
                     return new JsonDict(
-                        new JsonPrimitive(Object.class.getName()), new JsonPrimitive(Object.class.getName()));
+                            new JsonPrimitive(Object.class.getName()), new JsonPrimitive(Object.class.getName()));
                 }
 
                 TypeMirror key = declaredType.getTypeArguments().get(0);
@@ -393,10 +394,10 @@ public class AnnotationProcessor extends AbstractProcessor {
                     concreteTypes.add(_typeArguments.get(generic.getSimpleName()));
                 }
                 o.addField(beanName, newJsonType((DeclaredType) type, concreteTypes))
-                    .setCommentText(docComment);
+                        .setCommentText(docComment);
             } else {
                 o.addField(beanName, newJsonType(type))
-                    .setCommentText(docComment);
+                        .setCommentText(docComment);
             }
         }
 
@@ -435,7 +436,7 @@ public class AnnotationProcessor extends AbstractProcessor {
             Name name = typeVariable.asElement().getSimpleName();
             if (!_typeArguments.containsKey(name)) {
                 throw new UnsupportedOperationException(String.format(
-                    "Unknown parameterized type: %s. Available types in this context: %s",
+                        "Unknown parameterized type: %s. Available types in this context: %s",
                         typeVariable.toString(), _typeArguments));
             } else {
                 return _typeArguments.get(name);

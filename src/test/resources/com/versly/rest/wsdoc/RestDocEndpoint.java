@@ -18,6 +18,7 @@ import java.util.UUID;
 
 @RestApiMountPoint("/mount")
 public class RestDocEndpoint {
+
     /**
      * This is an exciting JavaDoc comment
      */
