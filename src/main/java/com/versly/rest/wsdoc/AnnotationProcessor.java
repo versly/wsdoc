@@ -71,7 +71,6 @@ public class AnnotationProcessor extends AbstractProcessor {
                         String.format("Wrote REST docs for %s endpoints to %s file at %s",
                                 docs.getResources().size(), exists ? "existing" : "new", file.getName()));
             } catch (Exception e) {
-                e.printStackTrace();
                 throw new RuntimeException(e); // TODO wrap in something nicer
             } finally {
                 if (fout != null) {
@@ -92,13 +91,12 @@ public class AnnotationProcessor extends AbstractProcessor {
     }
 
     private FileObject getOutputFile() throws IOException {
-        System.err.println("Getting output file...");
-        new Exception().printStackTrace();
         return this.processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, "", Utils.SERIALIZED_RESOURCE_LOCATION);
     }
 
     private void processRequestMappingMethod(ExecutableElement executableElement) {
-        System.out.println("Processing request mapping method: " + executableElement.toString());
+        processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE,
+            "Processing request mapping method: " + executableElement.toString());
         TypeElement cls = (TypeElement) executableElement.getEnclosingElement();
         String path = getClassLevelUrlPath(cls);
 

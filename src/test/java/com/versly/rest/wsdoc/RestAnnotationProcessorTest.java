@@ -120,7 +120,6 @@ public class RestAnnotationProcessorTest {
             }
         };
         Collection<JavaFileObject> files = Collections.singleton(file);
-        System.err.println("files: " + files);
         JavaCompiler.CompilationTask task = compiler.getTask(null, fileManager, null, null, null, files);
         task.setProcessors(Collections.singleton(processor));
         Assert.assertTrue(task.call());
