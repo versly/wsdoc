@@ -48,6 +48,18 @@ public class RestDocEndpoint {
         return null;
     }
 
+    @RequestMapping(value="recursiveParam", method = RequestMethod.POST)
+    public void recursiveParam(HttpServletRequest req,
+                               @RequestParam("recursive") ValueWithRecursion recursive)
+    {
+    }
+
+    @RequestMapping(value="recursiveReturn", method = RequestMethod.GET)
+    public ValueWithRecursion recursiveParam(HttpServletRequest req)
+    {
+        return null;
+    }
+
     public class ExcitingReturnValue {
         /**
          * The exciting return value's date!
@@ -57,6 +69,15 @@ public class RestDocEndpoint {
         }
 
         public void setDate(Date date) { // here to exercise a setter bug
+        }
+    }
+
+    public class ValueWithRecursion {
+        public ValueWithRecursion getOther() {
+            return null;
+        }
+
+        public void setOther(ValueWithRecursion other) {
         }
     }
 }

@@ -17,7 +17,6 @@ import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Collections;
 
-@Ignore
 public class RestAnnotationProcessorTest {
     private static String output;
     private static final TemporaryFolder tmpFolder = new TemporaryFolder();

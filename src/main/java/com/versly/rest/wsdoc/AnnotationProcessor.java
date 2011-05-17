@@ -204,13 +204,8 @@ public class AnnotationProcessor extends AbstractProcessor {
      * providing a list of concrete types to use to replace parameterized type placeholders.
      */
     private JsonType newJsonType(DeclaredType type, List<? extends TypeMirror> concreteTypes) {
-        if (_types.containsKey(type))
-            return _types.get(type);
-
         TypeVisitorImpl visitor = new TypeVisitorImpl((TypeElement) type.asElement(), concreteTypes);
-        JsonType jsonType = type.accept(visitor, null);
-        _types.put(type, jsonType);
-        return jsonType;
+        return type.accept(visitor, null);
     }
 
     private boolean isJsonPrimitive(TypeMirror typeMirror) {
@@ -295,28 +290,33 @@ public class AnnotationProcessor extends AbstractProcessor {
 
         @Override
         public JsonType visitDeclared(DeclaredType declaredType, Void o) {
+            if (_types.containsKey(declaredType))
+                return _types.get(declaredType);
+
+            JsonType jsonType;
             if (isJsonPrimitive(declaredType)) {
                 // 'primitive'-ish things
-                return new JsonPrimitive(declaredType.toString());
+                jsonType = new JsonPrimitive(declaredType.toString());
 
             } else if (isInstanceOf(declaredType, Collection.class)) {
 
                 if (declaredType.getTypeArguments().size() == 0) {
-                    return new JsonArray(new JsonPrimitive(Object.class.getName()));
+                    jsonType = new JsonArray(new JsonPrimitive(Object.class.getName()));
+                } else {
+                    TypeMirror elem = declaredType.getTypeArguments().get(0);
+                    jsonType = new JsonArray(elem.accept(this, o));
                 }
 
-                TypeMirror elem = declaredType.getTypeArguments().get(0);
-                return new JsonArray(elem.accept(this, o));
             } else if (isInstanceOf(declaredType, Map.class)) {
 
                 if (declaredType.getTypeArguments().size() == 0) {
-                    return new JsonDict(
+                    jsonType = new JsonDict(
                             new JsonPrimitive(Object.class.getName()), new JsonPrimitive(Object.class.getName()));
+                } else {
+                    TypeMirror key = declaredType.getTypeArguments().get(0);
+                    TypeMirror val = declaredType.getTypeArguments().get(1);
+                    jsonType = new JsonDict(key.accept(this, o), val.accept(this, o));
                 }
-
-                TypeMirror key = declaredType.getTypeArguments().get(0);
-                TypeMirror val = declaredType.getTypeArguments().get(1);
-                return new JsonDict(key.accept(this, o), val.accept(this, o));
 
             } else {
                 TypeElement element = (TypeElement) declaredType.asElement();
@@ -329,11 +329,17 @@ public class AnnotationProcessor extends AbstractProcessor {
                     }
                     JsonPrimitive primitive = new JsonPrimitive(String.class.getName());  // TODO is this always a string?
                     primitive.setRestrictions(enumConstants);
-                    return primitive;
+                    jsonType = primitive;
                 } else {
-                    return buildType(element);
+                    JsonObject json = new JsonObject();
+                    _types.put(declaredType, json);
+                    buildTypeContents(json, element);
+                    return json; // we've already added to the cache; short-circuit to handle recursion
                 }
             }
+
+            _types.put(declaredType, jsonType);
+            return jsonType;
         }
 
         private boolean isInstanceOf(TypeMirror typeMirror, Class type) {
@@ -350,12 +356,6 @@ public class AnnotationProcessor extends AbstractProcessor {
                     return true;
             }
             return isInstanceOf(typeElement.getSuperclass(), type);
-        }
-
-        private JsonObject buildType(TypeElement element) {
-            JsonObject json = new JsonObject();
-            buildTypeContents(json, element);
-            return json;
         }
 
         private void buildTypeContents(JsonObject o, TypeElement element) {
