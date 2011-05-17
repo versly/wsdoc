@@ -125,6 +125,8 @@
         <@render_json_primitive json/>
     <#elseif json.class.name == "com.versly.rest.wsdoc.JsonObject">
         <@render_json_object json/>
+    <#elseif json.class.name == "com.versly.rest.wsdoc.JsonRecursiveObject">
+        <@render_json_recursive_object json/>
     <#elseif json.class.name == "com.versly.rest.wsdoc.JsonArray">
         <@render_json_array json/>
     <#elseif json.class.name == "com.versly.rest.wsdoc.JsonDict">
@@ -175,4 +177,9 @@
     </div><#t>
     </span><#t>
     }
+</#macro>
+
+<#macro render_json_recursive_object json>
+<#-- @ftlvariable name="json" type="com.versly.rest.wsdoc.JsonRecursiveObject" -->
+    <span class="json-primitive-type">${json.recursedObjectTypeName} &#x21ba;</span>
 </#macro>
