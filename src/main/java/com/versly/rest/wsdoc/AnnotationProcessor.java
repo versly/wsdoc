@@ -42,6 +42,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 
     RestDocumentation docs = new RestDocumentation();
     private boolean _isComplete = false;
+    private Map<DeclaredType,JsonType> _types = new HashMap<DeclaredType,JsonType>();
 
     @Override
     public boolean process(Set<? extends TypeElement> supportedAnnotations, RoundEnvironment roundEnvironment) {
@@ -82,6 +83,7 @@ public class AnnotationProcessor extends AbstractProcessor {
                 }
             }
         }
+        _isComplete = true;
         return true;
     }
 
@@ -202,8 +204,13 @@ public class AnnotationProcessor extends AbstractProcessor {
      * providing a list of concrete types to use to replace parameterized type placeholders.
      */
     private JsonType newJsonType(DeclaredType type, List<? extends TypeMirror> concreteTypes) {
+        if (_types.containsKey(type))
+            return _types.get(type);
+
         TypeVisitorImpl visitor = new TypeVisitorImpl((TypeElement) type.asElement(), concreteTypes);
-        return type.accept(visitor, null);
+        JsonType jsonType = type.accept(visitor, null);
+        _types.put(type, jsonType);
+        return jsonType;
     }
 
     private boolean isJsonPrimitive(TypeMirror typeMirror) {
@@ -300,7 +307,6 @@ public class AnnotationProcessor extends AbstractProcessor {
 
                 TypeMirror elem = declaredType.getTypeArguments().get(0);
                 return new JsonArray(elem.accept(this, o));
-
             } else if (isInstanceOf(declaredType, Map.class)) {
 
                 if (declaredType.getTypeArguments().size() == 0) {
