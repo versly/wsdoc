@@ -1,8 +1,20 @@
 <!--
-~ Copyright (c) Versly, Inc. 2009-2010. All Rights Reserved.
+ ~ Copyright 2011 TaskDock, Inc.
+ ~
+ ~ Licensed under the Apache License, Version 2.0 (the "License");
+ ~ you may not use this file except in compliance with the License.
+ ~ You may obtain a copy of the License at
+ ~
+ ~     http://www.apache.org/licenses/LICENSE-2.0
+ ~
+ ~ Unless required by applicable law or agreed to in writing, software
+ ~ distributed under the License is distributed on an "AS IS" BASIS,
+ ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ ~ See the License for the specific language governing permissions and
+ ~ limitations under the License.
 -->
 
-<#-- @ftlvariable name="docs" type="java.util.List<com.versly.rest.wsdoc.RestDocumentation>" -->
+<#-- @ftlvariable name="docs" type="java.util.List<org.versly.rest.wsdoc.RestDocumentation>" -->
 
 <html>
     <head>
@@ -121,28 +133,28 @@
 </html>
 
 <#macro render_json json>
-    <#if json.class.name == "com.versly.rest.wsdoc.JsonPrimitive">
+    <#if json.class.name == "org.versly.rest.wsdoc.JsonPrimitive">
         <@render_json_primitive json/>
-    <#elseif json.class.name == "com.versly.rest.wsdoc.JsonObject">
+    <#elseif json.class.name == "org.versly.rest.wsdoc.JsonObject">
         <@render_json_object json/>
-    <#elseif json.class.name == "com.versly.rest.wsdoc.JsonRecursiveObject">
+    <#elseif json.class.name == "org.versly.rest.wsdoc.JsonRecursiveObject">
         <@render_json_recursive_object json/>
-    <#elseif json.class.name == "com.versly.rest.wsdoc.JsonArray">
+    <#elseif json.class.name == "org.versly.rest.wsdoc.JsonArray">
         <@render_json_array json/>
-    <#elseif json.class.name == "com.versly.rest.wsdoc.JsonDict">
+    <#elseif json.class.name == "org.versly.rest.wsdoc.JsonDict">
         <@render_json_dict json/>
     </#if>
 </#macro>
 
 <#macro render_json_array json>
-<#-- @ftlvariable name="json" type="com.versly.rest.wsdoc.JsonArray" -->
+<#-- @ftlvariable name="json" type="org.versly.rest.wsdoc.JsonArray" -->
     <span class="json-array">[
         <@render_json json.elementType />
     ]</span>
 </#macro>
 
 <#macro render_json_dict json>
-<#-- @ftlvariable name="json" type="com.versly.rest.wsdoc.JsonDict" -->
+<#-- @ftlvariable name="json" type="org.versly.rest.wsdoc.JsonDict" -->
     <span class="json-dict">[
         <@render_json json.keyType/>
         -&gt;
@@ -151,7 +163,7 @@
 </#macro>
 
 <#macro render_json_primitive json>
-<#-- @ftlvariable name="json" type="com.versly.rest.wsdoc.JsonPrimitive" -->
+<#-- @ftlvariable name="json" type="org.versly.rest.wsdoc.JsonPrimitive" -->
     <span class="json-primitive-type">${json.typeName}</span><#t>
     <#if json.restrictions??><#t>
         <div class="json-primitive-restrictions"><#t>
@@ -162,7 +174,7 @@
 </#macro>
 
 <#macro render_json_object json>
-<#-- @ftlvariable name="json" type="com.versly.rest.wsdoc.JsonObject" -->
+<#-- @ftlvariable name="json" type="org.versly.rest.wsdoc.JsonObject" -->
     <span class="json-object">{
     <div class="json-fields">
         <#list json.fields as field>
@@ -180,6 +192,6 @@
 </#macro>
 
 <#macro render_json_recursive_object json>
-<#-- @ftlvariable name="json" type="com.versly.rest.wsdoc.JsonRecursiveObject" -->
+<#-- @ftlvariable name="json" type="org.versly.rest.wsdoc.JsonRecursiveObject" -->
     <span class="json-primitive-type">${json.recursedObjectTypeName} &#x21ba;</span>
 </#macro>
