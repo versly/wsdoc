@@ -17,7 +17,7 @@
 package org.versly.rest.wsdoc;
 
 public class Utils {
-    static final String SERIALIZED_RESOURCE_LOCATION = "web-service-api.ser";
+    static final String SERIALIZED_RESOURCE_LOCATION = "org.versly.rest.wsdoc.web-service-api.ser";
 
     static String joinPaths(String lhs, String rhs) {
         while (lhs.endsWith("/"))
