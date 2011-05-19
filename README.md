@@ -2,7 +2,16 @@
 
 Automatically generate up-to-date documentation for your REST API.
 
-#### Installation ####
+1. [Installation](#installation)
+2. [Running](#running)
+3. [Samples](#samples)
+4. [Limitations](#limitations)
+5. [Configuration](#configuration)
+6. [Use with maven](#maven)
+7. [License (ASL v2)](#license)
+
+<a id="installation"/>
+#### Installation
 
 Currently, wsdoc is available in source format only. To install, you'll need mvn and java and whatnot:
 
@@ -12,7 +21,8 @@ Currently, wsdoc is available in source format only. To install, you'll need mvn
 
 Once you've done this, the wsdoc jar will be available in your local Maven repository, probably at ~/.m2/repository/org/versly/versly-wsdoc/1.0-SNAPSHOT/versly-wsdoc-1.0-SNAPSHOT.jar
 
-#### Running wsdoc ####
+<a id="running"/>
+#### Running wsdoc
 
 Often, a single REST API is implemented across a number of web archives. As a result, wsdoc is designed to run in two passes: a data-gathering pass (implemented via Java annotation processor) and an output-assembly pass (implemented as a standalone Java program):
 
@@ -28,13 +38,15 @@ Often, a single REST API is implemented across a number of web archives. As a re
 
 4\. Enjoy the output at web-service-api.html
 
-#### Sample Input and Output ####
+<a id="samples"/>
+#### Sample Input and Output
 
 * Input: https://github.com/versly/wsdoc/blob/gh-pages/sample/SnowReportController.java
 
 * Output: http://versly.github.com/wsdoc/sample/web-service-api.html
 
-#### Limitations ####
+<a id="limitations"/>
+#### Limitations
 
 * wsdoc is currently limited to REST endpoints identified via the [Spring 3 web bind annotations](http://blog.springsource.com/2009/03/08/rest-in-spring-3-mvc/) (@RequestMapping and whatnot).
 
@@ -48,7 +60,8 @@ Often, a single REST API is implemented across a number of web archives. As a re
 
 * The RestDocAssembler should run against a .ser file directly, so that you don't need to assemble a WAR prior to creating your documentation. In a build script, this isn't much of an issue, since Spring Web Services end up in a WAR anyways, but it would be more convenient for testing the generated output.
 
-#### Configuration and options ####
+<a id="configuration"/>
+#### Configuration and options
 
 * Configuring the intermediate output destination
 
@@ -72,7 +85,8 @@ Often, a single REST API is implemented across a number of web archives. As a re
 
     All endpoints inside the annotated class will be prefixed with the text provided to the annotation.
 
-#### wsdoc in a Maven build environment ####
+<a id="maven"/>
+#### wsdoc in a Maven build environment
 
     <build>
         <plugins>
@@ -110,6 +124,7 @@ Often, a single REST API is implemented across a number of web archives. As a re
         </plugins>
     </build>
 
-#### License ####
+<a id="license"/>
+#### License
 
 wsdoc is licensed under the Apache Software License v2. The text of the license is available here: http://www.apache.org/licenses/LICENSE-2.0.html
