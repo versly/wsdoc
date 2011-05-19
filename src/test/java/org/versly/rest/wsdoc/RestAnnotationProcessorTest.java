@@ -119,7 +119,7 @@ public class RestAnnotationProcessorTest {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
         fileManager.setLocation(StandardLocation.CLASS_OUTPUT, Collections.singletonList(buildDir));
-        JavaFileObject file = new SimpleJavaFileObject(new URI("string:///com/versly/wsdoc/RestDocEndpoint.java"),
+        JavaFileObject file = new SimpleJavaFileObject(new URI("string:///org/versly/rest/wsdoc/RestDocEndpoint.java"),
                 JavaFileObject.Kind.SOURCE) {
             @Override
             public CharSequence getCharContent(boolean b) throws IOException {
