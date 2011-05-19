@@ -16,12 +16,12 @@
 
 package org.versly.rest.wsdoc;
 
-import org.joda.time.DateTime;
-
 import java.io.Serializable;
 import java.net.URL;
 import java.sql.Timestamp;
 import java.util.*;
+
+import org.joda.time.DateTime;
 
 public class JsonPrimitive implements JsonType, Serializable {
 

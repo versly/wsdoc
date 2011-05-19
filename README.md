@@ -34,8 +34,6 @@ Often, a single REST API is implemented across a number of web archives. As a re
 
 * Only a subset of the Spring web bind annotations are supported. This isn't by design or due to fundamental limitations; we've just only built support for the parts that we use.
 
-* The -Dorg.versly.rest.wsdoc.outputFile syntax for specifying the HTML output file is the result of a legacy of communicating data to an AnnotationProcessor, and is super lame. It should be deprecated in favor of a proper command-line argument.
-
 * The RestDocAssembler should run against a .ser file directly, so that you don't need to assemble a WAR prior to creating your documentation. In a build script, this isn't much of an issue, since Spring Web Services end up in a WAR anyways, but it would be more convenient for testing the generated output.
 
 #### wsdoc in a Maven build environment ####

@@ -16,18 +16,30 @@
 
 package org.versly.rest.wsdoc;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.*;
+import javax.tools.JavaCompiler;
+import javax.tools.JavaFileObject;
+import javax.tools.SimpleJavaFileObject;
+import javax.tools.StandardJavaFileManager;
+import javax.tools.StandardLocation;
+import javax.tools.ToolProvider;
+
 import freemarker.template.TemplateException;
 import junit.framework.JUnit4TestAdapter;
 import junit.framework.TestSuite;
-import org.junit.*;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-
-import javax.tools.*;
-import java.io.*;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Collection;
-import java.util.Collections;
 
 public class RestAnnotationProcessorTest {
     private static String output;
@@ -55,7 +67,8 @@ public class RestAnnotationProcessorTest {
     @Test
     public void assertJavaDocComments() {
         processResource("RestDocEndpoint.java");
-        Assert.assertTrue("expected 'JavaDoc comment' in doc string; got: \n" + output,
+        Assert.assertTrue(
+            "expected 'JavaDoc comment' in doc string; got: \n" + output,
             output.contains("JavaDoc comment"));
     }
 
@@ -97,7 +110,8 @@ public class RestAnnotationProcessorTest {
     @Test
     public void assertUuidIsNotTraversedInto() {
         processResource("RestDocEndpoint.java");
-        Assert.assertFalse("leastSignificantBits field (member field of UUID class) should not be in output",
+        Assert.assertFalse(
+            "leastSignificantBits field (member field of UUID class) should not be in output",
             output.contains("leastSignificantBits"));
         Assert.assertTrue("expected uuid type somewhere in doc",
             output.contains("json-primitive-type\">uuid<"));
@@ -117,12 +131,10 @@ public class RestAnnotationProcessorTest {
 
     private static void processResource(String fileName) {
         try {
-            System.setProperty(
-                RestDocAssembler.OUTPUT_FILE_PROPERTY,
-                tmpDir + "/" + fileName.replace(".java", ".html"));
             runAnnotationProcessor(tmpDir, fileName);
-            buildOutput(tmpDir);
-            readOutput();
+            String htmlFile = tmpDir + "/" + fileName.replace(".java", ".html");
+            buildOutput(tmpDir, htmlFile);
+            readOutput(htmlFile);
         } catch (Exception ex) {
             if (ex instanceof RuntimeException)
                 throw (RuntimeException) ex;
@@ -131,14 +143,16 @@ public class RestAnnotationProcessorTest {
         }
     }
 
-    private static void buildOutput(File buildDir) throws ClassNotFoundException, IOException, TemplateException {
+    private static void buildOutput(File buildDir, String htmlFile)
+        throws ClassNotFoundException, IOException, TemplateException {
+
         InputStream in = new FileInputStream(new File(buildDir, Utils.SERIALIZED_RESOURCE_LOCATION));
-        new RestDocAssembler().writeDocumentation(Collections.singletonList(RestDocumentation.fromStream(in)));
+        new RestDocAssembler(htmlFile).writeDocumentation(
+            Collections.singletonList(RestDocumentation.fromStream(in)));
     }
 
-    private static void readOutput() throws IOException {
-        InputStream in;
-        in = new FileInputStream(RestDocAssembler.getOutputFile());
+    private static void readOutput(String htmlFile) throws IOException {
+        InputStream in = new FileInputStream(htmlFile);
         BufferedReader reader = new BufferedReader(new InputStreamReader(in));
         output = "";
         for (String line = null; (line = reader.readLine()) != null; ) {

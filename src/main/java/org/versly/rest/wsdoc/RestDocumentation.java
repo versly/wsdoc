@@ -16,13 +16,15 @@
 
 package org.versly.rest.wsdoc;
 
-import org.springframework.web.bind.annotation.RequestMethod;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.io.Serializable;
+import java.util.*;
 
-import java.io.*;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.Map;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 public class RestDocumentation implements Serializable {
 

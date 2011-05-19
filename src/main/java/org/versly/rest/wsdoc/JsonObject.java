@@ -17,9 +17,7 @@
 package org.versly.rest.wsdoc;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 public class JsonObject implements JsonType, Serializable {
 

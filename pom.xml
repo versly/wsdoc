@@ -47,6 +47,11 @@
             <artifactId>spring-web</artifactId>
             <version>3.0.4.RELEASE</version>
         </dependency>
+        <dependency>
+            <groupId>com.beust</groupId>
+            <artifactId>jcommander</artifactId>
+            <version>1.4</version>
+        </dependency>
 
         <!-- ISO 8601 date support fo dates -->
         <dependency>

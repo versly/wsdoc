@@ -16,40 +16,49 @@
 
 package org.versly.rest.wsdoc;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.*;
+import java.util.jar.JarFile;
+import java.util.zip.ZipEntry;
+
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
+import com.beust.jcommander.internal.Lists;
 import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Writer;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.jar.JarFile;
-import java.util.zip.ZipEntry;
-
 public class RestDocAssembler {
-    public static final String OUTPUT_FILE_PROPERTY = RestDocAssembler.class.getPackage().getName() + ".outputFile";
-    
-    public static void main(String... args) throws IOException, ClassNotFoundException, TemplateException {
+    private final String _outputFileName;
+
+    public static void main(String... args)
+        throws IOException, ClassNotFoundException, TemplateException {
+        Arguments arguments = new Arguments();
+        new JCommander(arguments, args);
+
         List<RestDocumentation> docs = new LinkedList<RestDocumentation>();
-        for (String arg : args) {
-            System.err.println("adding web service docs from WAR " + arg);
-            JarFile jar = new JarFile(arg);
+        for (String war : arguments.wars) {
+            System.err.println("adding web service docs from WAR " + war);
+            JarFile jar = new JarFile(war);
             ZipEntry e = jar.getEntry("WEB-INF/classes/" + Utils.SERIALIZED_RESOURCE_LOCATION);
             docs.add(RestDocumentation.fromStream(jar.getInputStream(e)));
             jar.close();
         }
 
         if (docs.size() > 0)
-            new RestDocAssembler().writeDocumentation(docs);
+            new RestDocAssembler(arguments.outputFileName).writeDocumentation(docs);
     }
 
-    void writeDocumentation(List<RestDocumentation> docs) throws IOException, ClassNotFoundException, TemplateException {
+    public RestDocAssembler(String outputFileName) {
+        _outputFileName = outputFileName;
+    }
+
+    void writeDocumentation(List<RestDocumentation> docs)
+        throws IOException, ClassNotFoundException, TemplateException {
         Configuration conf = new Configuration();
         conf.setClassForTemplateLoading(RestDocAssembler.class, "");
         conf.setObjectWrapper(new DefaultObjectWrapper());
@@ -74,7 +83,15 @@ public class RestDocAssembler {
         }
     }
 
-    static File getOutputFile() {
-        return new File(System.getProperty(OUTPUT_FILE_PROPERTY, "web-service-api.html"));
+    File getOutputFile() {
+        return new File(_outputFileName);
+    }
+
+    static class Arguments {
+        @Parameter
+        List<String> wars = Lists.newArrayList();
+
+        @Parameter(names = { "-o", "--out" }, description = "File to write HTML documentation to")
+        String outputFileName = "web-service-api.html";
     }
 }
