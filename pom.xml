@@ -27,20 +27,6 @@
     <version>1.0-SNAPSHOT</version>
     <url>http://github.com/versly/wsdoc</url>
 
-    <distributionManagement>
-        <snapshotRepository>
-            <id>versly-snapshots</id>
-            <url>http://maven.versly.com:8000/artifactory/libs-snapshots-local</url>
-            <layout>default</layout>
-            <uniqueVersion>false</uniqueVersion>
-        </snapshotRepository>
-        <repository>
-            <id>versly-releases</id>
-            <url>http://maven.versly.com:8000/artifactory/libs-releases-local</url>
-            <layout>default</layout>
-        </repository>
-    </distributionManagement>
-
     <dependencies>
         <dependency>
             <groupId>org.springframework</groupId>
