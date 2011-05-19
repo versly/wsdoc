@@ -375,9 +375,13 @@ public class AnnotationProcessor extends AbstractProcessor {
             if ("org.springframework.web.servlet.ModelAndView".equals(element.getQualifiedName().toString())) {
                 return;
             }
-            DeclaredType sup = (DeclaredType) element.getSuperclass();
-            if (!isJsonPrimitive(sup))
-                buildTypeContents(o, (TypeElement) sup.asElement());
+            if (element.getSuperclass().getKind() != TypeKind.NONE) {
+                // an interface's superclass is TypeKind.NONE
+
+                DeclaredType sup = (DeclaredType) element.getSuperclass();
+                if (!isJsonPrimitive(sup))
+                    buildTypeContents(o, (TypeElement) sup.asElement());
+            }
 
             for (Element e : element.getEnclosedElements()) {
                 if (e instanceof ExecutableElement) {
