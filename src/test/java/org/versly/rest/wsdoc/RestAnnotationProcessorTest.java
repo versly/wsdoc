@@ -32,6 +32,7 @@ import java.util.Collections;
 public class RestAnnotationProcessorTest {
     private static String output;
     private static final TemporaryFolder tmpFolder = new TemporaryFolder();
+    private static File tmpDir;
 
     public static TestSuite suite() {
         TestSuite suite = new TestSuite();
@@ -42,16 +43,90 @@ public class RestAnnotationProcessorTest {
     @BeforeClass
     public static void setUp() throws IOException, URISyntaxException, ClassNotFoundException, TemplateException {
         tmpFolder.create();
-        File tmpDir = tmpFolder.getRoot();
-        System.setProperty(RestDocAssembler.OUTPUT_FILE_PROPERTY, tmpDir + "/test-wsdoc-out.html");
-        runAnnotationProcessor(tmpDir);
-        buildOutput(tmpDir);
-        readOutput();
+        tmpDir = tmpFolder.getRoot();
+        processResource("RestDocEndpoint.java");
     }
 
     @AfterClass
     public static void tearDown() {
         tmpFolder.delete();
+    }
+
+    @Test
+    public void assertJavaDocComments() {
+        processResource("RestDocEndpoint.java");
+        Assert.assertTrue("expected 'JavaDoc comment' in doc string; got: \n" + output,
+            output.contains("JavaDoc comment"));
+    }
+
+    @Test
+    public void assertReturnValueComments() {
+        processResource("RestDocEndpoint.java");
+        Assert.assertTrue("expected \"exciting return value's date\" in doc string; got: \n" + output,
+            output.contains("exciting return value's date"));
+    }
+
+    @Test
+    public void assertPathVariableWithOverriddenName() {
+        processResource("RestDocEndpoint.java");
+        Assert.assertTrue("expected \"dateParam\" in doc string; got: \n" + output,
+            output.contains("dateParam"));
+    }
+
+    @Test
+    public void assertParams() {
+        processResource("RestDocEndpoint.java");
+        Assert.assertTrue("expected param0 and param1 in docs; got: \n" + output,
+            output.contains(">param0<") && output.contains(">param1<"));
+    }
+
+    @Test
+    public void assertMultipart() {
+        processResource("RestDocEndpoint.java");
+        Assert.assertTrue("expected multipart info docs; got: \n" + output,
+            output.contains("Note: this endpoint expects a multipart"));
+    }
+
+    @Test
+    public void assertOverriddenPaths() {
+        processResource("RestDocEndpoint.java");
+        Assert.assertTrue("expected multiple voidreturn sections; got: \n" + output,
+            output.indexOf("<a id=\"/mount/voidreturn") != output.lastIndexOf("<a id=\"/mount/voidreturn")); 
+    }
+
+    @Test
+    public void assertUuidIsNotTraversedInto() {
+        processResource("RestDocEndpoint.java");
+        Assert.assertFalse("leastSignificantBits field (member field of UUID class) should not be in output",
+            output.contains("leastSignificantBits"));
+        Assert.assertTrue("expected uuid type somewhere in doc",
+            output.contains("json-primitive-type\">uuid<"));
+    }
+
+    @Test
+    public void generateExample() {
+        processResource("SnowReportController.java");
+    }
+
+    private static void processResource(String fileName) {
+        try {
+            System.setProperty(
+                RestDocAssembler.OUTPUT_FILE_PROPERTY,
+                tmpDir + "/" + fileName.replace(".java", ".html"));
+            runAnnotationProcessor(tmpDir, fileName);
+            buildOutput(tmpDir);
+            readOutput();
+        } catch (Exception ex) {
+            if (ex instanceof RuntimeException)
+                throw (RuntimeException) ex;
+            else
+                throw new RuntimeException(ex);
+        }
+    }
+
+    private static void buildOutput(File buildDir) throws ClassNotFoundException, IOException, TemplateException {
+        InputStream in = new FileInputStream(new File(buildDir, Utils.SERIALIZED_RESOURCE_LOCATION));
+        new RestDocAssembler().writeDocumentation(Collections.singletonList(RestDocumentation.fromStream(in)));
     }
 
     private static void readOutput() throws IOException {
@@ -64,66 +139,18 @@ public class RestAnnotationProcessorTest {
         }
     }
 
-    private static void buildOutput(File buildDir) throws ClassNotFoundException, IOException, TemplateException {
-        InputStream in = new FileInputStream(new File(buildDir, Utils.SERIALIZED_RESOURCE_LOCATION));
-        new RestDocAssembler().writeDocumentation(Collections.singletonList(RestDocumentation.fromStream(in)));
-    }
-
-    @Test
-    public void assertJavaDocComments() {
-        Assert.assertTrue("expected 'JavaDoc comment' in doc string; got: \n" + output,
-            output.contains("JavaDoc comment"));
-    }
-
-    @Test
-    public void assertReturnValueComments() {
-        Assert.assertTrue("expected \"exciting return value's date\" in doc string; got: \n" + output,
-            output.contains("exciting return value's date"));
-    }
-
-    @Test
-    public void assertPathVariableWithOverriddenName() {
-        Assert.assertTrue("expected \"dateParam\" in doc string; got: \n" + output,
-            output.contains("dateParam"));
-    }
-
-    @Test
-    public void assertParams() {
-        Assert.assertTrue("expected param0 and param1 in docs; got: \n" + output,
-            output.contains(">param0<") && output.contains(">param1<"));
-    }
-
-    @Test
-    public void assertMultipart() {
-        Assert.assertTrue("expected multipart info docs; got: \n" + output,
-            output.contains("Note: this endpoint expects a multipart"));
-    }
-
-    @Test
-    public void assertOverriddenPaths() {
-        Assert.assertTrue("expected multiple voidreturn sections; got: \n" + output,
-            output.indexOf("<a id=\"/mount/voidreturn") != output.lastIndexOf("<a id=\"/mount/voidreturn")); 
-    }
-
-    @Test
-    public void assertUuidIsNotTraversedInto() {
-        Assert.assertFalse("leastSignificantBits field (member field of UUID class) should not be in output",
-            output.contains("leastSignificantBits"));
-        Assert.assertTrue("expected uuid type somewhere in doc",
-            output.contains("json-primitive-type\">uuid<"));
-    }
-
-    private static void runAnnotationProcessor(File buildDir) throws URISyntaxException, IOException {
+    private static void runAnnotationProcessor(File buildDir, final String fileName)
+            throws URISyntaxException, IOException {
         AnnotationProcessor processor = new AnnotationProcessor();
 
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
         fileManager.setLocation(StandardLocation.CLASS_OUTPUT, Collections.singletonList(buildDir));
-        JavaFileObject file = new SimpleJavaFileObject(new URI("string:///org/versly/rest/wsdoc/RestDocEndpoint.java"),
+        JavaFileObject file = new SimpleJavaFileObject(new URI("string:///org/versly/rest/wsdoc/" + fileName),
                 JavaFileObject.Kind.SOURCE) {
             @Override
             public CharSequence getCharContent(boolean b) throws IOException {
-                InputStream stream = getClass().getResource("RestDocEndpoint.java").openStream();
+                InputStream stream = getClass().getResource(fileName).openStream();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
                 String str = "";
                 for (String line = null; (line = reader.readLine()) != null; str += line + "\n")
