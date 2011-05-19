@@ -63,7 +63,7 @@ Often, a single REST API is implemented across a number of web archives. As a re
                 <dependencies>
                     <dependency>
                         <groupId>org.versly</groupId>
-                        <artifactId>rest.wsdoc</artifactId>
+                        <artifactId>versly-wsdoc</artifactId>
                         <version>1.0</version>
                         <scope>compile</scope>
                     </dependency>
