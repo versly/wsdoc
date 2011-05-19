@@ -2,6 +2,16 @@
 
 Automatically generate up-to-date documentation for your REST API.
 
+#### Installation ####
+
+Currently, wsdoc is available in source format only. To install, you'll need mvn and java and whatnot:
+
+    git clone git@github.com:versly/wsdoc.git
+    cd wsdoc
+    mvn install
+
+Once you've done this, the wsdoc jar will be available in your local Maven repository, probably at ~/.m2/repository/org/versly/versly-wsdoc/1.0-SNAPSHOT/versly-wsdoc-1.0-SNAPSHOT.jar
+
 #### Running wsdoc ####
 
 Often, a single REST API is implemented across a number of web archives. As a result, wsdoc is designed to run in two passes: a data-gathering pass (implemented via Java annotation processor) and an output-assembly pass (implemented as a standalone Java program):
