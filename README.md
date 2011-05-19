@@ -26,9 +26,13 @@ Often, a single REST API is implemented across a number of web archives. As a re
 
 #### Limitations ####
 
-* wsdoc is currently limited to REST endpoints identified via the Spring 3 Web Services annotations (@RequestMapping and whatnot).
+* wsdoc is currently limited to REST endpoints identified via the [Spring 3 web bind annotations](http://blog.springsource.com/2009/03/08/rest-in-spring-3-mvc/) (@RequestMapping and whatnot).
 
-* Only a subset of the Spring Web Services annotations are supported. This isn't by design or due to fundamental limitations; we've just only built support for the parts that we use.
+* We've made a bunch of JSON-related assumptions about how you want your DTOs to be represented. None of the Jackson annotations (except @JsonIgnore) are considered, so you're pretty much left with a simple bean transformation.
+
+* The output format is JSON-esque, but things will probably be comprehensible for non-JSON wire formats, too, assuming that our object model scanning assumptions pan out.
+
+* Only a subset of the Spring web bind annotations are supported. This isn't by design or due to fundamental limitations; we've just only built support for the parts that we use.
 
 * The -Dorg.versly.rest.wsdoc.outputFile syntax for specifying the HTML output file is the result of a legacy of communicating data to an AnnotationProcessor, and is super lame. It should be deprecated in favor of a proper command-line argument.
 
