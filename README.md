@@ -22,7 +22,7 @@ Often, a single REST API is implemented across a number of web archives. As a re
 
 * Input: https://github.com/versly/wsdoc/blob/gh-pages/sample/SnowReportController.java
 
-* Output: https://github.com/versly/wsdoc/blob/gh-pages/sample/web-service-api.html
+* Output: http://versly.github.com/wsdoc/sample/web-service-api.html
 
 #### Limitations ####
 
