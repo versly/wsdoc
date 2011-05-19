@@ -20,8 +20,9 @@ Often, a single REST API is implemented across a number of web archives. As a re
 
 #### Sample Input and Output ####
 
-https://github.com/versly/wsdoc/blob/gh-pages/sample/SnowReportController.java
-https://github.com/versly/wsdoc/blob/gh-pages/sample/web-service-api.html
+* Input: https://github.com/versly/wsdoc/blob/gh-pages/sample/SnowReportController.java
+
+* Output: https://github.com/versly/wsdoc/blob/gh-pages/sample/web-service-api.html
 
 #### Limitations ####
 
@@ -48,9 +49,6 @@ https://github.com/versly/wsdoc/blob/gh-pages/sample/web-service-api.html
                     <processors>
                         <processor>org.versly.rest.wsdoc.AnnotationProcessor</processor>            
                     </processors>
-                    <compilerArguments>
-                        -Aorg.versly.rest.wsdoc.AnnotationProcessor.sourceDirectory=${project.build.sourceDirectory}
-                    </compilerArguments>
                 </configuration>
                         
                 <executions>
