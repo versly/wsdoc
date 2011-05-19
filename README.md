@@ -92,7 +92,7 @@ Often, a single REST API is implemented across a number of web archives. As a re
                     <dependency>
                         <groupId>org.versly</groupId>
                         <artifactId>versly-wsdoc</artifactId>
-                        <version>1.0</version>
+                        <version>1.0-SNAPSHOT</version>
                         <scope>compile</scope>
                     </dependency>
                 </dependencies>
