@@ -213,7 +213,7 @@ public class AnnotationProcessor extends AbstractProcessor {
     private JsonType newJsonType(DeclaredType type, List<? extends TypeMirror> concreteTypes,
                                  Collection<DeclaredType> typeRecursionGuard) {
         TypeVisitorImpl visitor
-            = new TypeVisitorImpl((TypeElement) type.asElement(), concreteTypes, typeRecursionGuard);
+            = new TypeVisitorImpl(type, concreteTypes, typeRecursionGuard);
         return type.accept(visitor, null);
     }
 
@@ -262,11 +262,15 @@ public class AnnotationProcessor extends AbstractProcessor {
     private class TypeVisitorImpl implements TypeVisitor<JsonType,Void> {
         private Map<Name, DeclaredType> _typeArguments = new HashMap();
         private Collection<DeclaredType> _typeRecursionGuard;
+        private DeclaredType _type;
 
-        public TypeVisitorImpl(TypeElement type, List<? extends TypeMirror> typeArguments,
+        public TypeVisitorImpl(DeclaredType type, List<? extends TypeMirror> typeArguments,
                                Collection<DeclaredType> typeRecursionGuard) {
+
+            TypeElement elem = (TypeElement) type.asElement();
             _typeRecursionGuard = typeRecursionGuard;
-            List<? extends TypeParameterElement> generics = type.getTypeParameters();
+            _type = type;
+            List<? extends TypeParameterElement> generics = elem.getTypeParameters();
             for (int i = 0; i < generics.size(); i++) {
                 DeclaredType value =
                         (typeArguments.isEmpty() || !(typeArguments.get(i) instanceof DeclaredType)) ?
@@ -347,8 +351,6 @@ public class AnnotationProcessor extends AbstractProcessor {
         private JsonType buildType(DeclaredType declaredType, TypeElement element) {
             if (_typeRecursionGuard.contains(declaredType))
                 return new JsonRecursiveObject(element.getSimpleName().toString());
-            else
-                _typeRecursionGuard.add(declaredType);
 
             JsonObject json = new JsonObject();
             buildTypeContents(json, element);
@@ -416,7 +418,9 @@ public class AnnotationProcessor extends AbstractProcessor {
                 for (TypeParameterElement generic : element.getTypeParameters()) {
                     concreteTypes.add(_typeArguments.get(generic.getSimpleName()));
                 }
-                o.addField(beanName, newJsonType((DeclaredType) type, concreteTypes, _typeRecursionGuard))
+                Collection<DeclaredType> types = new HashSet<DeclaredType>(_typeRecursionGuard);
+                types.add(_type);
+                o.addField(beanName, newJsonType((DeclaredType) type, concreteTypes, types))
                         .setCommentText(docComment);
             } else {
                 o.addField(beanName, newJsonType(type))

@@ -108,6 +108,13 @@ public class RestAnnotationProcessorTest {
         processResource("SnowReportController.java");
     }
 
+    @Test
+    public void nonRecursiveTypeWithMultipleUsesDoesNotHaveRecursionCircles() {
+        processResource("NonRecursiveMultiUse.java");
+        Assert.assertFalse("should not contain the recursion symbol",
+            output.contains("&#x21ba;"));
+    }
+
     private static void processResource(String fileName) {
         try {
             System.setProperty(
