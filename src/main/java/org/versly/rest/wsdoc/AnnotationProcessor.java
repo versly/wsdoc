@@ -69,7 +69,7 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 @SupportedAnnotationTypes("org.springframework.web.bind.annotation.RequestMapping")
 public class AnnotationProcessor extends AbstractProcessor {
 
-    RestDocumentation docs = new RestDocumentation();
+    private RestDocumentation _docs = new RestDocumentation();
     private boolean _isComplete = false;
 
     @Override
@@ -87,17 +87,17 @@ public class AnnotationProcessor extends AbstractProcessor {
             }
         }
 
-        if (docs.getResources().size() > 0) {
+        if (_docs.getResources().size() > 0) {
 
             OutputStream fout = null;
             try {
                 FileObject file = getOutputFile();
                 boolean exists = new File(file.getName()).exists();
                 fout = file.openOutputStream();
-                docs.toStream(fout);
+                _docs.toStream(fout);
                 processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE,
                         String.format("Wrote REST docs for %s endpoints to %s file at %s",
-                                docs.getResources().size(), exists ? "existing" : "new", file.getName()));
+                                _docs.getResources().size(), exists ? "existing" : "new", file.getName()));
             } catch (Exception e) {
                 throw new RuntimeException(e); // TODO wrap in something nicer
             } finally {
@@ -130,7 +130,7 @@ public class AnnotationProcessor extends AbstractProcessor {
         path = addMethodPathComponent(executableElement, cls, path, anno);
         RequestMethod meth = getRequestMethod(executableElement, cls, anno);
 
-        RestDocumentation.Resource.Method doc = docs.getResourceDocumentation(path).newMethodDocumentation(meth);
+        RestDocumentation.Resource.Method doc = _docs.getResourceDocumentation(path).newMethodDocumentation(meth);
         doc.setCommentText(processingEnv.getElementUtils().getDocComment(executableElement));
         buildParameterData(executableElement, doc);
         buildResponseFormat(executableElement.getReturnType(), doc);
