@@ -106,8 +106,6 @@ public class AnnotationProcessor extends AbstractProcessor {
     }
 
     private void processRequestMappingMethod(ExecutableElement executableElement) {
-        processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE,
-                "Processing request mapping method: " + executableElement.toString());
         TypeElement cls = (TypeElement) executableElement.getEnclosingElement();
         String path = getClassLevelUrlPath(cls);
 
