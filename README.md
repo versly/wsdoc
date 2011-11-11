@@ -83,7 +83,7 @@ Often, a single REST API is implemented across a number of web archives. As a re
             ...
         }
 
-    All endpoints inside the annotated class will be prefixed with the text provided to the annotation.
+  All endpoints inside the annotated class will be prefixed with the text provided to the annotation.
 
 <a id="maven"/>
 #### wsdoc in a Maven build environment
