@@ -16,13 +16,11 @@
 
 package org.versly.rest.wsdoc;
 
+import java.io.Serializable;
 import java.util.*;
 import javax.servlet.http.HttpServletRequest;
 
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 @RestApiMountPoint("/mount")
@@ -64,7 +62,13 @@ public class RestDocEndpoint {
     }
 
     @RequestMapping(value="recursiveReturn", method = RequestMethod.GET)
-    public ValueWithRecursion recursiveParam(HttpServletRequest req)
+    public ValueWithRecursion recursiveReturn(HttpServletRequest req)
+    {
+        return null;
+    }
+
+    @RequestMapping(value="recursiveListReturn", method = RequestMethod.GET)
+    public @ResponseBody ValueWithListRecursion recursiveListReturn(HttpServletRequest req)
     {
         return null;
     }
@@ -87,6 +91,23 @@ public class RestDocEndpoint {
         }
 
         public void setOther(ValueWithRecursion other) {
+        }
+    }
+
+    public class ValueWithListRecursion {
+
+        public String getStringValue() {
+            return null;
+        }
+
+        public void setStringValue(String val) {
+        }
+
+        public List<ValueWithListRecursion> getOthers() {
+            return null;
+        }
+
+        public void setOthers(List<ValueWithRecursion> others) {
         }
     }
 }
