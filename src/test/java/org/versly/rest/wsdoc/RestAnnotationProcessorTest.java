@@ -160,18 +160,33 @@ public class RestAnnotationProcessorTest {
         }
     }
 
+    public static void main(String[] args) throws IOException, URISyntaxException {
+        File dir = new File(args[0]);
+        for (int i = 1; i < args.length; i++) {
+            runAnnotationProcessor(dir,
+                    args[i].substring(0, args[i].lastIndexOf('/')),
+                    args[i].substring(args[i].lastIndexOf('/')));
+        }
+    }
+
     private static void runAnnotationProcessor(File buildDir, final String fileName)
+            throws URISyntaxException, IOException {
+
+        runAnnotationProcessor(buildDir, "org/versly/rest/wsdoc/", fileName);
+    }
+
+    private static void runAnnotationProcessor(File buildDir, final String packagePrefix, final String fileName)
             throws URISyntaxException, IOException {
         AnnotationProcessor processor = new AnnotationProcessor();
 
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
         fileManager.setLocation(StandardLocation.CLASS_OUTPUT, Collections.singletonList(buildDir));
-        JavaFileObject file = new SimpleJavaFileObject(new URI("string:///org/versly/rest/wsdoc/" + fileName),
+        JavaFileObject file = new SimpleJavaFileObject(new URI("string:///" + packagePrefix + fileName),
                 JavaFileObject.Kind.SOURCE) {
             @Override
             public CharSequence getCharContent(boolean b) throws IOException {
-                InputStream stream = getClass().getResource(fileName).openStream();
+                InputStream stream = getClass().getClassLoader().getResource(packagePrefix + fileName).openStream();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
                 String str = "";
                 for (String line = null; (line = reader.readLine()) != null; str += line + "\n")
