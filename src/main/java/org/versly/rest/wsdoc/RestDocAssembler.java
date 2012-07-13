@@ -16,14 +16,6 @@
 
 package org.versly.rest.wsdoc;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Writer;
-import java.util.*;
-import java.util.jar.JarFile;
-import java.util.zip.ZipEntry;
-
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.internal.Lists;
@@ -31,6 +23,14 @@ import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
+
+import java.io.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.jar.JarFile;
+import java.util.zip.ZipEntry;
 
 public class RestDocAssembler {
     private final String _outputFileName;
@@ -41,12 +41,22 @@ public class RestDocAssembler {
         new JCommander(arguments, args);
 
         List<RestDocumentation> docs = new LinkedList<RestDocumentation>();
-        for (String war : arguments.wars) {
-            System.err.println("adding web service docs from WAR " + war);
-            JarFile jar = new JarFile(war);
-            ZipEntry e = jar.getEntry("WEB-INF/classes/" + Utils.SERIALIZED_RESOURCE_LOCATION);
-            docs.add(RestDocumentation.fromStream(jar.getInputStream(e)));
-            jar.close();
+        for (String input : arguments.inputs) {
+            File inputFile = new File(input);
+            if (inputFile.isDirectory()) {
+                System.err.println("adding web service docs from classes directory " + input);
+                File resourceFile = new File(inputFile, Utils.SERIALIZED_RESOURCE_LOCATION);
+                docs.add(RestDocumentation.fromStream(new FileInputStream(resourceFile))); // TODO resource management
+            } else if (input.toLowerCase().endsWith(".war")) {
+                System.err.println("adding web service docs from WAR " + input);
+                JarFile jar = new JarFile(input);
+                ZipEntry e = jar.getEntry("WEB-INF/classes/" + Utils.SERIALIZED_RESOURCE_LOCATION);
+                docs.add(RestDocumentation.fromStream(jar.getInputStream(e)));
+                jar.close();
+            } else {
+                System.err.println("adding web service docs from serialized input " + input);
+                docs.add(RestDocumentation.fromStream(new FileInputStream(inputFile))); // TODO resource management
+            }
         }
 
         if (docs.size() > 0)
@@ -89,7 +99,7 @@ public class RestDocAssembler {
 
     static class Arguments {
         @Parameter
-        List<String> wars = Lists.newArrayList();
+        List<String> inputs = Lists.newArrayList();
 
         @Parameter(names = { "-o", "--out" }, description = "File to write HTML documentation to")
         String outputFileName = "web-service-api.html";
