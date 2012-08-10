@@ -16,15 +16,11 @@
 
 package org.versly.rest.wsdoc;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.io.Serializable;
-import java.util.*;
-
 import org.springframework.web.bind.annotation.RequestMethod;
+
+import java.io.*;
+import java.util.*;
+import java.util.regex.Pattern;
 
 public class RestDocumentation implements Serializable {
 
@@ -62,10 +58,22 @@ public class RestDocumentation implements Serializable {
         oos.flush();
     }
 
+    public RestDocumentation filter(Iterable<Pattern> excludePatterns) {
+        RestDocumentation filtered = new RestDocumentation();
+        OUTER: for (Map.Entry<String, Resource> entry : _resources.entrySet()) {
+            for (Pattern excludePattern : excludePatterns)
+                if (excludePattern.matcher(entry.getKey()).matches())
+                    continue OUTER;
+
+            filtered._resources.put(entry.getKey(), entry.getValue());
+        }
+        return filtered;
+    }
+
     public class Resource implements Serializable {
 
         private String path;
-        private Collection<Method> _methods = new LinkedList();
+        private Collection<Method> _methods = new LinkedList<Method>();
 
         public Resource(String path) {
             this.path = path;

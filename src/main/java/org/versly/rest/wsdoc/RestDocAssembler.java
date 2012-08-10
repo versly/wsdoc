@@ -25,11 +25,9 @@ import freemarker.template.Template;
 import freemarker.template.TemplateException;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.jar.JarFile;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 
 public class RestDocAssembler {
@@ -59,24 +57,38 @@ public class RestDocAssembler {
             }
         }
 
-        if (docs.size() > 0)
-            new RestDocAssembler(arguments.outputFileName).writeDocumentation(docs);
+        if (docs.size() > 0) {
+            List<Pattern> excludePatterns = new ArrayList<Pattern>();
+            for (String pattern : arguments.excludes)
+                excludePatterns.add(Pattern.compile(pattern));
+            new RestDocAssembler(arguments.outputFileName).writeDocumentation(docs, excludePatterns);
+        }
     }
 
     public RestDocAssembler(String outputFileName) {
         _outputFileName = outputFileName;
     }
 
-    void writeDocumentation(List<RestDocumentation> docs)
+    void writeDocumentation(List<RestDocumentation> docs, Iterable<Pattern> excludePatterns)
         throws IOException, ClassNotFoundException, TemplateException {
+
+        List<RestDocumentation> filteredDocs;
+        if (excludePatterns != null) {
+            filteredDocs = new ArrayList<RestDocumentation>();
+            for (RestDocumentation doc : docs)
+                filteredDocs.add(doc.filter(excludePatterns));
+        } else {
+            filteredDocs = docs;
+        }
+
         Configuration conf = new Configuration();
         conf.setClassForTemplateLoading(RestDocAssembler.class, "");
         conf.setObjectWrapper(new DefaultObjectWrapper());
         Writer out = null;
         try {
             Template template = conf.getTemplate("RestDocumentation.ftl");
-            Map root = new HashMap();
-            root.put("docs", docs);
+            Map<String, List<RestDocumentation>> root = new HashMap<String, List<RestDocumentation>>();
+            root.put("docs", filteredDocs);
             File file = getOutputFile();
             out = new FileWriter(file);
             template.process(root, out);
@@ -103,5 +115,8 @@ public class RestDocAssembler {
 
         @Parameter(names = { "-o", "--out" }, description = "File to write HTML documentation to")
         String outputFileName = "web-service-api.html";
+
+        @Parameter(names = { "--exclude" }, description = "Endpoint pattern to exclude from the generated docs")
+        List<String> excludes = Lists.newArrayList();
     }
 }

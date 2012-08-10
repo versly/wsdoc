@@ -71,6 +71,12 @@ Often, a single REST API is implemented across a number of web archives. As a re
 
         java org.versly.rest.wsdoc.RestDocAssembler --output snow-report.html *.war
 
+* Excluding endpoint patterns
+
+  If you have some endpoints that you'd like to exclude from the generated output, use the --exclude option to specify regular expressions to omit when invoking org.versly.rest.wsdoc.RestDocAssembler:
+
+        java org.versly.rest.wsdoc.RestDocAssembler --output snow-report.html *.war --exclude /api/v1/admin.*
+
 * Adding a prefix to the generated URLs
 
   Often, an entire WAR or a particular controller is bound to a root URL path. This information may not be available to wsdoc when processing the Java source files alone. For example, we might want to bind the snow-report endpoint in our example to /api/v1/snow-report rather than just /snow-report. To include this sort of prefix information in the generated documentation, use the [@RestApiMountPoint](https://github.com/versly/wsdoc/blob/master/org/versly/rest/wsdoc/RestApiMountPoint.java) annotation:

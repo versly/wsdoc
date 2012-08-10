@@ -16,22 +16,6 @@
 
 package org.versly.rest.wsdoc;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.*;
-import javax.tools.JavaCompiler;
-import javax.tools.JavaFileObject;
-import javax.tools.SimpleJavaFileObject;
-import javax.tools.StandardJavaFileManager;
-import javax.tools.StandardLocation;
-import javax.tools.ToolProvider;
-
 import freemarker.template.TemplateException;
 import junit.framework.JUnit4TestAdapter;
 import junit.framework.TestSuite;
@@ -40,6 +24,15 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+
+import javax.tools.*;
+import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.regex.Pattern;
 
 public class RestAnnotationProcessorTest {
     private static String output;
@@ -68,8 +61,8 @@ public class RestAnnotationProcessorTest {
     public void assertJavaDocComments() {
         processResource("RestDocEndpoint.java");
         Assert.assertTrue(
-            "expected 'JavaDoc comment' in doc string; got: \n" + output,
-            output.contains("JavaDoc comment"));
+                "expected 'JavaDoc comment' in doc string; got: \n" + output,
+                output.contains("JavaDoc comment"));
     }
 
     @Test
@@ -111,8 +104,8 @@ public class RestAnnotationProcessorTest {
     public void assertUuidIsNotTraversedInto() {
         processResource("RestDocEndpoint.java");
         Assert.assertFalse(
-            "leastSignificantBits field (member field of UUID class) should not be in output",
-            output.contains("leastSignificantBits"));
+                "leastSignificantBits field (member field of UUID class) should not be in output",
+                output.contains("leastSignificantBits"));
         Assert.assertTrue("expected uuid type somewhere in doc",
             output.contains("json-primitive-type\">uuid<"));
     }
@@ -126,14 +119,25 @@ public class RestAnnotationProcessorTest {
     public void nonRecursiveTypeWithMultipleUsesDoesNotHaveRecursionCircles() {
         processResource("NonRecursiveMultiUse.java");
         Assert.assertFalse("should not contain the recursion symbol",
-            output.contains("&#x21ba;"));
+                output.contains("&#x21ba;"));
+    }
+
+    @Test
+    public void excludePatterns() {
+        processResource("SnowReportController.java", Arrays.asList(Pattern.compile("foo"), Pattern.compile(".*snow-report.*")));
+        Assert.assertFalse("should not contain the snow-report endpoint",
+            output.contains("snow-report"));
     }
 
     private static void processResource(String fileName) {
+        processResource(fileName, null);
+    }
+
+    private static void processResource(String fileName, Iterable<Pattern> excludes) {
         try {
             runAnnotationProcessor(tmpDir, fileName);
             String htmlFile = tmpDir + "/" + fileName.replace(".java", ".html");
-            buildOutput(tmpDir, htmlFile);
+            buildOutput(tmpDir, htmlFile, excludes);
             readOutput(htmlFile);
         } catch (Exception ex) {
             if (ex instanceof RuntimeException)
@@ -143,12 +147,12 @@ public class RestAnnotationProcessorTest {
         }
     }
 
-    private static void buildOutput(File buildDir, String htmlFile)
+    private static void buildOutput(File buildDir, String htmlFile, Iterable<Pattern> excludes)
         throws ClassNotFoundException, IOException, TemplateException {
 
         InputStream in = new FileInputStream(new File(buildDir, Utils.SERIALIZED_RESOURCE_LOCATION));
         new RestDocAssembler(htmlFile).writeDocumentation(
-            Collections.singletonList(RestDocumentation.fromStream(in)));
+            Collections.singletonList(RestDocumentation.fromStream(in)), excludes);
     }
 
     private static void readOutput(String htmlFile) throws IOException {
