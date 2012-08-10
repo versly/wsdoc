@@ -135,7 +135,7 @@ Often, a single REST API is implemented across a number of web archives. As a re
 
                 <executions>
                     <execution>
-                        <phase>compile</phase>
+                        <phase>prepare-package</phase>
                         <goals>
                             <goal>java</goal>
                         </goals>
