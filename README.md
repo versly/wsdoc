@@ -88,7 +88,7 @@ Often, a single REST API is implemented across a number of web archives. As a re
 
     <build>
         <plugins>
-            <!-- REST documentation -->
+            <!-- REST documentation parse -->
             <plugin>
                 <groupId>org.bsc.maven</groupId>
                 <artifactId>maven-processor-plugin</artifactId>
@@ -119,6 +119,27 @@ Often, a single REST API is implemented across a number of web archives. As a re
                     </dependency>
                 </dependencies>
             </plugin>
+
+            <!-- REST HTML documentation generation. Possibly in a different POM
+                 than the parse step above. -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.2</version>
+
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>org.versly.rest.wsdoc.RestDocAssembler</mainClass>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
     </build>
 
