@@ -30,11 +30,11 @@ Often, a single REST API is implemented across a number of web archives. As a re
 
     javac -processor org.versly.rest.wsdoc.AnnotationProcessor *.java
 
-2\. Perform the rest of your WAR assembly.
+2\. (Optional) Perform the rest of your WAR assembly.
 
-3\. Generate the HTML output, given all your web archives:
+3\. Generate the HTML output, given all your web archives or output from the annotation processor:
 
-    java org.versly.rest.wsdoc.RestDocAssembler *.war
+    java org.versly.rest.wsdoc.RestDocAssembler *.war *.ser
 
 4\. Enjoy the output at web-service-api.html
 
@@ -58,8 +58,6 @@ Often, a single REST API is implemented across a number of web archives. As a re
 
 * Only a subset of the Spring web bind annotations are supported. This isn't by design or due to fundamental limitations; we've just only built support for the parts that we use.
 
-* The RestDocAssembler should run against a .ser file directly, so that you don't need to assemble a WAR prior to creating your documentation. In a build script, this isn't much of an issue, since Spring Web Services end up in a WAR anyways, but it would be more convenient for testing the generated output.
-
 <a id="configuration"/>
 #### Configuration and options
 
@@ -71,7 +69,7 @@ Often, a single REST API is implemented across a number of web archives. As a re
 
   You can specify where wsdoc should generate its output to with the --output flag when invoking org.versly.rest.wsdoc.RestDocAssembler:
 
-        java --output snow-report.html *.war
+        java org.versly.rest.wsdoc.RestDocAssembler --output snow-report.html *.war
 
 * Adding a prefix to the generated URLs
 
