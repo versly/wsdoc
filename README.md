@@ -129,12 +129,15 @@ Often, a single REST API is implemented across a number of web archives. As a re
 
                 <executions>
                     <execution>
-                        <phase>package</phase>
+                        <phase>compile</phase>
                         <goals>
                             <goal>java</goal>
                         </goals>
                         <configuration>
                             <mainClass>org.versly.rest.wsdoc.RestDocAssembler</mainClass>
+                            <arguments>
+                                <argument>${project.build.directory}/classes</argument>
+                            <arguments>
                         </configuration>
                     </execution>
                 </executions>
