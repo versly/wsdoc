@@ -67,15 +67,15 @@ Often, a single REST API is implemented across a number of web archives. As a re
 
 * Specifying the HTML output file name
 
-  You can specify where wsdoc should generate its output to with the --output flag when invoking org.versly.rest.wsdoc.RestDocAssembler:
+  You can specify where wsdoc should generate its output to with the --out flag when invoking org.versly.rest.wsdoc.RestDocAssembler:
 
-        java org.versly.rest.wsdoc.RestDocAssembler --output snow-report.html *.war
+        java org.versly.rest.wsdoc.RestDocAssembler --out snow-report.html *.war
 
 * Excluding endpoint patterns
 
   If you have some endpoints that you'd like to exclude from the generated output, use the --exclude option to specify regular expressions to omit when invoking org.versly.rest.wsdoc.RestDocAssembler:
 
-        java org.versly.rest.wsdoc.RestDocAssembler --output snow-report.html *.war --exclude /api/v1/admin.*
+        java org.versly.rest.wsdoc.RestDocAssembler --out snow-report.html *.war --exclude /api/v1/admin.*
 
 * Adding a prefix to the generated URLs
 
