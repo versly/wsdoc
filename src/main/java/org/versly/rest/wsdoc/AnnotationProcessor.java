@@ -16,6 +16,7 @@
 
 package org.versly.rest.wsdoc;
 
+import com.sun.tools.javac.code.Type;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -424,7 +425,8 @@ public class AnnotationProcessor extends AbstractProcessor {
 
             // replace variables with the current concrete manifestation
             if (type instanceof TypeVariable) {
-                type = getDeclaredTypeForTypeVariable((TypeVariable) type);
+                Type.MethodType methodType = (Type.MethodType) processingEnv.getTypeUtils().asMemberOf(_type, executableElement);
+                type = methodType.getReturnType();
                 if (type == null)
                     return; // couldn't find a replacement -- must be a generics-capable type with no generics info
             }
