@@ -26,7 +26,7 @@
 
             div.resource { border-top: 1px solid gray; padding-top: 5px; margin-top: 15px; }
             div.resource-header { font-family: monospace; font-size: 18px; font-weight: bold; padding-bottom: 15px; }
-            div.resource-docs { padding-bottom: 20px; }
+            div.resource-docs { padding-bottom: 20px; white-space: pre; }
 
             div.url-info { padding-bottom: 20px; }
             div.url-info table { width: 400px; border-spacing: 0px; }
@@ -84,9 +84,7 @@
                         </div>
 
                         <#if (methodDoc.commentText??)>
-                            <div class="resource-docs">
-                                ${methodDoc.commentText}
-                            </div>
+                            <div class="resource-docs">${methodDoc.commentText}</div>
                         </#if>
 
                         <#if methodDoc.multipartRequest>

@@ -16,26 +16,52 @@
 
 package org.versly.rest.wsdoc;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ErrorType;
+import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.NoType;
+import javax.lang.model.type.NullType;
+import javax.lang.model.type.PrimitiveType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.WildcardType;
+import javax.lang.model.util.AbstractTypeVisitor6;
+import javax.lang.model.util.ElementFilter;
+import javax.tools.Diagnostic;
+import javax.tools.FileObject;
+import javax.tools.StandardLocation;
+
+import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
-
-import javax.annotation.processing.AbstractProcessor;
-import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
-import javax.lang.model.element.*;
-import javax.lang.model.type.*;
-import javax.lang.model.util.AbstractTypeVisitor6;
-import javax.tools.Diagnostic;
-import javax.tools.FileObject;
-import javax.tools.StandardLocation;
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.*;
 
 /**
  * Generates an HTML documentation file describing the REST / JSON endpoints as defined with the
@@ -133,6 +159,7 @@ public class AnnotationProcessor extends AbstractProcessor {
         scanForMultipart(executableElement, doc);
         buildPathVariables(executableElement, doc);
         buildUrlParameters(executableElement, doc);
+        buildQueryParameters(executableElement, doc);
         buildRequestBodies(executableElement, doc);
     }
 
@@ -191,6 +218,30 @@ public class AnnotationProcessor extends AbstractProcessor {
                 addUrlField(subs, var, reqParam.value());
             }
         }
+    }
+
+    private void buildQueryParameters(ExecutableElement executableElement, RestDocumentation.Resource.Method doc) {
+        if (doc.getRequestMethod().equals(RequestMethod.GET)) {
+            List<String> queryParams = new ArrayList<String>();
+            for (VariableElement var : executableElement.getParameters()) {
+                if (var.getAnnotation(RequestParam.class) == null && var.getAnnotation(PathVariable.class) == null) {
+                    Element paramType = ((DeclaredType)var.asType()).asElement();
+                    List<ExecutableElement> methods = ElementFilter.methodsIn(paramType.getEnclosedElements());
+                    for (ExecutableElement method : methods) {
+                        if (method.getSimpleName().toString().startsWith("set") && method.getParameters().size() == 1) {
+                            TypeMirror setterType = method.getParameters().get(0).asType();
+                            String setterTypeName = new JsonPrimitive(setterType.toString()).getTypeName();
+                            queryParams.add(StringUtils.uncapitalize(method.getSimpleName().toString().substring(3))+"="+setterTypeName);
+                        }
+                    }
+                }
+
+            }
+            if (!queryParams.isEmpty()) {
+                doc.setCommentText("" + doc.getCommentText() + "\nQuery Parameters " + org.apache.commons.lang3.StringUtils.join(queryParams, "&"));
+            }
+        }
+
     }
 
     private JsonType jsonTypeFromTypeMirror(TypeMirror typeMirror, Collection<DeclaredType> typeRecursionGuard) {

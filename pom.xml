@@ -24,7 +24,7 @@
     <groupId>org.versly</groupId>
     <artifactId>versly-wsdoc</artifactId>
     <packaging>jar</packaging>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.2-SNAPSHOT</version>
     <url>http://github.com/versly/wsdoc</url>
 
     <dependencies>
@@ -50,6 +50,13 @@
             <artifactId>freemarker</artifactId>
             <version>2.3.16</version>
         </dependency>
+        
+        <dependency>
+          <groupId>org.apache.commons</groupId>
+          <artifactId>commons-lang3</artifactId>
+          <version>3.1</version>
+        </dependency>
+
 
         <dependency>
             <groupId>javax.servlet</groupId>
