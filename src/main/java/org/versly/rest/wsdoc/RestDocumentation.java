@@ -16,11 +16,19 @@
 
 package org.versly.rest.wsdoc;
 
-import org.springframework.web.bind.annotation.RequestMethod;
-
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.Map;
 import java.util.regex.Pattern;
+
+import org.springframework.web.bind.annotation.RequestMethod;
 
 public class RestDocumentation implements Serializable {
 
@@ -108,6 +116,7 @@ public class RestDocumentation implements Serializable {
             private JsonType _responseBody;
             private String _commentText;
             private boolean _isMultipartRequest;
+            private UrlFields queryParameters = new UrlFields();
 
             public Method(RequestMethod meth) {
                 this.meth = meth;
@@ -156,6 +165,14 @@ public class RestDocumentation implements Serializable {
             public void setMultipartRequest(boolean multipart) {
                 _isMultipartRequest = multipart;
             }
+            
+            public void setQueryParameters(UrlFields queryParams) {
+                this.queryParameters = queryParams;
+            }
+            
+            public UrlFields getQueryParameters() {
+                return queryParameters;
+            }
 
             /**
              * An HTML-safe, textual key that uniquely identifies this endpoint.
@@ -180,6 +197,7 @@ public class RestDocumentation implements Serializable {
                     _jsonTypes.put(name, jsonType);
                 }
             }
+
         }
     }
 }

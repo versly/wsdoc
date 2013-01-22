@@ -29,9 +29,10 @@
             div.resource-docs { padding-bottom: 20px; white-space: pre; }
 
             div.url-info { padding-bottom: 20px; }
-            div.url-info table { width: 400px; border-spacing: 0px; }
+            div.url-info table { width: auto; border-spacing: 0px; }
             div.url-info thead td { border-bottom: 1px dashed gray; }
-            .url-info-key { font-family: monospace; }
+            div.url-info thead td,.url-info-key { padding-right: 50px; }
+            .url-info-key { font-family: monospace; vertical-align: top; }
             .url-info-expected-type { font-family: monospace; }
 
             div.request-body { padding-bottom: 20px; }
@@ -109,6 +110,24 @@
                                 </table>
                             </div>
                         </#if>
+                        
+                        <#assign queryParams=methodDoc.queryParameters.fields>
+                        <#if (queryParams?keys?size > 0)>
+                            <div class="url-info">
+                                <table>
+                                    <thead>
+                                        <tr><td>Query Parameter</td><td>Expected Type</td></tr>
+                                    </thead>
+                                    <#list queryParams?keys as key>
+                                        <tr>
+                                            <td class="url-info-key">${key}</td>
+                                            <td class="url-info-expected-type"><@render_json queryParams[key]/></td>
+                                        </tr>
+                                    </#list>
+                                </table>
+                            </div>
+                        </#if>
+
 
                         <#if (methodDoc.requestBody??)>
                             <div class="request-body">

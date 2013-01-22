@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -222,7 +223,6 @@ public class AnnotationProcessor extends AbstractProcessor {
 
     private void buildQueryParameters(ExecutableElement executableElement, RestDocumentation.Resource.Method doc) {
         if (doc.getRequestMethod().equals(RequestMethod.GET)) {
-            List<String> queryParams = new ArrayList<String>();
             for (VariableElement var : executableElement.getParameters()) {
                 if (var.getAnnotation(RequestParam.class) == null && var.getAnnotation(PathVariable.class) == null) {
                     Element paramType = ((DeclaredType)var.asType()).asElement();
@@ -230,15 +230,12 @@ public class AnnotationProcessor extends AbstractProcessor {
                     for (ExecutableElement method : methods) {
                         if (method.getSimpleName().toString().startsWith("set") && method.getParameters().size() == 1) {
                             TypeMirror setterType = method.getParameters().get(0).asType();
-                            String setterTypeName = new JsonPrimitive(setterType.toString()).getTypeName();
-                            queryParams.add(StringUtils.uncapitalize(method.getSimpleName().toString().substring(3))+"="+setterTypeName);
+                            JsonType jsonType = jsonTypeFromTypeMirror(setterType, Collections.<DeclaredType>emptyList());
+                            String propName = StringUtils.uncapitalize(method.getSimpleName().toString().substring(3));
+                            doc.getQueryParameters().addField(propName, jsonType);
                         }
                     }
                 }
-
-            }
-            if (!queryParams.isEmpty()) {
-                doc.setCommentText("" + doc.getCommentText() + "\nQuery Parameters " + org.apache.commons.lang3.StringUtils.join(queryParams, "&"));
             }
         }
 
