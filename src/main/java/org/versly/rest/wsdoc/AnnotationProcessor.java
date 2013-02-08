@@ -57,26 +57,26 @@ import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 
 import org.apache.commons.lang3.StringUtils;
-import org.codehaus.jackson.annotate.JsonIgnore;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * Generates an HTML documentation file describing the REST / JSON endpoints as defined with the
- * Spring {@link org.springframework.web.bind.annotation.RequestMapping} annotation. Outputs to
- * <code>rest-api.html</code> in the top of the classes directory.
+ * Spring {@link org.springframework.web.bind.annotation.RequestMapping} annotation. Outputs to <code>rest-api.html</code> in the top of the classes directory.
  */
 // TODO:
-//   - @CookieValue
-//   - @RequestHeader
-//   - @ResponseStatus
-//   - combine class-level and method-level annotations properly
-//   - MethodNameResolver
-//   - plural RequestMapping value support (i.e., two paths bound to one method)
-//   - support for methods not marked with @RequestMapping whose class does have a @RequestMapping annotation
+// - @CookieValue
+// - @RequestHeader
+// - @ResponseStatus
+// - combine class-level and method-level annotations properly
+// - MethodNameResolver
+// - plural RequestMapping value support (i.e., two paths bound to one method)
+// - support for methods not marked with @RequestMapping whose class does have a @RequestMapping annotation
 @SupportedAnnotationTypes("org.springframework.web.bind.annotation.RequestMapping")
 public class AnnotationProcessor extends AbstractProcessor {
 
@@ -225,7 +225,7 @@ public class AnnotationProcessor extends AbstractProcessor {
         if (doc.getRequestMethod().equals(RequestMethod.GET)) {
             for (VariableElement var : executableElement.getParameters()) {
                 if (var.getAnnotation(RequestParam.class) == null && var.getAnnotation(PathVariable.class) == null) {
-                    Element paramType = ((DeclaredType)var.asType()).asElement();
+                    Element paramType = ((DeclaredType) var.asType()).asElement();
                     List<ExecutableElement> methods = ElementFilter.methodsIn(paramType.getEnclosedElements());
                     for (ExecutableElement method : methods) {
                         if (method.getSimpleName().toString().startsWith("set") && method.getParameters().size() == 1) {
@@ -273,7 +273,7 @@ public class AnnotationProcessor extends AbstractProcessor {
      * providing a list of concrete types to use to replace parameterized type placeholders.
      */
     private JsonType jsonTypeForDeclaredType(DeclaredType type, List<? extends TypeMirror> concreteTypes,
-                                             Collection<DeclaredType> typeRecursionGuard) {
+            Collection<DeclaredType> typeRecursionGuard) {
 
         JsonType jt = _memoizedDeclaredTypes.get(type);
         if (jt == null) {
@@ -286,7 +286,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 
     private boolean isJsonPrimitive(TypeMirror typeMirror) {
         return (typeMirror.getKind().isPrimitive()
-                || JsonPrimitive.isPrimitive(typeMirror.toString()));
+        || JsonPrimitive.isPrimitive(typeMirror.toString()));
     }
 
     private void buildResponseFormat(TypeMirror type, RestDocumentation.Resource.Method doc) {
@@ -326,13 +326,13 @@ public class AnnotationProcessor extends AbstractProcessor {
                     cls.getQualifiedName()));
     }
 
-    private class TypeVisitorImpl extends AbstractTypeVisitor6<JsonType,Void> {
+    private class TypeVisitorImpl extends AbstractTypeVisitor6<JsonType, Void> {
         private Map<Name, DeclaredType> _typeArguments = new HashMap();
         private Collection<DeclaredType> _typeRecursionDetector;
         private DeclaredType _type;
 
         public TypeVisitorImpl(DeclaredType type, List<? extends TypeMirror> typeArguments,
-                               Collection<DeclaredType> typeRecursionGuard) {
+                Collection<DeclaredType> typeRecursionGuard) {
 
             TypeElement elem = (TypeElement) type.asElement();
             _typeRecursionDetector = typeRecursionGuard;
@@ -402,7 +402,7 @@ public class AnnotationProcessor extends AbstractProcessor {
                             enumConstants.add(e.toString());
                         }
                     }
-                    JsonPrimitive primitive = new JsonPrimitive(String.class.getName());  // TODO is this always a string?
+                    JsonPrimitive primitive = new JsonPrimitive(String.class.getName()); // TODO is this always a string?
                     primitive.setRestrictions(enumConstants);
                     return primitive;
                 } else {
@@ -509,7 +509,7 @@ public class AnnotationProcessor extends AbstractProcessor {
                 return false;
 
             if (!(executableElement.getSimpleName().toString().startsWith("get")
-                    || executableElement.getSimpleName().toString().startsWith("is")))
+            || executableElement.getSimpleName().toString().startsWith("is")))
                 return false;
 
             if (executableElement.getParameters().size() > 0)
