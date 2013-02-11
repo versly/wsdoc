@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
 
 public class JsonPrimitive implements JsonType, Serializable {
 
@@ -66,6 +67,7 @@ public class JsonPrimitive implements JsonType, Serializable {
         _primitiveTypeNamesByJavaTypeName.put(java.sql.Time.class.getName(), "time");
         _primitiveTypeNamesByJavaTypeName.put(Timestamp.class.getName(), "timestamp");
         _primitiveTypeNamesByJavaTypeName.put(DateTime.class.getName(), "datetime");
+        _primitiveTypeNamesByJavaTypeName.put(LocalDate.class.getName(), "date");
     }
 
     private String typeName;

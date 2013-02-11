@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -230,7 +229,7 @@ public class AnnotationProcessor extends AbstractProcessor {
                     for (ExecutableElement method : methods) {
                         if (method.getSimpleName().toString().startsWith("set") && method.getParameters().size() == 1) {
                             TypeMirror setterType = method.getParameters().get(0).asType();
-                            JsonType jsonType = jsonTypeFromTypeMirror(setterType, Collections.<DeclaredType>emptyList());
+                            JsonType jsonType = jsonTypeFromTypeMirror(setterType, new ArrayList<DeclaredType>());
                             String propName = StringUtils.uncapitalize(method.getSimpleName().toString().substring(3));
                             doc.getQueryParameters().addField(propName, jsonType);
                         }
