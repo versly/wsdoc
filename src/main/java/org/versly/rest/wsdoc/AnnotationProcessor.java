@@ -272,10 +272,13 @@ public class AnnotationProcessor extends AbstractProcessor {
             return path;
         else if (clsAnno.value().length == 1)
             return Utils.joinPaths(path, clsAnno.value()[0]);
-        else
-            throw new IllegalStateException(String.format(
-                    "The RequestMapping annotation of class %s has multiple value strings. Only zero or one value is supported",
-                    cls.getQualifiedName()));
+        else {  // Modified Mike Rawlins 2013-03-15 - support multiple values for request mapping
+            String urlString = "[ " + clsAnno.value()[0];
+            for (int i = 1; i < clsAnno.value().length; i++) {
+                urlString = urlString + " || " + clsAnno.value()[i];
+            }
+            return urlString + " ]";
+        }
     }
 
     private class TypeVisitorImpl extends AbstractTypeVisitor6<JsonType,Void> {
