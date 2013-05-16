@@ -170,7 +170,7 @@ public class AnnotationProcessor extends AbstractProcessor {
     }
 
     private void buildRequestBody(VariableElement var, RestDocumentation.Resource.Method doc) {
-        doc.setRequestBody(jsonTypeFromTypeMirror(var.asType(), new HashSet<DeclaredType>()));
+        doc.setRequestBody(jsonTypeFromTypeMirror(var.asType(), new HashSet<String>()));
     }
 
     private void buildPathVariables(ExecutableElement executableElement, RestDocumentation.Resource.Method doc,
@@ -187,7 +187,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 
     private void addUrlField(RestDocumentation.Resource.Method.UrlFields subs, VariableElement var, String annoValue) {
         String name = (annoValue == null || annoValue.isEmpty()) ? var.getSimpleName().toString() : annoValue;
-        subs.addField(name, jsonTypeFromTypeMirror(var.asType(), new HashSet<DeclaredType>()));
+        subs.addField(name, jsonTypeFromTypeMirror(var.asType(), new HashSet<String>()));
     }
 
     private void buildUrlParameters(ExecutableElement executableElement, RestDocumentation.Resource.Method doc,
@@ -202,7 +202,7 @@ public class AnnotationProcessor extends AbstractProcessor {
         }
     }
 
-    private JsonType jsonTypeFromTypeMirror(TypeMirror typeMirror, Collection<DeclaredType> typeRecursionGuard) {
+    private JsonType jsonTypeFromTypeMirror(TypeMirror typeMirror, Collection<String> typeRecursionGuard) {
 
         JsonType type;
 
@@ -234,7 +234,7 @@ public class AnnotationProcessor extends AbstractProcessor {
      * providing a list of concrete types to use to replace parameterized type placeholders.
      */
     private JsonType jsonTypeForDeclaredType(DeclaredType type, List<? extends TypeMirror> concreteTypes,
-                                             Collection<DeclaredType> typeRecursionGuard) {
+                                             Collection<String> typeRecursionGuard) {
 
         JsonType jt = _memoizedDeclaredTypes.get(type);
         if (jt == null) {
@@ -251,7 +251,7 @@ public class AnnotationProcessor extends AbstractProcessor {
     }
 
     private void buildResponseFormat(TypeMirror type, RestDocumentation.Resource.Method doc) {
-        doc.setResponseBody(jsonTypeFromTypeMirror(type, new HashSet<DeclaredType>()));
+        doc.setResponseBody(jsonTypeFromTypeMirror(type, new HashSet<String>()));
     }
 
     private String getClassLevelUrlPath(TypeElement cls, RestAnnotationTypes annotationTypes) {
@@ -263,11 +263,11 @@ public class AnnotationProcessor extends AbstractProcessor {
 
     private class TypeVisitorImpl extends AbstractTypeVisitor6<JsonType,Void> {
         private Map<Name, DeclaredType> _typeArguments = new HashMap();
-        private Collection<DeclaredType> _typeRecursionDetector;
+        private Collection<String> _typeRecursionDetector;
         private DeclaredType _type;
 
         public TypeVisitorImpl(DeclaredType type, List<? extends TypeMirror> typeArguments,
-                               Collection<DeclaredType> typeRecursionGuard) {
+                               Collection<String> typeRecursionGuard) {
 
             TypeElement elem = (TypeElement) type.asElement();
             _typeRecursionDetector = typeRecursionGuard;
@@ -283,7 +283,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 
         @Override
         public JsonType visitPrimitive(PrimitiveType primitiveType, Void o) {
-            return jsonTypeFromTypeMirror(primitiveType, new HashSet<DeclaredType>(_typeRecursionDetector));
+            return jsonTypeFromTypeMirror(primitiveType, new HashSet<String>(_typeRecursionDetector));
         }
 
         @Override
@@ -307,10 +307,10 @@ public class AnnotationProcessor extends AbstractProcessor {
                 if (declaredType.getTypeArguments().size() == 0) {
                     return new JsonArray(new JsonPrimitive(Object.class.getName()));
                 } else {
-                    TypeMirror elem = declaredType.getTypeArguments().get(0);
+                    TypeParameterElement elem = ((TypeElement) declaredType.asElement()).getTypeParameters().get(0);
 
-                    _typeRecursionDetector.add(_type);
-                    return new JsonArray(acceptOrRecurse(o, elem));
+                    _typeRecursionDetector.add(_type.toString());
+                    return new JsonArray(acceptOrRecurse(o, elem.asType()));
                 }
 
             } else if (isInstanceOf(declaredType, Map.class)) {
@@ -322,7 +322,7 @@ public class AnnotationProcessor extends AbstractProcessor {
                     TypeMirror key = declaredType.getTypeArguments().get(0);
                     TypeMirror val = declaredType.getTypeArguments().get(1);
 
-                    _typeRecursionDetector.add(_type);
+                    _typeRecursionDetector.add(_type.toString());
                     JsonType keyJson = acceptOrRecurse(o, key);
                     JsonType valJson = acceptOrRecurse(o, val);
                     return new JsonDict(keyJson, valJson);
@@ -352,7 +352,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 
         private JsonType buildType(DeclaredType declaredType, TypeElement element) {
 
-            if (_typeRecursionDetector.contains(declaredType))
+            if (_typeRecursionDetector.contains(declaredType.toString()))
                 return new JsonRecursiveObject(element.getSimpleName().toString());
 
             JsonObject json = new JsonObject();
@@ -418,7 +418,7 @@ public class AnnotationProcessor extends AbstractProcessor {
                 o.addField(beanName, jsonType)
                         .setCommentText(docComment);
             } else {
-                o.addField(beanName, jsonTypeFromTypeMirror(type, new HashSet<DeclaredType>(_typeRecursionDetector)))
+                o.addField(beanName, jsonTypeFromTypeMirror(type, new HashSet<String>(_typeRecursionDetector)))
                         .setCommentText(docComment);
             }
         }
@@ -427,12 +427,14 @@ public class AnnotationProcessor extends AbstractProcessor {
             // loop over the element's generic types, and build a concrete list from the owning context
             List<DeclaredType> concreteTypes = new ArrayList();
 
-            TypeElement element = (TypeElement) type.asElement();
-            for (TypeParameterElement generic : element.getTypeParameters()) {
-                concreteTypes.add(_typeArguments.get(generic.getSimpleName()));
+            for (TypeMirror generic : type.getTypeArguments()) {
+                if (generic instanceof DeclaredType)
+                    concreteTypes.add((DeclaredType) generic);
+                else
+                    concreteTypes.add(_typeArguments.get(((TypeVariable) generic).asElement().getSimpleName()));
             }
-            _typeRecursionDetector.add(_type);
-            Collection<DeclaredType> types = new HashSet<DeclaredType>(_typeRecursionDetector);
+            _typeRecursionDetector.add(_type.toString());
+            Collection<String> types = new HashSet<String>(_typeRecursionDetector);
             return jsonTypeForDeclaredType(type, concreteTypes, types);
         }
 
@@ -471,7 +473,7 @@ public class AnnotationProcessor extends AbstractProcessor {
             Name name = typeVariable.asElement().getSimpleName();
             if (!_typeArguments.containsKey(name)) {
                 throw new UnsupportedOperationException(String.format(
-                        "Unknown parameterized type: %s. Available types in this context: %s",
+                        "Unknown parameterized type: %s. Available types in this context: %s.",
                         typeVariable.toString(), _typeArguments));
             } else {
                 return _typeArguments.get(name);

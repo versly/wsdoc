@@ -16,13 +16,13 @@
 
 package org.versly.rest.wsdoc.springmvc;
 
-import java.io.Serializable;
 import java.util.*;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.versly.rest.wsdoc.RestApiMountPoint;
+import org.versly.rest.wsdoc.model.ParameterizedTypeReferrer;
 
 @RestApiMountPoint("/mount")
 public class RestDocEndpoint {
@@ -71,6 +71,11 @@ public class RestDocEndpoint {
     @RequestMapping(value="recursiveListReturn", method = RequestMethod.GET)
     public @ResponseBody ValueWithListRecursion recursiveListReturn(HttpServletRequest req)
     {
+        return null;
+    }
+
+    @RequestMapping(value="endpointWithParameterizedType", method = RequestMethod.GET)
+    public ParameterizedTypeReferrer endpointWithParameterizedType() {
         return null;
     }
 

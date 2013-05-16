@@ -17,6 +17,7 @@
 package org.versly.rest.wsdoc.jaxrs;
 
 import org.versly.rest.wsdoc.RestApiMountPoint;
+import org.versly.rest.wsdoc.model.ParameterizedTypeReferrer;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -77,6 +78,12 @@ public class RestDocEndpoint {
     @Path("recursiveListReturn")
     public ValueWithListRecursion recursiveListReturn(HttpServletRequest req)
     {
+        return null;
+    }
+
+    @GET
+    @Path("endpointWithParameterizedType")
+    public ParameterizedTypeReferrer endpointWithParameterizedType() {
         return null;
     }
 

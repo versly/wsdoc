@@ -27,12 +27,12 @@ public abstract class AbstractRestAnnotationProcessorTest {
     }
 
     protected void processResource(String fileName) {
-        processResource(fileName, null);
+        processResource(fileName, null, true);
     }
 
-    private void processResource(String fileName, Iterable<Pattern> excludes) {
+    private void processResource(String fileName, Iterable<Pattern> excludes, boolean needsTestPackage) {
         try {
-            runAnnotationProcessor(tmpDir, fileName);
+            runAnnotationProcessor(tmpDir, fileName, needsTestPackage);
             String htmlFile = tmpDir + "/" + fileName.replace(".java", ".html");
             buildOutput(tmpDir, htmlFile, excludes);
             readOutput(htmlFile);
@@ -61,10 +61,10 @@ public abstract class AbstractRestAnnotationProcessorTest {
         }
     }
 
-    private void runAnnotationProcessor(File buildDir, final String fileName)
+    private void runAnnotationProcessor(File buildDir, final String fileName, boolean needsTestPackage)
             throws URISyntaxException, IOException {
 
-        String packagePrefix = "org/versly/rest/wsdoc/" + getPackageToTest() + "/";
+        String packagePrefix = "org/versly/rest/wsdoc/" + (needsTestPackage ? getPackageToTest() + "/" : "");
         runAnnotationProcessor(buildDir, packagePrefix, fileName);
     }
 
@@ -153,9 +153,15 @@ public abstract class AbstractRestAnnotationProcessorTest {
 
     @Test
     public void excludePatterns() {
-        processResource("SnowReportController.java", Arrays.asList(Pattern.compile("foo"), Pattern.compile(".*snow-report.*")));
+        processResource("SnowReportController.java",
+                Arrays.asList(Pattern.compile("foo"), Pattern.compile(".*snow-report.*")), true);
         AssertJUnit.assertFalse("should not contain the snow-report endpoint",
             output.contains("snow-report"));
+    }
+
+    @Test
+    public void genericTypeResolution() throws IOException, URISyntaxException {
+        processResource("RestDocEndpoint.java");
     }
 
     protected abstract String getPackageToTest();
