@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-package org.versly.rest.wsdoc;
+package org.versly.rest.wsdoc.jaxrs;
 
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
 
 public class NonRecursiveMultiUse {
 
-    @RequestMapping(value = "/foo", method = RequestMethod.GET)
+    @GET
+    @Path("foo")
     public NonRecursiveParent foo() {
         return null;
     }

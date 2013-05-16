@@ -20,6 +20,9 @@ public class Utils {
     static final String SERIALIZED_RESOURCE_LOCATION = "org.versly.rest.wsdoc.web-service-api.ser";
 
     static String joinPaths(String lhs, String rhs) {
+        if (rhs == null)
+            return lhs;
+
         while (lhs.endsWith("/"))
             lhs = lhs.substring(0, lhs.length() - 1);
 

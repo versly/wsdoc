@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.versly.rest.wsdoc;
+package org.versly.rest.wsdoc.springmvc;
 
 import java.io.Serializable;
 import java.util.*;
@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.versly.rest.wsdoc.RestApiMountPoint;
 
 @RestApiMountPoint("/mount")
 public class RestDocEndpoint {

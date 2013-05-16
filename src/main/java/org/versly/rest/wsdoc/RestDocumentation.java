@@ -16,8 +16,6 @@
 
 package org.versly.rest.wsdoc;
 
-import org.springframework.web.bind.annotation.RequestMethod;
-
 import java.io.*;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -93,7 +91,7 @@ public class RestDocumentation implements Serializable {
          * with the same argument, multiple distinct {@link Method} objects
          * will be returned.
          */
-        public Method newMethodDocumentation(RequestMethod meth) {
+        public Method newMethodDocumentation(String meth) {
             Method method = new Method(meth);
             _methods.add(method);
             return method;
@@ -101,7 +99,7 @@ public class RestDocumentation implements Serializable {
 
         public class Method implements Serializable {
 
-            private RequestMethod meth;
+            private String meth;
             private JsonType _requestBody;
             private UrlFields _urlSubstitutions = new UrlFields();
             private UrlFields _urlParameters = new UrlFields();
@@ -109,11 +107,11 @@ public class RestDocumentation implements Serializable {
             private String _commentText;
             private boolean _isMultipartRequest;
 
-            public Method(RequestMethod meth) {
+            public Method(String meth) {
                 this.meth = meth;
             }
 
-            public RequestMethod getRequestMethod() {
+            public String getRequestMethod() {
                 return meth;
             }
 
@@ -161,7 +159,7 @@ public class RestDocumentation implements Serializable {
              * An HTML-safe, textual key that uniquely identifies this endpoint.
              */
             public String getKey() {
-                String key = path + "_" + meth.name();
+                String key = path + "_" + meth;
                 for (String param : _urlParameters.getFields().keySet()) {
                     key += "_" + param;
                 }

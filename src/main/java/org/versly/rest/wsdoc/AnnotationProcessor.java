@@ -17,10 +17,6 @@
 package org.versly.rest.wsdoc;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -35,6 +31,7 @@ import javax.tools.StandardLocation;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.annotation.Annotation;
 import java.util.*;
 
 /**
@@ -50,7 +47,7 @@ import java.util.*;
 //   - MethodNameResolver
 //   - plural RequestMapping value support (i.e., two paths bound to one method)
 //   - support for methods not marked with @RequestMapping whose class does have a @RequestMapping annotation
-@SupportedAnnotationTypes("org.springframework.web.bind.annotation.RequestMapping")
+@SupportedAnnotationTypes({"org.springframework.web.bind.annotation.RequestMapping", "javax.ws.rs.Path"})
 public class AnnotationProcessor extends AbstractProcessor {
 
     private RestDocumentation _docs = new RestDocumentation();
@@ -66,12 +63,8 @@ public class AnnotationProcessor extends AbstractProcessor {
             return true;
 
         Collection<String> processedPackageNames = new LinkedHashSet<String>();
-        for (Element e : roundEnvironment.getElementsAnnotatedWith(RequestMapping.class)) {
-            if (e instanceof ExecutableElement) {
-                addPackageName(processedPackageNames, e);
-                processRequestMappingMethod((ExecutableElement) e);
-            }
-        }
+        processElements(roundEnvironment, processedPackageNames, new SpringMVCRestAnnotationTypes());
+        processElements(roundEnvironment, processedPackageNames, new JaxRSRestAnnotationTypes());
 
         if (_docs.getResources().size() > 0) {
 
@@ -100,6 +93,17 @@ public class AnnotationProcessor extends AbstractProcessor {
         return true;
     }
 
+    private void processElements(RoundEnvironment roundEnvironment,
+                                 Collection<String> processedPackageNames,
+                                 RestAnnotationTypes annotationTypes) {
+        for (Element e : roundEnvironment.getElementsAnnotatedWith(annotationTypes.getMappingAnnotationType())) {
+            if (e instanceof ExecutableElement) {
+                addPackageName(processedPackageNames, e);
+                processRequestMappingMethod((ExecutableElement) e, annotationTypes);
+            }
+        }
+    }
+
     private void addPackageName(Collection<String> processedPackageNames, Element e) {
         processedPackageNames.add(processingEnv.getElementUtils().getPackageOf(e).getQualifiedName().toString());
     }
@@ -108,21 +112,21 @@ public class AnnotationProcessor extends AbstractProcessor {
         return this.processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, "", Utils.SERIALIZED_RESOURCE_LOCATION);
     }
 
-    private void processRequestMappingMethod(ExecutableElement executableElement) {
+    private void processRequestMappingMethod(ExecutableElement executableElement, RestAnnotationTypes annotationTypes) {
         TypeElement cls = (TypeElement) executableElement.getEnclosingElement();
-        String path = getClassLevelUrlPath(cls);
+        String path = getClassLevelUrlPath(cls, annotationTypes);
 
-        RequestMapping anno = executableElement.getAnnotation(RequestMapping.class);
-        path = addMethodPathComponent(executableElement, cls, path, anno);
-        RequestMethod meth = getRequestMethod(executableElement, cls, anno);
+        path = Utils.joinPaths(path, annotationTypes.getRequestPath(executableElement, cls));
+        String meth = annotationTypes.getRequestMethod(executableElement, cls);
 
         RestDocumentation.Resource.Method doc = _docs.getResourceDocumentation(path).newMethodDocumentation(meth);
         doc.setCommentText(processingEnv.getElementUtils().getDocComment(executableElement));
-        buildParameterData(executableElement, doc);
+        buildParameterData(executableElement, doc, annotationTypes);
         buildResponseFormat(executableElement.getReturnType(), doc);
     }
 
-    private void buildParameterData(ExecutableElement executableElement, RestDocumentation.Resource.Method doc) {
+    private void buildParameterData(ExecutableElement executableElement, RestDocumentation.Resource.Method doc,
+                                    RestAnnotationTypes annotationTypes) {
 
         // only process @RequestBody, @PathVariable and @RequestParam parameters for now.
         // TODO Consider expanding this to include other Spring REST annotations.
@@ -130,13 +134,16 @@ public class AnnotationProcessor extends AbstractProcessor {
         // We can safely ignore @RequestMapping.params, as Spring requires that a @RequestParam exists
         // for each entry listed in this list. I expect that this might be the same for @RequestMapping.headers
 
-        scanForMultipart(executableElement, doc);
-        buildPathVariables(executableElement, doc);
-        buildUrlParameters(executableElement, doc);
+        scanForSpringMVCMultipart(executableElement, doc);
+        buildPathVariables(executableElement, doc, annotationTypes);
+        buildUrlParameters(executableElement, doc, annotationTypes);
         buildRequestBodies(executableElement, doc);
     }
 
-    private void scanForMultipart(ExecutableElement executableElement, RestDocumentation.Resource.Method doc) {
+    /**
+     * This is Spring-MVC only -- JAX-RS doesn't have an (obvious) analog.
+     */
+    private void scanForSpringMVCMultipart(ExecutableElement executableElement, RestDocumentation.Resource.Method doc) {
         for (VariableElement var : executableElement.getParameters()) {
             TypeMirror varType = var.asType();
             if (varType.toString().startsWith(MultipartHttpServletRequest.class.getName())) {
@@ -166,13 +173,14 @@ public class AnnotationProcessor extends AbstractProcessor {
         doc.setRequestBody(jsonTypeFromTypeMirror(var.asType(), new HashSet<DeclaredType>()));
     }
 
-    private void buildPathVariables(ExecutableElement executableElement, RestDocumentation.Resource.Method doc) {
+    private void buildPathVariables(ExecutableElement executableElement, RestDocumentation.Resource.Method doc,
+                                    RestAnnotationTypes annotationTypes) {
         RestDocumentation.Resource.Method.UrlFields subs = doc.getUrlSubstitutions();
 
         for (VariableElement var : executableElement.getParameters()) {
-            PathVariable pathVar = var.getAnnotation(PathVariable.class);
-            if (pathVar != null) {
-                addUrlField(subs, var, pathVar.value());
+            String pathVariable = annotationTypes.getPathVariable(var);
+            if (pathVariable != null) {
+                addUrlField(subs, var, pathVariable);
             }
         }
     }
@@ -182,13 +190,14 @@ public class AnnotationProcessor extends AbstractProcessor {
         subs.addField(name, jsonTypeFromTypeMirror(var.asType(), new HashSet<DeclaredType>()));
     }
 
-    private void buildUrlParameters(ExecutableElement executableElement, RestDocumentation.Resource.Method doc) {
+    private void buildUrlParameters(ExecutableElement executableElement, RestDocumentation.Resource.Method doc,
+                                    RestAnnotationTypes annotationTypes) {
         RestDocumentation.Resource.Method.UrlFields subs = doc.getUrlParameters();
 
         for (VariableElement var : executableElement.getParameters()) {
-            RequestParam reqParam = var.getAnnotation(RequestParam.class);
+            String reqParam = annotationTypes.getRequestParam(var);
             if (reqParam != null) {
-                addUrlField(subs, var, reqParam.value());
+                addUrlField(subs, var, reqParam);
             }
         }
     }
@@ -245,37 +254,11 @@ public class AnnotationProcessor extends AbstractProcessor {
         doc.setResponseBody(jsonTypeFromTypeMirror(type, new HashSet<DeclaredType>()));
     }
 
-    private RequestMethod getRequestMethod(ExecutableElement executableElement, TypeElement cls, RequestMapping anno) {
-        if (anno.method().length != 1)
-            throw new IllegalStateException(String.format(
-                    "The RequestMapping annotation for %s.%s is not parseable. Exactly one request method (GET/POST/etc) is required.",
-                    cls.getQualifiedName(), executableElement.getSimpleName()));
-        else
-            return anno.method()[0];
-    }
-
-    private String addMethodPathComponent(ExecutableElement executableElement, TypeElement cls, String path, RequestMapping anno) {
-        if (anno == null || anno.value().length != 1)
-            throw new IllegalStateException(String.format(
-                    "The RequestMapping annotation for %s.%s is not parseable. Exactly one value is required.",
-                    cls.getQualifiedName(), executableElement.getSimpleName()));
-        else
-            return Utils.joinPaths(path, anno.value()[0]);
-    }
-
-    private String getClassLevelUrlPath(TypeElement cls) {
+    private String getClassLevelUrlPath(TypeElement cls, RestAnnotationTypes annotationTypes) {
         RestApiMountPoint mountPoint = cls.getAnnotation(RestApiMountPoint.class);
         String path = mountPoint == null ? "/" : mountPoint.value();
 
-        RequestMapping clsAnno = cls.getAnnotation(RequestMapping.class);
-        if (clsAnno == null || clsAnno.value().length == 0)
-            return path;
-        else if (clsAnno.value().length == 1)
-            return Utils.joinPaths(path, clsAnno.value()[0]);
-        else
-            throw new IllegalStateException(String.format(
-                    "The RequestMapping annotation of class %s has multiple value strings. Only zero or one value is supported",
-                    cls.getQualifiedName()));
+        return Utils.joinPaths(path, annotationTypes.getRequestPath(cls));
     }
 
     private class TypeVisitorImpl extends AbstractTypeVisitor6<JsonType,Void> {
@@ -515,4 +498,19 @@ public class AnnotationProcessor extends AbstractProcessor {
             throw new UnsupportedOperationException(typeMirror.toString());
         }
     }
+
+    interface RestAnnotationTypes {
+        Class<? extends Annotation> getMappingAnnotationType();
+
+        String getRequestPath(ExecutableElement executableElement, TypeElement contextClass);
+
+        String getRequestPath(TypeElement cls);
+
+        String getRequestMethod(ExecutableElement executableElement, TypeElement contextClass);
+
+        String getPathVariable(VariableElement var);
+
+        String getRequestParam(VariableElement var);
+    }
+
 }
