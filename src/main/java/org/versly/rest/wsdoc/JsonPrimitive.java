@@ -17,6 +17,7 @@
 package org.versly.rest.wsdoc;
 
 import java.io.Serializable;
+import java.net.URI;
 import java.net.URL;
 import java.sql.Timestamp;
 import java.util.*;
@@ -51,6 +52,7 @@ public class JsonPrimitive implements JsonType, Serializable {
         _primitiveTypeNamesByJavaTypeName.put(Void.class.getName(), "void");
 
         _primitiveTypeNamesByJavaTypeName.put(URL.class.getName(), "url");
+        _primitiveTypeNamesByJavaTypeName.put(URI.class.getName(), "url");
         _primitiveTypeNamesByJavaTypeName.put(UUID.class.getName(), "uuid");
 
         _primitiveTypeNamesByJavaTypeName.put(Date.class.getName(), "timestamp");
