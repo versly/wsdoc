@@ -275,7 +275,7 @@ public class AnnotationProcessor extends AbstractProcessor {
         }
 
         private void loadTypeElements(DeclaredType type, List<? extends TypeMirror> typeArguments) {
-            // TODO test this with generic interfaces, including in superclasses
+            // TODO test this with generic interfaces, including in superclasses. Issue #10.
 
             TypeElement elem = (TypeElement) type.asElement();
             if (Object.class.getName().equals(elem.getQualifiedName().toString()))
