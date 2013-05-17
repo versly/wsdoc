@@ -1,4 +1,4 @@
-package org.versly.rest.wsdoc;
+package org.versly.rest.wsdoc.model.genericdomain;
 
 
 public class DefaultParent<T> extends Grandparent<Long, Integer> implements Parent<T> {

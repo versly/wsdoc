@@ -45,6 +45,21 @@ public class SpringMVCRestAnnotationProcessorTest extends AbstractRestAnnotation
             output.contains("Note: this endpoint expects a multipart"));
     }
 
+    @Test
+    public void processControllerThatReturnsDomainObjectWithGenericParentsExpectsSuccess() {
+        processResource("genericdomain/ChildController.java");
+        AssertJUnit.assertTrue("expected firstGrandparentField and secondGrandparentField in docs; got: \n" + output,
+                output.contains(">firstGrandparentField<") && output.contains(">secondGrandparentField<")
+                        && output.contains(">parentField<") && output.contains(">childField<"));
+    }
+
+    @Test
+    public void processControllerThatReturnsGenericDomainObjectExpectsSuccess() {
+        processResource("genericdomain/ParentController.java");
+        AssertJUnit.assertTrue("expected parentField in docs; got: \n" + output,
+                output.contains(">parentField<"));
+    }
+
     public static void main(String[] args) throws IOException, URISyntaxException {
         File dir = new File(args[0]);
         for (int i = 1; i < args.length; i++) {

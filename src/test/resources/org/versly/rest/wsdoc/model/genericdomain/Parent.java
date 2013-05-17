@@ -1,4 +1,4 @@
-package org.versly.rest.wsdoc;
+package org.versly.rest.wsdoc.model.genericdomain;
 
 public interface Parent<T> {
 

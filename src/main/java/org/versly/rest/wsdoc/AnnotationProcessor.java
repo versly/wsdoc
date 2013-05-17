@@ -16,7 +16,6 @@
 
 package org.versly.rest.wsdoc;
 
-import com.sun.tools.javac.code.Type;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
@@ -270,15 +269,29 @@ public class AnnotationProcessor extends AbstractProcessor {
         public TypeVisitorImpl(DeclaredType type, List<? extends TypeMirror> typeArguments,
                                Collection<String> typeRecursionGuard) {
 
-            TypeElement elem = (TypeElement) type.asElement();
             _typeRecursionDetector = typeRecursionGuard;
             _type = type;
+            loadTypeElements(type, typeArguments);
+        }
+
+        private void loadTypeElements(DeclaredType type, List<? extends TypeMirror> typeArguments) {
+            // TODO test this with generic interfaces, including in superclasses
+
+            TypeElement elem = (TypeElement) type.asElement();
+            if (Object.class.getName().equals(elem.getQualifiedName().toString()))
+                return;
+
             List<? extends TypeParameterElement> generics = elem.getTypeParameters();
             for (int i = 0; i < generics.size(); i++) {
                 DeclaredType value =
                         (typeArguments.isEmpty() || !(typeArguments.get(i) instanceof DeclaredType)) ?
                                 null : (DeclaredType) typeArguments.get(i);
                 _typeArguments.put(generics.get(i).getSimpleName(), value);
+            }
+
+            if (elem.getSuperclass() instanceof DeclaredType) {
+                DeclaredType sup = (DeclaredType) elem.getSuperclass();
+                loadTypeElements(sup, sup.getTypeArguments());
             }
         }
 
@@ -408,8 +421,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 
             // replace variables with the current concrete manifestation
             if (type instanceof TypeVariable) {
-                Type.MethodType methodType = (Type.MethodType) processingEnv.getTypeUtils().asMemberOf(_type, executableElement);
-                type = methodType.getReturnType();
+                type = getDeclaredTypeForTypeVariable((TypeVariable) type);
                 if (type == null)
                     return; // couldn't find a replacement -- must be a generics-capable type with no generics info
             }

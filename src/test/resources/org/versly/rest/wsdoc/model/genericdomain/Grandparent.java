@@ -1,4 +1,4 @@
-package org.versly.rest.wsdoc;
+package org.versly.rest.wsdoc.model.genericdomain;
 
 /**
  * User: Ryan Walls

@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-package org.versly.rest.wsdoc;
+package org.versly.rest.wsdoc.springmvc.genericdomain;
 
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.versly.rest.wsdoc.model.genericdomain.Parent;
 
-public class ChildController {
+public class ParentController {
 
     /**
-     * Retrieves the child
+     * Retrieves the parent
      */
-    @RequestMapping(value = "/child", method = RequestMethod.GET)
-    public Child getChild() {
+    @RequestMapping(value = "/parent", method = RequestMethod.GET)
+    public Parent<String> getParent() {
         return null;
     }
 

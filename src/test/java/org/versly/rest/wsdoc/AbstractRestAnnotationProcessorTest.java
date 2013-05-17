@@ -48,6 +48,10 @@ public abstract class AbstractRestAnnotationProcessorTest {
         throws ClassNotFoundException, IOException, TemplateException {
 
         InputStream in = new FileInputStream(new File(buildDir, Utils.SERIALIZED_RESOURCE_LOCATION));
+
+        // make the parent dirs in case htmlFile is nested
+        new File(htmlFile).getParentFile().mkdirs();
+
         new RestDocAssembler(htmlFile).writeDocumentation(
             Collections.singletonList(RestDocumentation.fromStream(in)), excludes);
     }
