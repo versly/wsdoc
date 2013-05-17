@@ -79,6 +79,10 @@ public class RestDocEndpoint {
         return null;
     }
 
+    @RequestMapping(value = { "multiple-bindings-a", "multiple-bindings-b" }, method = RequestMethod.GET)
+    public void multipleBindings() {
+    }
+
     public class ExcitingReturnValue {
         /**
          * The exciting return value's date!

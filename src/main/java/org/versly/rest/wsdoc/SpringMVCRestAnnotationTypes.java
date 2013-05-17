@@ -1,10 +1,8 @@
 package org.versly.rest.wsdoc;
 
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -19,27 +17,22 @@ class SpringMVCRestAnnotationTypes implements AnnotationProcessor.RestAnnotation
     }
 
     @Override
-    public String getRequestPath(ExecutableElement executableElement, TypeElement contextClass) {
+    public String[] getRequestPaths(ExecutableElement executableElement, TypeElement contextClass) {
         RequestMapping anno = executableElement.getAnnotation(RequestMapping.class);
-        if (anno == null || anno.value().length != 1)
-            throw new IllegalStateException(String.format(
-                    "The RequestMapping annotation for %s.%s is not parseable. Exactly one value is required.",
-                    contextClass.getQualifiedName(), executableElement.getSimpleName()));
-        else
-            return anno.value()[0];
+        return requestPathsForAnnotation(anno);
     }
 
     @Override
-    public String getRequestPath(TypeElement cls) {
+    public String[] getRequestPaths(TypeElement cls) {
         RequestMapping clsAnno = cls.getAnnotation(RequestMapping.class);
-        if (clsAnno == null || clsAnno.value().length == 0)
-            return null;
-        else if (clsAnno.value().length == 1)
-            return clsAnno.value()[0];
+        return requestPathsForAnnotation(clsAnno);
+    }
+
+    private String[] requestPathsForAnnotation(RequestMapping clsAnno) {
+        if (clsAnno == null)
+            return new String[0];
         else
-            throw new IllegalStateException(String.format(
-                    "The RequestMapping annotation of class %s has multiple value strings. Only zero or one value is supported",
-                    cls.getQualifiedName()));
+            return clsAnno.value();
     }
 
     @Override

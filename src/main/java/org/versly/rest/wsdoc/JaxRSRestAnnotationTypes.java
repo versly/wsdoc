@@ -15,23 +15,23 @@ public class JaxRSRestAnnotationTypes implements AnnotationProcessor.RestAnnotat
     }
 
     @Override
-    public String getRequestPath(ExecutableElement executableElement, TypeElement contextClass) {
+    public String[] getRequestPaths(ExecutableElement executableElement, TypeElement contextClass) {
         Path anno = executableElement.getAnnotation(Path.class);
         if (anno == null)
             throw new IllegalStateException(String.format(
                     "The Path annotation for %s.%s is not parseable. Exactly one value is required.",
                     contextClass.getQualifiedName(), executableElement.getSimpleName()));
         else
-            return anno.value();
+            return new String[] { anno.value() };
     }
 
     @Override
-    public String getRequestPath(TypeElement cls) {
+    public String[] getRequestPaths(TypeElement cls) {
         Path clsAnno = cls.getAnnotation(Path.class);
         if (clsAnno == null)
-            return null;
+            return new String[0];
         else
-            return clsAnno.value();
+            return new String[] { clsAnno.value() };
     }
 
     @Override

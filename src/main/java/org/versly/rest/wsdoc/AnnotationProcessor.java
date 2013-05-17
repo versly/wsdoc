@@ -114,15 +114,18 @@ public class AnnotationProcessor extends AbstractProcessor {
 
     private void processRequestMappingMethod(ExecutableElement executableElement, RestAnnotationTypes annotationTypes) {
         TypeElement cls = (TypeElement) executableElement.getEnclosingElement();
-        String path = getClassLevelUrlPath(cls, annotationTypes);
 
-        path = Utils.joinPaths(path, annotationTypes.getRequestPath(executableElement, cls));
-        String meth = annotationTypes.getRequestMethod(executableElement, cls);
+        for (final String basePath : getClassLevelUrlPaths(cls, annotationTypes)) {
+            for (final String requestPath : annotationTypes.getRequestPaths(executableElement, cls)) {
+                final String fullPath = Utils.joinPaths(basePath, requestPath);
+                String meth = annotationTypes.getRequestMethod(executableElement, cls);
 
-        RestDocumentation.Resource.Method doc = _docs.getResourceDocumentation(path).newMethodDocumentation(meth);
-        doc.setCommentText(processingEnv.getElementUtils().getDocComment(executableElement));
-        buildParameterData(executableElement, doc, annotationTypes);
-        buildResponseFormat(executableElement.getReturnType(), doc);
+                RestDocumentation.Resource.Method doc = _docs.getResourceDocumentation(fullPath).newMethodDocumentation(meth);
+                doc.setCommentText(processingEnv.getElementUtils().getDocComment(executableElement));
+                buildParameterData(executableElement, doc, annotationTypes);
+                buildResponseFormat(executableElement.getReturnType(), doc);
+            }
+        }
     }
 
     private void buildParameterData(ExecutableElement executableElement, RestDocumentation.Resource.Method doc,
@@ -254,11 +257,19 @@ public class AnnotationProcessor extends AbstractProcessor {
         doc.setResponseBody(jsonTypeFromTypeMirror(type, new HashSet<String>()));
     }
 
-    private String getClassLevelUrlPath(TypeElement cls, RestAnnotationTypes annotationTypes) {
+    private String[] getClassLevelUrlPaths(TypeElement cls, RestAnnotationTypes annotationTypes) {
         RestApiMountPoint mountPoint = cls.getAnnotation(RestApiMountPoint.class);
-        String path = mountPoint == null ? "/" : mountPoint.value();
+        final String basePath = mountPoint == null ? "/" : mountPoint.value();
 
-        return Utils.joinPaths(path, annotationTypes.getRequestPath(cls));
+        String[] paths = annotationTypes.getRequestPaths(cls);
+        if (paths.length == 0) {
+            return new String[] { basePath };
+        } else {
+            for (int i = 0; i < paths.length; i++) {
+                paths[i] = Utils.joinPaths(basePath, paths[i]);
+            }
+            return paths;
+        }
     }
 
     private class TypeVisitorImpl extends AbstractTypeVisitor6<JsonType,Void> {
@@ -518,9 +529,9 @@ public class AnnotationProcessor extends AbstractProcessor {
     interface RestAnnotationTypes {
         Class<? extends Annotation> getMappingAnnotationType();
 
-        String getRequestPath(ExecutableElement executableElement, TypeElement contextClass);
+        String[] getRequestPaths(ExecutableElement executableElement, TypeElement contextClass);
 
-        String getRequestPath(TypeElement cls);
+        String[] getRequestPaths(TypeElement cls);
 
         String getRequestMethod(ExecutableElement executableElement, TypeElement contextClass);
 

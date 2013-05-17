@@ -60,6 +60,13 @@ public class SpringMVCRestAnnotationProcessorTest extends AbstractRestAnnotation
                 output.contains(">parentField<"));
     }
 
+    @Test
+    public void multipleBindingsForOneEndpoint() {
+        processResource("RestDocEndpoint.java");
+        AssertJUnit.assertTrue("expected multiple-bindings-a and multiple-bindings-b in docs; got: \n" + output,
+                output.contains("multiple-bindings-a<") && output.contains("multiple-bindings-b<"));
+    }
+
     public static void main(String[] args) throws IOException, URISyntaxException {
         File dir = new File(args[0]);
         for (int i = 1; i < args.length; i++) {
