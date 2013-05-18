@@ -338,7 +338,7 @@ public class AnnotationProcessor extends AbstractProcessor {
                 } else {
                     TypeParameterElement elem = ((TypeElement) declaredType.asElement()).getTypeParameters().get(0);
 
-                    _typeRecursionDetector.add(_type.toString());
+                    _typeRecursionDetector.add(declaredType.toString());
                     return new JsonArray(acceptOrRecurse(o, elem.asType()));
                 }
 
@@ -351,7 +351,7 @@ public class AnnotationProcessor extends AbstractProcessor {
                     TypeMirror key = declaredType.getTypeArguments().get(0);
                     TypeMirror val = declaredType.getTypeArguments().get(1);
 
-                    _typeRecursionDetector.add(_type.toString());
+                    _typeRecursionDetector.add(declaredType.toString());
                     JsonType keyJson = acceptOrRecurse(o, key);
                     JsonType valJson = acceptOrRecurse(o, val);
                     return new JsonDict(keyJson, valJson);
