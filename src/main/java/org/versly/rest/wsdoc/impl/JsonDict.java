@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.versly.rest.wsdoc;
+package org.versly.rest.wsdoc.impl;
 
 import java.io.Serializable;
 

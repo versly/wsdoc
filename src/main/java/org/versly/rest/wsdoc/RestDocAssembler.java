@@ -23,6 +23,8 @@ import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
+import org.versly.rest.wsdoc.impl.RestDocumentation;
+import org.versly.rest.wsdoc.impl.Utils;
 
 import java.io.*;
 import java.util.*;

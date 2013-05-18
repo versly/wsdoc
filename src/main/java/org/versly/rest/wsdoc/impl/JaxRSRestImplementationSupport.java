@@ -1,4 +1,6 @@
-package org.versly.rest.wsdoc;
+package org.versly.rest.wsdoc.impl;
+
+import org.versly.rest.wsdoc.AnnotationProcessor;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -8,7 +10,7 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
 
-public class JaxRSRestAnnotationTypes implements AnnotationProcessor.RestAnnotationTypes {
+public class JaxRSRestImplementationSupport implements AnnotationProcessor.RestImplementationSupport {
     @Override
     public Class<? extends Annotation> getMappingAnnotationType() {
         return Path.class;

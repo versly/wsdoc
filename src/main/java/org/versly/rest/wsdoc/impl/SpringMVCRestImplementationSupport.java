@@ -1,15 +1,16 @@
-package org.versly.rest.wsdoc;
+package org.versly.rest.wsdoc.impl;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.versly.rest.wsdoc.AnnotationProcessor;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import java.lang.annotation.Annotation;
 
-class SpringMVCRestAnnotationTypes implements AnnotationProcessor.RestAnnotationTypes {
+public class SpringMVCRestImplementationSupport implements AnnotationProcessor.RestImplementationSupport {
 
     @Override
     public Class<? extends Annotation> getMappingAnnotationType() {

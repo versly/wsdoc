@@ -3,6 +3,8 @@ package org.versly.rest.wsdoc;
 import freemarker.template.TemplateException;
 import org.testng.AssertJUnit;
 import org.testng.annotations.Test;
+import org.versly.rest.wsdoc.impl.RestDocumentation;
+import org.versly.rest.wsdoc.impl.Utils;
 
 import javax.tools.*;
 import java.io.*;

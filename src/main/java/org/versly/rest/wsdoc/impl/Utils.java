@@ -14,8 +14,23 @@
  * limitations under the License.
  */
 
-package org.versly.rest.wsdoc;
+package org.versly.rest.wsdoc.impl;
 
-public interface JsonType {
+public class Utils {
+    public static final String SERIALIZED_RESOURCE_LOCATION = "org.versly.rest.wsdoc.web-service-api.ser";
+
+    public static String joinPaths(String lhs, String rhs) {
+        // Mike Rawlins 2013-03-15 Don't append slash if right hand side is empty
+        if (rhs == null || rhs.length() == 0) {
+            return lhs;
+        }
+
+        while (lhs.endsWith("/"))
+            lhs = lhs.substring(0, lhs.length() - 1);
+
+        while (rhs.startsWith("/"))
+            rhs = rhs.substring(1);
+
+        return lhs + "/" + rhs;
+    }
 }
-

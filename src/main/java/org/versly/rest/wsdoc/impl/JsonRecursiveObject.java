@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package org.versly.rest.wsdoc;
+package org.versly.rest.wsdoc.impl;
 
 import java.io.Serializable;
 
-public class JsonArray implements JsonType, Serializable {
-    private JsonType elementType;
+public class JsonRecursiveObject implements JsonType, Serializable {
+    private String recursedObjectTypeName;
 
-    public JsonArray(JsonType elementType) {
-        this.elementType = elementType;
+    public JsonRecursiveObject(String recursedObjectTypeName) {
+        this.recursedObjectTypeName = recursedObjectTypeName;
     }
 
-    public JsonType getElementType() {
-        return elementType;
+    public String getRecursedObjectTypeName() {
+        return recursedObjectTypeName;
     }
 }

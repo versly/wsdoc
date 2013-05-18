@@ -14,18 +14,8 @@
  * limitations under the License.
  */
 
-package org.versly.rest.wsdoc;
+package org.versly.rest.wsdoc.impl;
 
-import java.io.Serializable;
-
-public class JsonRecursiveObject implements JsonType, Serializable {
-    private String recursedObjectTypeName;
-
-    public JsonRecursiveObject(String recursedObjectTypeName) {
-        this.recursedObjectTypeName = recursedObjectTypeName;
-    }
-
-    public String getRecursedObjectTypeName() {
-        return recursedObjectTypeName;
-    }
+public interface JsonType {
 }
+

@@ -14,23 +14,18 @@
  * limitations under the License.
  */
 
-package org.versly.rest.wsdoc;
+package org.versly.rest.wsdoc.impl;
 
-public class Utils {
-    static final String SERIALIZED_RESOURCE_LOCATION = "org.versly.rest.wsdoc.web-service-api.ser";
+import java.io.Serializable;
 
-    static String joinPaths(String lhs, String rhs) {
-        // Mike Rawlins 2013-03-15 Don't append slash if right hand side is empty
-        if (rhs == null || rhs.length() == 0) {
-            return lhs;
-        }
+public class JsonArray implements JsonType, Serializable {
+    private JsonType elementType;
 
-        while (lhs.endsWith("/"))
-            lhs = lhs.substring(0, lhs.length() - 1);
+    public JsonArray(JsonType elementType) {
+        this.elementType = elementType;
+    }
 
-        while (rhs.startsWith("/"))
-            rhs = rhs.substring(1);
-
-        return lhs + "/" + rhs;
+    public JsonType getElementType() {
+        return elementType;
     }
 }
