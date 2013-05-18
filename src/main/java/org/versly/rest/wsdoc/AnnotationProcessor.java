@@ -407,9 +407,16 @@ public class AnnotationProcessor extends AbstractProcessor {
         }
 
         private void buildTypeContents(JsonObject o, TypeElement element) {
+            // Spring-MVC and JAX-RS both support methods that return a builder object
+            // that contains the real underlying response payload. These should not be
+            // expressed as response values.
             if ("org.springframework.web.servlet.ModelAndView".equals(element.getQualifiedName().toString())) {
                 return;
             }
+            if ("javax.ws.rs.core.Response".equals(element.getQualifiedName().toString())) {
+                return;
+            }
+
             if (element.getSuperclass().getKind() != TypeKind.NONE) {
                 // an interface's superclass is TypeKind.NONE
 
