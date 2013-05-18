@@ -323,6 +323,10 @@ public class AnnotationProcessor extends AbstractProcessor {
 
         @Override
         public JsonType visitDeclared(DeclaredType declaredType, Void o) {
+
+            if (_typeRecursionDetector.contains(declaredType.toString()))
+                return new JsonRecursiveObject(declaredType.asElement().getSimpleName().toString());
+
             if (isJsonPrimitive(declaredType)) {
                 // 'primitive'-ish things
                 return new JsonPrimitive(declaredType.toString());
