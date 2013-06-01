@@ -16,7 +16,7 @@
 
 package org.versly.rest.wsdoc;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import javax.annotation.processing.AbstractProcessor;
