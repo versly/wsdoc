@@ -119,7 +119,16 @@ public class AnnotationProcessor extends AbstractProcessor {
         for (final String basePath : getClassLevelUrlPaths(cls, implementationSupport)) {
             for (final String requestPath : implementationSupport.getRequestPaths(executableElement, cls)) {
                 final String fullPath = Utils.joinPaths(basePath, requestPath);
-                String meth = implementationSupport.getRequestMethod(executableElement, cls);
+                String meth;
+                try {
+                    meth = implementationSupport.getRequestMethod(executableElement, cls);
+                } catch (IllegalStateException ex) {
+                    // if something is bad with the request method annotations (no PATCH support currently, for example),
+                    // then just warn and continue, so the docs don't break the dev process.
+                    this.processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING,
+                            "error processing element: " + ex.getMessage(), executableElement);
+                    continue;
+                }
 
                 RestDocumentation.Resource.Method doc = _docs.getResourceDocumentation(fullPath).newMethodDocumentation(meth);
                 doc.setCommentText(processingEnv.getElementUtils().getDocComment(executableElement));
