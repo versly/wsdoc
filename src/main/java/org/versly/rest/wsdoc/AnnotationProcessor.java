@@ -150,7 +150,7 @@ public class AnnotationProcessor extends AbstractProcessor {
         scanForSpringMVCMultipart(executableElement, doc);
         buildPathVariables(executableElement, doc, implementationSupport);
         buildUrlParameters(executableElement, doc, implementationSupport);
-        buildRequestBodies(executableElement, doc);
+        buildRequestBodies(executableElement, doc, implementationSupport);
     }
 
     /**
@@ -166,10 +166,11 @@ public class AnnotationProcessor extends AbstractProcessor {
         }
     }
 
-    private void buildRequestBodies(ExecutableElement executableElement, RestDocumentation.Resource.Method doc) {
+    private void buildRequestBodies(ExecutableElement executableElement, RestDocumentation.Resource.Method doc,
+                                    RestImplementationSupport implementationSupport) {
         List<VariableElement> requestBodies = new ArrayList<VariableElement>();
         for (VariableElement var : executableElement.getParameters()) {
-            if (var.getAnnotation(org.springframework.web.bind.annotation.RequestBody.class) != null)
+            if (implementationSupport.isRequestBody(var))
                 requestBodies.add(var);
         }
 
@@ -559,6 +560,8 @@ public class AnnotationProcessor extends AbstractProcessor {
         String getPathVariable(VariableElement var);
 
         String getRequestParam(VariableElement var);
+
+        boolean isRequestBody(VariableElement var);
     }
 
 }

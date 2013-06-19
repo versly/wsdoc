@@ -87,6 +87,12 @@ public class RestDocEndpoint {
         return null;
     }
 
+    @POST
+    @Path("recursiveListRequestBody")
+    public void recursiveListReturn(ValueWithListRecursion body)
+    {
+    }
+
     public class ExcitingReturnValue {
         /**
          * The exciting return value's date!

@@ -58,4 +58,9 @@ public class SpringMVCRestImplementationSupport implements AnnotationProcessor.R
         RequestParam reqParam = var.getAnnotation(RequestParam.class);
         return reqParam == null ? null : reqParam.value();
     }
+
+    @Override
+    public boolean isRequestBody(VariableElement var) {
+        return var.getAnnotation(org.springframework.web.bind.annotation.RequestBody.class) != null;
+    }
 }

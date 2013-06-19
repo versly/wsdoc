@@ -70,4 +70,9 @@ public class JaxRSRestImplementationSupport implements AnnotationProcessor.RestI
         QueryParam param = var.getAnnotation(QueryParam.class);
         return param == null ? null : param.value();
     }
+
+    @Override
+    public boolean isRequestBody(VariableElement var) {
+        return var.getAnnotationMirrors().size() == 0;
+    }
 }

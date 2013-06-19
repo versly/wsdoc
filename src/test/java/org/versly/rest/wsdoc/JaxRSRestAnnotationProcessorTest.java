@@ -33,6 +33,14 @@ public class JaxRSRestAnnotationProcessorTest extends AbstractRestAnnotationProc
         super.setUp();
     }
 
+    @Test
+    public void assertRequestBody() {
+        processResource("PostWithRequestBody.java");
+
+        AssertJUnit.assertTrue("expected two Request Body sections; got: \n" + output,
+            output.split("Request Body").length == 3);
+    }
+
     public static void main(String[] args) throws IOException, URISyntaxException {
         File dir = new File(args[0]);
         for (int i = 1; i < args.length; i++) {
