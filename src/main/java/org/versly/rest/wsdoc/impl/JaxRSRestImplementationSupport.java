@@ -38,7 +38,7 @@ public class JaxRSRestImplementationSupport implements AnnotationProcessor.RestI
 
     @Override
     public String getRequestMethod(ExecutableElement executableElement, TypeElement contextClass) {
-        List<String> methods = new ArrayList<String>();
+        List<String> methods = new ArrayList<>();
 
         gatherMethod(executableElement, methods, GET.class);
         gatherMethod(executableElement, methods, PUT.class);

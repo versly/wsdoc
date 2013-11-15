@@ -21,10 +21,20 @@ import java.util.*;
 
 public class JsonObject implements JsonType, Serializable {
 
-    private List<JsonField> _fields = new ArrayList();
+    private transient Set<String> ignoreProperties = new HashSet<>();
+
+    public void ignoreProperty(String name) {
+        ignoreProperties.add(name);
+    }
+
+    public boolean isIgnoringProperty(String name) {
+        return ignoreProperties.contains(name);
+    }
+
+    private List<JsonField> _fields = new ArrayList<>();
 
     public <T extends JsonType> JsonField addField(String fieldName, T value) {
-        JsonField<T> field = new JsonField(fieldName, value);
+        JsonField<T> field = new JsonField<>(fieldName, value);
         if (_fields.contains(field))
             throw new IllegalStateException("field " + fieldName + " is already defined");
         _fields.add(field);

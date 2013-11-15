@@ -26,7 +26,7 @@ import org.joda.time.DateTime;
 
 public class JsonPrimitive implements JsonType, Serializable {
 
-    private static final Map<String, String> _primitiveTypeNamesByJavaTypeName = new HashMap();
+    private static final Map<String, String> _primitiveTypeNamesByJavaTypeName = new HashMap<>();
 
     static {
         _primitiveTypeNamesByJavaTypeName.put(Object.class.getName(), "object");

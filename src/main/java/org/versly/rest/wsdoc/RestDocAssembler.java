@@ -40,7 +40,7 @@ public class RestDocAssembler {
         Arguments arguments = new Arguments();
         new JCommander(arguments, args);
 
-        List<RestDocumentation> docs = new LinkedList<RestDocumentation>();
+        List<RestDocumentation> docs = new LinkedList<>();
         for (String input : arguments.inputs) {
             File inputFile = new File(input);
             if (inputFile.isDirectory()) {
@@ -60,7 +60,7 @@ public class RestDocAssembler {
         }
 
         if (docs.size() > 0) {
-            List<Pattern> excludePatterns = new ArrayList<Pattern>();
+            List<Pattern> excludePatterns = new ArrayList<>();
             for (String pattern : arguments.excludes)
                 excludePatterns.add(Pattern.compile(pattern));
             new RestDocAssembler(arguments.outputFileName).writeDocumentation(docs, excludePatterns);
@@ -76,7 +76,7 @@ public class RestDocAssembler {
 
         List<RestDocumentation> filteredDocs;
         if (excludePatterns != null) {
-            filteredDocs = new ArrayList<RestDocumentation>();
+            filteredDocs = new ArrayList<>();
             for (RestDocumentation doc : docs)
                 filteredDocs.add(doc.filter(excludePatterns));
         } else {
@@ -89,7 +89,7 @@ public class RestDocAssembler {
         Writer out = null;
         try {
             Template template = conf.getTemplate("RestDocumentation.ftl");
-            Map<String, List<RestDocumentation>> root = new HashMap<String, List<RestDocumentation>>();
+            Map<String, List<RestDocumentation>> root = new HashMap<>();
             root.put("docs", filteredDocs);
             File file = getOutputFile();
             out = new FileWriter(file);
