@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 
 public class RestDocumentation implements Serializable {
 
-    private Map<String, Resource> _resources = new LinkedHashMap();
+    private Map<String, Resource> _resources = new LinkedHashMap<>();
 
     public Collection<Resource> getResources() {
         return _resources.values();
@@ -71,7 +71,7 @@ public class RestDocumentation implements Serializable {
     public class Resource implements Serializable {
 
         private String path;
-        private Collection<Method> _methods = new LinkedList<Method>();
+        private Collection<Method> _methods = new LinkedList<>();
 
         public Resource(String path) {
             this.path = path;
@@ -168,7 +168,7 @@ public class RestDocumentation implements Serializable {
 
             public class UrlFields implements Serializable {
 
-                private Map<String, JsonType> _jsonTypes = new LinkedHashMap();
+                private Map<String, JsonType> _jsonTypes = new LinkedHashMap<>();
 
                 public Map<String, JsonType> getFields() {
                     return _jsonTypes;

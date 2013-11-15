@@ -29,7 +29,7 @@
             div.resource-docs { padding-bottom: 20px; }
 
             div.url-info { padding-bottom: 20px; }
-            div.url-info table { width: 400px; border-spacing: 0px; }
+            div.url-info table { width: 400px; border-spacing: 0; }
             div.url-info thead td { border-bottom: 1px dashed gray; }
             .url-info-key { font-family: monospace; }
             .url-info-expected-type { font-family: monospace; }
@@ -66,7 +66,7 @@
         <#list docs as doc>
             <#list doc.resources as resource>
                 <#list resource.requestMethodDocs as methodDoc>
-                    <a id="${methodDoc.key}"/>
+                    <a id="${methodDoc.key}"></a>
                     <div class="resource">
                         <div class="resource-header">
                                 <span class="method">${methodDoc.requestMethod}</span>

@@ -16,6 +16,7 @@
 
 package org.versly.rest.wsdoc.springmvc;
 
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -32,6 +33,7 @@ public class SnowReportController {
     }
 
 
+    @JsonIgnoreProperties({"mountainName"})
     public interface SnowReport {
         public String getMountainName();
         public double getTemperatureInFahrenheit();
