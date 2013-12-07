@@ -449,6 +449,12 @@ public class AnnotationProcessor extends AbstractProcessor {
             TypeMirror type = executableElement.getReturnType();
             String methodName = executableElement.getSimpleName().toString();
             int trimLength = methodName.startsWith("is") ? 2 : 3;
+
+            // if the name is something trivial like 'get', skip it. See issue #15.
+            if (methodName.length() <= trimLength) {
+                return;
+            }
+
             String beanName = methodName.substring(trimLength + 1, methodName.length());
             beanName = methodName.substring(trimLength, trimLength + 1).toLowerCase() + beanName;
 
