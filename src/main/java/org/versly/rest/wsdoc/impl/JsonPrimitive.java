@@ -56,6 +56,7 @@ public class JsonPrimitive implements JsonType, Serializable {
         _primitiveTypeNamesByJavaTypeName.put(UUID.class.getName(), "uuid");
 
         _primitiveTypeNamesByJavaTypeName.put(Date.class.getName(), "timestamp");
+        _primitiveTypeNamesByJavaTypeName.put(java.util.Calendar.class.getName(), "timestamp");
         _primitiveTypeNamesByJavaTypeName.put(java.sql.Date.class.getName(), "date");
         _primitiveTypeNamesByJavaTypeName.put(java.sql.Time.class.getName(), "time");
         _primitiveTypeNamesByJavaTypeName.put(Timestamp.class.getName(), "timestamp");
