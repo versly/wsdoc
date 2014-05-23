@@ -66,6 +66,7 @@ public class AnnotationProcessor extends AbstractProcessor {
         Collection<String> processedPackageNames = new LinkedHashSet<String>();
         processElements(roundEnvironment, processedPackageNames, new SpringMVCRestImplementationSupport());
         processElements(roundEnvironment, processedPackageNames, new JaxRSRestImplementationSupport());
+        _docs.postProcess();
 
         if (_docs.getResources().size() > 0) {
 
@@ -569,5 +570,4 @@ public class AnnotationProcessor extends AbstractProcessor {
 
         boolean isRequestBody(VariableElement var);
     }
-
 }

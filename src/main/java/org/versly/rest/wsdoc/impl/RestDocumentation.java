@@ -68,10 +68,35 @@ public class RestDocumentation implements Serializable {
         return filtered;
     }
 
+    public void postProcess()
+    {
+        for (Resource visitor: _resources.values())
+        {
+            for (Resource visitee: _resources.values())
+            {
+                if (visitee != visitor && visitee.path.startsWith(visitor.path) &&
+                        (visitee._parent == null || visitee._parent.path.length() < visitor.path.length()))
+                {
+                    if (visitee._parent != null) {
+                        visitee._parent._children.remove(visitee);
+                    }
+                    visitee._parent = visitor;
+                    visitor._children.add(visitee);
+                }
+            }
+        }
+        for (Resource res: _resources.values())
+        {
+
+        }
+    }
+
     public class Resource implements Serializable {
 
         private String path;
         private Collection<Method> _methods = new LinkedList<Method>();
+        private Resource _parent;
+        private Collection<Resource> _children = new LinkedList<Resource>();
 
         public Resource(String path) {
             this.path = path;
@@ -84,6 +109,14 @@ public class RestDocumentation implements Serializable {
         public Collection<Method> getRequestMethodDocs() {
             return _methods;
         }
+
+        public Resource getParent() { return _parent; };
+
+        public String getPathLeaf() {
+            return (_parent != null) ? path.substring(_parent.path.length()) : path;
+        }
+
+        public Collection<Resource> getChildren() { return _children; }
 
         /**
          * Creates and returns a new {@link Method} instance, and adds it to
