@@ -16,6 +16,7 @@
 
 package org.versly.rest.wsdoc.impl;
 
+import javax.lang.model.type.TypeMirror;
 import java.io.*;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -139,6 +140,24 @@ public class RestDocumentation implements Serializable {
             private JsonType _responseBody;
             private String _commentText;
             private boolean _isMultipartRequest;
+            private String _requestSchema;
+            private String _responseSchema;
+
+            public String getResponseSchema() {
+                return _responseSchema;
+            }
+
+            public void setResponseSchema(String _responseSchema) {
+                this._responseSchema = _responseSchema;
+            }
+
+            public String getRequestSchema() {
+                return _requestSchema;
+            }
+
+            public void setRequestSchema(String _requestSchema) {
+                this._requestSchema = _requestSchema;
+            }
 
             public Method(String meth) {
                 this.meth = meth;

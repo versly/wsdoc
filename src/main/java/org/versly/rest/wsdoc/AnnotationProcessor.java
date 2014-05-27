@@ -17,6 +17,10 @@
 package org.versly.rest.wsdoc;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator;
+import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
+import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.versly.rest.wsdoc.impl.*;
 
@@ -186,6 +190,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 
     private void buildRequestBody(VariableElement var, RestDocumentation.Resource.Method doc) {
         doc.setRequestBody(jsonTypeFromTypeMirror(var.asType(), new HashSet<String>()));
+        doc.setRequestSchema(jsonSchemaFromTypeMirror(var.asType()));
     }
 
     private void buildPathVariables(ExecutableElement executableElement, RestDocumentation.Resource.Method doc,
@@ -267,6 +272,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 
     private void buildResponseFormat(TypeMirror type, RestDocumentation.Resource.Method doc) {
         doc.setResponseBody(jsonTypeFromTypeMirror(type, new HashSet<String>()));
+        doc.setResponseSchema(jsonSchemaFromTypeMirror(type));
     }
 
     private String[] getClassLevelUrlPaths(TypeElement cls, RestImplementationSupport implementationSupport) {
@@ -569,5 +575,22 @@ public class AnnotationProcessor extends AbstractProcessor {
         String getRequestParam(VariableElement var);
 
         boolean isRequestBody(VariableElement var);
+    }
+
+    String jsonSchemaFromTypeMirror(TypeMirror type) {
+        String serializedSchema = null;
+        if (!type.getKind().isPrimitive() && type.getKind() != TypeKind.VOID)
+        {
+            try {
+                ObjectMapper m = new ObjectMapper();
+                SchemaFactoryWrapper visitor = new SchemaFactoryWrapper();
+                m.acceptJsonFormatVisitor(m.constructType(Class.forName(type.toString())), visitor);
+                serializedSchema = m.writeValueAsString(visitor.finalSchema());
+            } catch (Exception ex) {
+                this.processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING,
+                        "cannot generate json-schema for class " + type.toString() + ": " + ex.getMessage());
+            }
+        }
+        return serializedSchema;
     }
 }
