@@ -86,10 +86,6 @@ public class RestDocumentation implements Serializable {
                 }
             }
         }
-        for (Resource res: _resources.values())
-        {
-
-        }
     }
 
     public class Resource implements Serializable {
