@@ -25,11 +25,13 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.versly.rest.wsdoc.impl.*;
 
 import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 import javax.lang.model.util.AbstractTypeVisitor6;
+import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
@@ -59,6 +61,13 @@ public class AnnotationProcessor extends AbstractProcessor {
     private boolean _isComplete = false;
     private Map<TypeMirror, JsonType> _memoizedTypeMirrors = new HashMap<TypeMirror, JsonType>();
     private Map<DeclaredType, JsonType> _memoizedDeclaredTypes = new HashMap<DeclaredType, JsonType>();
+    private ProcessingEnvironment _processingEnv;
+
+    @Override
+    public void init(ProcessingEnvironment processingEnv) {
+        super.init(processingEnv);
+        _processingEnv = processingEnv;
+    }
 
     @Override
     public boolean process(Set<? extends TypeElement> supportedAnnotations, RoundEnvironment roundEnvironment) {
@@ -579,18 +588,53 @@ public class AnnotationProcessor extends AbstractProcessor {
 
     String jsonSchemaFromTypeMirror(TypeMirror type) {
         String serializedSchema = null;
-        if (!type.getKind().isPrimitive() && type.getKind() != TypeKind.VOID)
-        {
+
+        if (type.getKind().isPrimitive() || type.getKind() == TypeKind.VOID) {
+            return null;
+        }
+
+        // we need the dto class to generate schema using jackson json-schema module
+        // note: Types.erasure() provides canonical names whereas Class.forName() wants a "regular" name,
+        // so forName will fail for nested and inner classes as "regular" names use $ between parent and child.
+        Class dtoClass = null;
+        StringBuffer erasure = new StringBuffer(_processingEnv.getTypeUtils().erasure(type).toString());
+        for (boolean done = false; !done; ) {
+            try {
+                dtoClass = Class.forName(erasure.toString());
+                done = true;
+            } catch (ClassNotFoundException e) {
+                if (erasure.lastIndexOf(".") != -1) {
+                    erasure.setCharAt(erasure.lastIndexOf("."), '$');
+                }
+                else
+                {
+                    done = true;
+                }
+            }
+        }
+
+        // if we were able to figure out the dto class, use jackson json-schema module to serialize it
+        Exception e = null;
+        if (dtoClass != null) {
             try {
                 ObjectMapper m = new ObjectMapper();
                 SchemaFactoryWrapper visitor = new SchemaFactoryWrapper();
-                m.acceptJsonFormatVisitor(m.constructType(Class.forName(type.toString())), visitor);
+                m.acceptJsonFormatVisitor(m.constructType(dtoClass), visitor);
                 serializedSchema = m.writeValueAsString(visitor.finalSchema());
             } catch (Exception ex) {
-                this.processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING,
-                        "cannot generate json-schema for class " + type.toString() + ": " + ex.getMessage());
+                e = ex;
             }
         }
+
+        // report warning if we were not able to generate schema for non-primitive type
+        if (serializedSchema == null)
+        {
+            System.out.println("failed to serialize erasure: " + erasure);
+            this.processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING,
+                    "cannot generate json-schema for class " + type.toString() + " (erasure " + erasure + "), " +
+                            ((e != null) ? ("exception: " + e.getMessage()) : "class not found"));
+        }
+
         return serializedSchema;
     }
 }

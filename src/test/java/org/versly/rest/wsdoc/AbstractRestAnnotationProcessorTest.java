@@ -8,8 +8,11 @@ import org.versly.rest.wsdoc.impl.Utils;
 
 import javax.tools.*;
 import java.io.*;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -18,6 +21,7 @@ import java.util.regex.Pattern;
 public abstract class AbstractRestAnnotationProcessorTest {
     protected static String output;
     private static File tmpDir;
+    protected static final String[] _outputFormats = { "html", "raml" };
 
     public void setUp() throws IOException, URISyntaxException, ClassNotFoundException, TemplateException {
         File tempFile = File.createTempFile("wsdoc", "tmp");
@@ -25,19 +29,22 @@ public abstract class AbstractRestAnnotationProcessorTest {
         tmpDir = new File(tempFile.getParentFile(), "wsdoc-" + System.currentTimeMillis());
         tmpDir.mkdirs();
         tmpDir.deleteOnExit();
-        processResource("RestDocEndpoint.java");
+        for (String format: _outputFormats) {
+            processResource("RestDocEndpoint.java", format);
+        }
     }
 
-    protected void processResource(String fileName) {
-        processResource(fileName, null, true);
+    protected void processResource(String fileName, String outputFormat) {
+        processResource(fileName, outputFormat, null, true);
     }
 
-    private void processResource(String fileName, Iterable<Pattern> excludes, boolean needsTestPackage) {
+    private void processResource(
+            String fileName, String outputFormat, Iterable<Pattern> excludes, boolean needsTestPackage) {
         try {
             runAnnotationProcessor(tmpDir, fileName, needsTestPackage);
-            String htmlFile = tmpDir + "/" + fileName.replace(".java", ".html");
-            buildOutput(tmpDir, htmlFile, excludes);
-            readOutput(htmlFile);
+            String outputFile = tmpDir + "/" + fileName.replace(".java", "." + outputFormat);
+            buildOutput(tmpDir, outputFile, outputFormat, excludes);
+            readOutput(outputFile);
         } catch (Exception ex) {
             if (ex instanceof RuntimeException)
                 throw (RuntimeException) ex;
@@ -46,16 +53,16 @@ public abstract class AbstractRestAnnotationProcessorTest {
         }
     }
 
-    private static void buildOutput(File buildDir, String htmlFile, Iterable<Pattern> excludes)
+    private static void buildOutput(File buildDir, String outputFile, String outputFormat, Iterable<Pattern> excludes)
         throws ClassNotFoundException, IOException, TemplateException {
 
         InputStream in = new FileInputStream(new File(buildDir, Utils.SERIALIZED_RESOURCE_LOCATION));
 
         // make the parent dirs in case htmlFile is nested
-        new File(htmlFile).getParentFile().mkdirs();
+        new File(outputFile).getParentFile().mkdirs();
 
-        new RestDocAssembler(htmlFile).writeDocumentation(
-            Collections.singletonList(RestDocumentation.fromStream(in)), excludes);
+        new RestDocAssembler(outputFile).writeDocumentation(
+                Collections.singletonList(RestDocumentation.fromStream(in)), excludes);
     }
 
     private static void readOutput(String htmlFile) throws IOException {
@@ -101,73 +108,93 @@ public abstract class AbstractRestAnnotationProcessorTest {
 
     @Test
     public void assertJavaDocComments() {
-        processResource("RestDocEndpoint.java");
-        AssertJUnit.assertTrue(
-                "expected 'JavaDoc comment' in doc string; got: \n" + output,
-                output.contains("JavaDoc comment"));
+        for (String format: _outputFormats) {
+            processResource("RestDocEndpoint.java", format);
+            AssertJUnit.assertTrue(
+                    "expected 'JavaDoc comment' in doc string; got: \n" + output,
+                    output.contains("JavaDoc comment"));
+        }
     }
 
     @Test
     public void assertReturnValueComments() {
-        processResource("RestDocEndpoint.java");
-        AssertJUnit.assertTrue("expected \"exciting return value's date\" in doc string; got: \n" + output,
-            output.contains("exciting return value's date"));
+        for (String format: _outputFormats) {
+            processResource("RestDocEndpoint.java", format);
+            AssertJUnit.assertTrue("expected \"exciting return value's date\" in doc string; got: \n" + output,
+                    output.contains("exciting return value's date"));
+        }
     }
 
     @Test
     public void assertPathVariableWithOverriddenName() {
-        processResource("RestDocEndpoint.java");
-        AssertJUnit.assertTrue("expected \"dateParam\" in doc string; got: \n" + output,
-            output.contains("dateParam"));
+        for (String format: _outputFormats) {
+            processResource("RestDocEndpoint.java", format);
+            AssertJUnit.assertTrue("expected \"dateParam\" in doc string; got: \n" + output,
+                    output.contains("dateParam"));
+        }
     }
 
     @Test
     public void assertParams() {
-        processResource("RestDocEndpoint.java");
-        AssertJUnit.assertTrue("expected param0 and param1 in docs; got: \n" + output,
-            output.contains(">param0<") && output.contains(">param1<"));
+        for (String format: _outputFormats) {
+            processResource("RestDocEndpoint.java", format);
+            AssertJUnit.assertTrue("expected param0 and param1 in docs; got: \n" + output,
+                    output.contains(">param0<") && output.contains(">param1<"));
+        }
     }
 
     @Test
     public void assertOverriddenPaths() {
-        processResource("RestDocEndpoint.java");
-        AssertJUnit.assertTrue("expected multiple voidreturn sections; got: \n" + output,
-            output.indexOf("<a id=\"/mount/voidreturn") != output.lastIndexOf("<a id=\"/mount/voidreturn"));
+        for (String format: _outputFormats) {
+            processResource("RestDocEndpoint.java", format);
+            AssertJUnit.assertTrue("expected multiple voidreturn sections; got: \n" + output,
+                    output.indexOf("<a id=\"/mount/voidreturn") != output.lastIndexOf("<a id=\"/mount/voidreturn"));
+        }
     }
 
     @Test
     public void assertUuidIsNotTraversedInto() {
-        processResource("RestDocEndpoint.java");
-        AssertJUnit.assertFalse(
-                "leastSignificantBits field (member field of UUID class) should not be in output",
-                output.contains("leastSignificantBits"));
-        AssertJUnit.assertTrue("expected uuid type somewhere in doc",
-            output.contains("json-primitive-type\">uuid<"));
+        for (String format: _outputFormats) {
+            processResource("RestDocEndpoint.java", format);
+            AssertJUnit.assertFalse(
+                    "leastSignificantBits field (member field of UUID class) should not be in output",
+                    output.contains("leastSignificantBits"));
+            AssertJUnit.assertTrue("expected uuid type somewhere in doc",
+                    output.contains("json-primitive-type\">uuid<"));
+        }
     }
 
     @Test
     public void generateExample() {
-        processResource("SnowReportController.java");
+        for (String format: _outputFormats) {
+            processResource("SnowReportController.java", format);
+        }
     }
 
     @Test
     public void nonRecursiveTypeWithMultipleUsesDoesNotHaveRecursionCircles() {
-        processResource("NonRecursiveMultiUse.java");
-        AssertJUnit.assertFalse("should not contain the recursion symbol",
-                output.contains("&#x21ba;"));
+        for (String format: _outputFormats) {
+            processResource("NonRecursiveMultiUse.java", format);
+            AssertJUnit.assertFalse("should not contain the recursion symbol",
+                    output.contains("&#x21ba;"));
+        }
     }
 
     @Test
     public void excludePatterns() {
-        processResource("SnowReportController.java",
-                Arrays.asList(Pattern.compile("foo"), Pattern.compile(".*snow-report.*")), true);
-        AssertJUnit.assertFalse("should not contain the snow-report endpoint",
-            output.contains("snow-report"));
+        for (String format: _outputFormats) {
+            processResource("SnowReportController.java", format,
+                    Arrays.asList(Pattern.compile("foo"), Pattern.compile(".*snow-report.*")), true);
+            AssertJUnit.assertFalse("should not contain the snow-report endpoint",
+                    output.contains("snow-report"));
+        }
     }
 
     @Test
     public void genericTypeResolution() throws IOException, URISyntaxException {
-        processResource("RestDocEndpoint.java");
+        for (String format: _outputFormats) {
+            processResource("RestDocEndpoint.java", format);
+        }
     }
 
     protected abstract String getPackageToTest();
