@@ -16,6 +16,8 @@
 
 package org.versly.rest.wsdoc.impl;
 
+import org.apache.commons.lang3.StringUtils;
+
 import javax.lang.model.type.TypeMirror;
 import java.io.*;
 import java.util.*;
@@ -189,6 +191,14 @@ public class RestDocumentation implements Serializable {
 
             public String getCommentText() {
                 return _commentText;
+            }
+
+            public String getIndentedCommentText(int indent) {
+                if (_commentText != null) {
+                    String whitespace = StringUtils.leftPad("", indent);
+                    return whitespace + _commentText.split("\n @")[0].replaceAll("\n", "\n" + whitespace);
+                }
+                return null;
             }
 
             public void setCommentText(String text) {

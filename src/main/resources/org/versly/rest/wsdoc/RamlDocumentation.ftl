@@ -46,7 +46,7 @@ mediaType: application/json
 <#macro write_method methodDoc depth>
 <#list 1..depth as i> </#list>${methodDoc.requestMethod?lower_case}:
 <#if methodDoc.commentText??>
-<@write_description description=methodDoc.commentText depth=depth+4/>
+<@write_description methodDoc=methodDoc depth=depth+4/>
 </#if>
 
 <@write_parameters methodDoc=methodDoc depth=depth+4/>
@@ -62,8 +62,9 @@ mediaType: application/json
 <#--
   -- write out method description
   -->
-<#macro write_description description depth>
-<#list 1..depth as i> </#list>description: ${description?trim}
+<#macro write_description methodDoc depth>
+<#list 1..depth as i> </#list>description: |
+${methodDoc.indentedCommentText(depth+4)}
 </#macro>
 
 
