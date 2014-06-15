@@ -241,6 +241,9 @@ public class AnnotationProcessor extends AbstractProcessor {
             int startIndex = methodJavaDoc.indexOf(token);
             if (startIndex != -1) {
                 int endIndex = methodJavaDoc.indexOf("@param", startIndex + 1);
+                if (endIndex == -1) {
+                    endIndex = methodJavaDoc.indexOf("@return", startIndex + 1);
+                }
                 if (endIndex != -1) {
                     desc = methodJavaDoc.substring(startIndex + token.length(), endIndex);
                 } else {

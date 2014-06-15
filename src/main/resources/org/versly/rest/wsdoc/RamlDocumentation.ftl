@@ -99,14 +99,15 @@ ${methodDoc.indentedCommentText(depth+4)}
   -->
 <#macro write_parameter_info field depth>
 <#if field.fieldDescription??>
-<#list 1..depth as i> </#list>description: ${field.fieldDescription}
+<#list 1..depth as i> </#list>description: |
+<#list 1..depth as i> </#list>    ${field.fieldDescription}
 </#if>
 <#if field.fieldType.class.name == "org.versly.rest.wsdoc.impl.JsonPrimitive">
-<#list 1..depth as i> </#list>type: <@write_raml_type field.fieldType.typeName/><#t>
+<#list 1..depth as i> </#list>type: <@write_raml_type field.fieldType.typeName/>
 <#if field.fieldType.restrictions??><#t>
 one of [ <#list field.fieldType.restrictions as restricton>${restricton}<#if restricton_has_next>, </#if></#list> ]</#if>
 <#else>
-<#list 1..depth as i> </#list>type: string<#t>
+<#list 1..depth as i> </#list>type: string
 </#if>
 </#macro>
 
