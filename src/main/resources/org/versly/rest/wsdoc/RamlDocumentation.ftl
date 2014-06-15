@@ -16,10 +16,11 @@ mediaType: application/json
 
 
 <#--
-  -- write out a RAML resource
+  -- write out a RAML resource path.
+  -- Note, we strip off regex expressions because RAML requires the path to be a valid URI template.
   -->
 <#macro write_resource resource depth>
-<#if (depth > 0)><#list 1..depth as i> </#list></#if>${resource.pathLeaf}:
+<#if (depth > 0)><#list 1..depth as i> </#list></#if>${resource.pathLeaf?replace(":.*}", "}", "r")}:
 <@write_resource_parts resource=resource depth=depth+4/>
 
 </#macro>
@@ -89,20 +90,23 @@ ${methodDoc.indentedCommentText(depth+4)}
   -->
 <#macro write_parameter fields key depth>
 <#list 1..depth as i> </#list>${key}:
-<@write_parameter_type type=fields[key] depth=depth+4/>
+<@write_parameter_info field=fields[key] depth=depth+4/>
 </#macro>
 
 
 <#--
   -- write out a single url parameter type
   -->
-<#macro write_parameter_type type depth>
-<#if type.class.name == "org.versly.rest.wsdoc.impl.JsonPrimitive">
-<#list 1..depth as i> </#list>type: ${type.typeName}<#t>
-<#if type.restrictions??><#t>
-one of [ <#list type.restrictions as restricton>${restricton}<#if restricton_has_next>, </#if></#list> ]</#if>
+<#macro write_parameter_info field depth>
+<#if field.fieldDescription??>
+<#list 1..depth as i> </#list>description: ${field.fieldDescription}
+</#if>
+<#if field.fieldType.class.name == "org.versly.rest.wsdoc.impl.JsonPrimitive">
+<#list 1..depth as i> </#list>type: <@write_raml_type field.fieldType.typeName/><#t>
+<#if field.fieldType.restrictions??><#t>
+one of [ <#list field.fieldType.restrictions as restricton>${restricton}<#if restricton_has_next>, </#if></#list> ]</#if>
 <#else>
-<#list 1..depth as i> </#list>type: string
+<#list 1..depth as i> </#list>type: string<#t>
 </#if>
 </#macro>
 
@@ -154,4 +158,14 @@ one of [ <#list type.restrictions as restricton>${restricton}<#if restricton_has
 </#macro>
 
 
-
+<#--
+  -- RAML has a limited set of types for URI template parameters
+  -->
+<#macro write_raml_type type>
+<#if type == "float" || type == "double">number
+<#elseif type == "integer" || type == "long" || type == "short" || type == "byte" >integer
+<#elseif type == "date" || type == "timestamp" || type == "time">date
+<#elseif type == "boolean">boolean
+<#else>string
+</#if>
+</#macro>

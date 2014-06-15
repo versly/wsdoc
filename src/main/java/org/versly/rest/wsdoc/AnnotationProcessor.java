@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator;
 import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
 import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.versly.rest.wsdoc.impl.*;
 
@@ -209,14 +210,15 @@ public class AnnotationProcessor extends AbstractProcessor {
         for (VariableElement var : executableElement.getParameters()) {
             String pathVariable = implementationSupport.getPathVariable(var);
             if (pathVariable != null) {
-                addUrlField(subs, var, pathVariable);
+                addUrlField(subs, var, pathVariable, findParamDescription(pathVariable, doc.getCommentText()));
             }
         }
     }
 
-    private void addUrlField(RestDocumentation.Resource.Method.UrlFields subs, VariableElement var, String annoValue) {
+    private void addUrlField(RestDocumentation.Resource.Method.UrlFields subs, VariableElement var, String annoValue,
+            String description) {
         String name = (annoValue == null || annoValue.isEmpty()) ? var.getSimpleName().toString() : annoValue;
-        subs.addField(name, jsonTypeFromTypeMirror(var.asType(), new HashSet<String>()));
+        subs.addField(name, jsonTypeFromTypeMirror(var.asType(), new HashSet<String>()), description);
     }
 
     private void buildUrlParameters(ExecutableElement executableElement, RestDocumentation.Resource.Method doc,
@@ -226,9 +228,29 @@ public class AnnotationProcessor extends AbstractProcessor {
         for (VariableElement var : executableElement.getParameters()) {
             String reqParam = implementationSupport.getRequestParam(var);
             if (reqParam != null) {
-                addUrlField(subs, var, reqParam);
+                addUrlField(subs, var, reqParam, findParamDescription(reqParam, doc.getCommentText()));
             }
         }
+    }
+
+    String findParamDescription(String paramName, String methodJavaDoc)
+    {
+        String desc = null;
+        if (methodJavaDoc != null) {
+            String token = "@param " + paramName;
+            int startIndex = methodJavaDoc.indexOf(token);
+            if (startIndex != -1) {
+                int endIndex = methodJavaDoc.indexOf("@param", startIndex + 1);
+                if (endIndex != -1) {
+                    desc = methodJavaDoc.substring(startIndex + token.length(), endIndex);
+                } else {
+                    desc = methodJavaDoc.substring(startIndex + token.length());
+                }
+                desc = StringUtils.strip(desc.replace("\n", " ").replace("\r", " ").replaceAll(" {2,}", " "));
+            }
+        }
+
+        return desc;
     }
 
     private JsonType jsonTypeFromTypeMirror(TypeMirror typeMirror, Collection<String> typeRecursionGuard) {

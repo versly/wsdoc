@@ -226,14 +226,41 @@ public class RestDocumentation implements Serializable {
 
             public class UrlFields implements Serializable {
 
-                private Map<String, JsonType> _jsonTypes = new LinkedHashMap();
+                private Map<String, UrlField> _jsonFields = new LinkedHashMap();
 
-                public Map<String, JsonType> getFields() {
-                    return _jsonTypes;
+                public class UrlField implements Serializable {
+
+                    private JsonType fieldType;
+                    private String fieldDescription;
+
+                    public UrlField(JsonType type, String desc) {
+                        fieldType = type;
+                        fieldDescription = desc;
+                    }
+
+                    public JsonType getFieldType() {
+                        return fieldType;
+                    }
+
+                    public void setFieldType(JsonType fieldType) {
+                        this.fieldType = fieldType;
+                    }
+
+                    public String getFieldDescription() {
+                        return fieldDescription;
+                    }
+
+                    public void setFieldDescription(String fieldDescription) {
+                        this.fieldDescription = fieldDescription;
+                    }
                 }
 
-                public void addField(String name, JsonType jsonType) {
-                    _jsonTypes.put(name, jsonType);
+                public Map<String, UrlField> getFields() {
+                    return _jsonFields;
+                }
+
+                public void addField(String name, JsonType jsonType, String description) {
+                    _jsonFields.put(name, new UrlField(jsonType, description));
                 }
             }
         }
