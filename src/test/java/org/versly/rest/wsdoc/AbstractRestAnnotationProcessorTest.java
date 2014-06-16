@@ -8,11 +8,8 @@ import org.versly.rest.wsdoc.impl.Utils;
 
 import javax.tools.*;
 import java.io.*;
-import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -61,7 +58,7 @@ public abstract class AbstractRestAnnotationProcessorTest {
         // make the parent dirs in case htmlFile is nested
         new File(outputFile).getParentFile().mkdirs();
 
-        new RestDocAssembler(outputFile).writeDocumentation(
+        new RestDocAssembler(outputFile, outputFormat).writeDocumentation(
                 Collections.singletonList(RestDocumentation.fromStream(in)), excludes);
     }
 
@@ -118,11 +115,9 @@ public abstract class AbstractRestAnnotationProcessorTest {
 
     @Test
     public void assertReturnValueComments() {
-        for (String format: _outputFormats) {
-            processResource("RestDocEndpoint.java", format);
-            AssertJUnit.assertTrue("expected \"exciting return value's date\" in doc string; got: \n" + output,
-                    output.contains("exciting return value's date"));
-        }
+        processResource("RestDocEndpoint.java", "html");
+        AssertJUnit.assertTrue("expected \"exciting return value's date\" in doc string; got: \n" + output,
+                output.contains("exciting return value's date"));
     }
 
     @Test
@@ -136,32 +131,26 @@ public abstract class AbstractRestAnnotationProcessorTest {
 
     @Test
     public void assertParams() {
-        for (String format: _outputFormats) {
-            processResource("RestDocEndpoint.java", format);
-            AssertJUnit.assertTrue("expected param0 and param1 in docs; got: \n" + output,
-                    output.contains(">param0<") && output.contains(">param1<"));
-        }
+        processResource("RestDocEndpoint.java", "html");
+        AssertJUnit.assertTrue("expected param0 and param1 in docs; got: \n" + output,
+                output.contains(">param0<") && output.contains(">param1<"));
     }
 
     @Test
     public void assertOverriddenPaths() {
-        for (String format: _outputFormats) {
-            processResource("RestDocEndpoint.java", format);
-            AssertJUnit.assertTrue("expected multiple voidreturn sections; got: \n" + output,
-                    output.indexOf("<a id=\"/mount/voidreturn") != output.lastIndexOf("<a id=\"/mount/voidreturn"));
-        }
+        processResource("RestDocEndpoint.java", "html");
+        AssertJUnit.assertTrue("expected multiple voidreturn sections; got: \n" + output,
+                output.indexOf("<a id=\"/mount/voidreturn") != output.lastIndexOf("<a id=\"/mount/voidreturn"));
     }
 
     @Test
     public void assertUuidIsNotTraversedInto() {
-        for (String format: _outputFormats) {
-            processResource("RestDocEndpoint.java", format);
-            AssertJUnit.assertFalse(
-                    "leastSignificantBits field (member field of UUID class) should not be in output",
-                    output.contains("leastSignificantBits"));
-            AssertJUnit.assertTrue("expected uuid type somewhere in doc",
-                    output.contains("json-primitive-type\">uuid<"));
-        }
+        processResource("RestDocEndpoint.java", "html");
+        AssertJUnit.assertFalse(
+                "leastSignificantBits field (member field of UUID class) should not be in output",
+                output.contains("leastSignificantBits"));
+        AssertJUnit.assertTrue("expected uuid type somewhere in doc",
+                output.contains("json-primitive-type\">uuid<"));
     }
 
     @Test

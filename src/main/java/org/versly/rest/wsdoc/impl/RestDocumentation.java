@@ -77,7 +77,7 @@ public class RestDocumentation implements Serializable {
         {
             for (Resource visitee: _resources.values())
             {
-                if (visitee != visitor && visitee.path.startsWith(visitor.path) &&
+                if (visitee != visitor && visitee.path.startsWith(visitor.path + "/") &&
                         (visitee._parent == null || visitee._parent.path.length() < visitor.path.length()))
                 {
                     if (visitee._parent != null) {

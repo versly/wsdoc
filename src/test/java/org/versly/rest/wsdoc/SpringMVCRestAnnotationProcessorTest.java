@@ -40,40 +40,32 @@ public class SpringMVCRestAnnotationProcessorTest extends AbstractRestAnnotation
 
     @Test
     public void assertMultipart() {
-        for (String format: _outputFormats) {
-            processResource("RestDocEndpoint.java", format);
-            AssertJUnit.assertTrue("expected multipart info docs; got: \n" + output,
-                    output.contains("Note: this endpoint expects a multipart"));
-        }
+        processResource("RestDocEndpoint.java", "html");
+        AssertJUnit.assertTrue("expected multipart info docs; got: \n" + output,
+                output.contains("Note: this endpoint expects a multipart"));
     }
 
     @Test
     public void processControllerThatReturnsDomainObjectWithGenericParentsExpectsSuccess() {
-        for (String format: _outputFormats) {
-            processResource("genericdomain/ChildController.java", format);
-            AssertJUnit.assertTrue("expected firstGrandparentField and secondGrandparentField in docs; got: \n" + output,
-                    output.contains(">firstGrandparentField<") && output.contains(">secondGrandparentField<")
-                            && output.contains(">parentField<") && output.contains(">childField<")
-            );
-        }
+        processResource("genericdomain/ChildController.java", "html");
+        AssertJUnit.assertTrue("expected firstGrandparentField and secondGrandparentField in docs; got: \n" + output,
+                output.contains(">firstGrandparentField<") && output.contains(">secondGrandparentField<")
+                        && output.contains(">parentField<") && output.contains(">childField<")
+        );
     }
 
     @Test
     public void processControllerThatReturnsGenericDomainObjectExpectsSuccess() {
-        for (String format: _outputFormats) {
-            processResource("genericdomain/ParentController.java", format);
-            AssertJUnit.assertTrue("expected parentField in docs; got: \n" + output,
-                    output.contains(">parentField<"));
-        }
+        processResource("genericdomain/ParentController.java", "html");
+        AssertJUnit.assertTrue("expected parentField in docs; got: \n" + output,
+                output.contains(">parentField<"));
     }
 
     @Test
     public void multipleBindingsForOneEndpoint() {
-        for (String format: _outputFormats) {
-            processResource("RestDocEndpoint.java", format);
-            AssertJUnit.assertTrue("expected multiple-bindings-a and multiple-bindings-b in docs; got: \n" + output,
-                    output.contains("multiple-bindings-a<") && output.contains("multiple-bindings-b<"));
-        }
+        processResource("RestDocEndpoint.java", "html");
+        AssertJUnit.assertTrue("expected multiple-bindings-a and multiple-bindings-b in docs; got: \n" + output,
+                output.contains("multiple-bindings-a<") && output.contains("multiple-bindings-b<"));
     }
 
     public static void main(String[] args) throws IOException, URISyntaxException {
