@@ -71,6 +71,10 @@ public class RestDocumentation implements Serializable {
         return filtered;
     }
 
+    /**
+     * This inspects the method paths and establishes parent/child relationships.  This helps in particular
+     * with generating RAML documentation, as RAML represents endpoints hierarchically.
+     */
     public void postProcess()
     {
         for (Resource visitor: _resources.values())

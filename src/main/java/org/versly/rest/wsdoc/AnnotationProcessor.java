@@ -654,7 +654,6 @@ public class AnnotationProcessor extends AbstractProcessor {
         // report warning if we were not able to generate schema for non-primitive type
         if (serializedSchema == null)
         {
-            System.out.println("failed to serialize erasure: " + erasure);
             this.processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING,
                     "cannot generate json-schema for class " + type.toString() + " (erasure " + erasure + "), " +
                             ((e != null) ? ("exception: " + e.getMessage()) : "class not found"));
