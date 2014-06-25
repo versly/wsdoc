@@ -48,7 +48,7 @@
             <version>1.4</version>
         </dependency>
 
-        <!-- ISO 8601 date support fo dates -->
+        <!-- ISO 8601 date support for dates -->
         <dependency>
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
