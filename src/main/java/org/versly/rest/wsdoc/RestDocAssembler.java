@@ -34,6 +34,7 @@ import java.util.zip.ZipEntry;
 
 public class RestDocAssembler {
     private final String _outputFileName;
+    private final String _outputTemplate;
 
     public static void main(String... args)
         throws IOException, ClassNotFoundException, TemplateException {
@@ -63,12 +64,26 @@ public class RestDocAssembler {
             List<Pattern> excludePatterns = new ArrayList<Pattern>();
             for (String pattern : arguments.excludes)
                 excludePatterns.add(Pattern.compile(pattern));
-            new RestDocAssembler(arguments.outputFileName).writeDocumentation(docs, excludePatterns);
+            new RestDocAssembler(arguments.outputFileName, arguments.outputFormat)
+                    .writeDocumentation(docs, excludePatterns);
+        }
+    }
+
+    public RestDocAssembler(String outputFileName, String outputFormat) {
+
+        _outputFileName = outputFileName;
+        if (outputFormat.equalsIgnoreCase("raml"))
+        {
+            _outputTemplate = "RamlDocumentation.ftl";
+        }
+        else
+        {
+            _outputTemplate = "RestDocumentation.ftl";
         }
     }
 
     public RestDocAssembler(String outputFileName) {
-        _outputFileName = outputFileName;
+        this(outputFileName, "html");
     }
 
     void writeDocumentation(List<RestDocumentation> docs, Iterable<Pattern> excludePatterns)
@@ -88,7 +103,7 @@ public class RestDocAssembler {
         conf.setObjectWrapper(new DefaultObjectWrapper());
         Writer out = null;
         try {
-            Template template = conf.getTemplate("RestDocumentation.ftl");
+            Template template = conf.getTemplate(_outputTemplate);
             Map<String, List<RestDocumentation>> root = new HashMap<String, List<RestDocumentation>>();
             root.put("docs", filteredDocs);
             File file = getOutputFile();
@@ -120,5 +135,8 @@ public class RestDocAssembler {
 
         @Parameter(names = { "--exclude" }, description = "Endpoint pattern to exclude from the generated docs")
         List<String> excludes = Lists.newArrayList();
+
+        @Parameter(names = { "-f", "--format" }, description = "Format for output: html or raml")
+        String outputFormat = "html";
     }
 }

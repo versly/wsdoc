@@ -31,6 +31,10 @@ public class Utils {
         while (rhs.startsWith("/"))
             rhs = rhs.substring(1);
 
+        // By default JAX-RS and Spring URI template matching ignore the presence of trailing slashes.
+        while (rhs.endsWith("/"))
+            rhs = rhs.substring(0, rhs.length() - 1);
+
         return lhs + "/" + rhs;
     }
 }
