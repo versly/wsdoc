@@ -14,25 +14,18 @@
  * limitations under the License.
  */
 
-package org.versly.rest.wsdoc;
+package org.versly.rest.wsdoc.impl;
 
 import java.io.Serializable;
 
-public class JsonDict implements JsonType, Serializable {
+public class JsonArray implements JsonType, Serializable {
+    private JsonType elementType;
 
-    private JsonType keyType;
-    private JsonType valType;
-
-    public JsonDict(JsonType keyType, JsonType valType) {
-        this.keyType = keyType;
-        this.valType = valType;
+    public JsonArray(JsonType elementType) {
+        this.elementType = elementType;
     }
 
-    public JsonType getKeyType() {
-        return keyType;
-    }
-
-    public JsonType getValueType() {
-        return valType;
+    public JsonType getElementType() {
+        return elementType;
     }
 }

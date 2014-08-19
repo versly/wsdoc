@@ -14,7 +14,7 @@
  ~ limitations under the License.
 -->
 
-<#-- @ftlvariable name="docs" type="java.util.List<org.versly.rest.wsdoc.RestDocumentation>" -->
+<#-- @ftlvariable name="docs" type="java.util.List<org.versly.rest.wsdoc.impl.RestDocumentation>" -->
 
 <html>
     <head>
@@ -150,28 +150,28 @@
 </html>
 
 <#macro render_json json>
-    <#if json.class.name == "org.versly.rest.wsdoc.JsonPrimitive">
+    <#if json.class.name == "org.versly.rest.wsdoc.impl.JsonPrimitive">
         <@render_json_primitive json/>
-    <#elseif json.class.name == "org.versly.rest.wsdoc.JsonObject">
+    <#elseif json.class.name == "org.versly.rest.wsdoc.impl.JsonObject">
         <@render_json_object json/>
-    <#elseif json.class.name == "org.versly.rest.wsdoc.JsonRecursiveObject">
+    <#elseif json.class.name == "org.versly.rest.wsdoc.impl.JsonRecursiveObject">
         <@render_json_recursive_object json/>
-    <#elseif json.class.name == "org.versly.rest.wsdoc.JsonArray">
+    <#elseif json.class.name == "org.versly.rest.wsdoc.impl.JsonArray">
         <@render_json_array json/>
-    <#elseif json.class.name == "org.versly.rest.wsdoc.JsonDict">
+    <#elseif json.class.name == "org.versly.rest.wsdoc.impl.JsonDict">
         <@render_json_dict json/>
     </#if>
 </#macro>
 
 <#macro render_json_array json>
-<#-- @ftlvariable name="json" type="org.versly.rest.wsdoc.JsonArray" -->
+<#-- @ftlvariable name="json" type="org.versly.rest.wsdoc.impl.JsonArray" -->
     <span class="json-array">[
         <@render_json json.elementType />
     ]</span>
 </#macro>
 
 <#macro render_json_dict json>
-<#-- @ftlvariable name="json" type="org.versly.rest.wsdoc.JsonDict" -->
+<#-- @ftlvariable name="json" type="org.versly.rest.wsdoc.impl.JsonDict" -->
     <span class="json-dict">[
         <@render_json json.keyType/>
         -&gt;
@@ -180,7 +180,7 @@
 </#macro>
 
 <#macro render_json_primitive json>
-<#-- @ftlvariable name="json" type="org.versly.rest.wsdoc.JsonPrimitive" -->
+<#-- @ftlvariable name="json" type="org.versly.rest.wsdoc.impl.JsonPrimitive" -->
     <span class="json-primitive-type">${json.typeName}</span><#t>
     <#if json.restrictions??><#t>
         <div class="json-primitive-restrictions"><#t>
@@ -191,7 +191,7 @@
 </#macro>
 
 <#macro render_json_object json>
-<#-- @ftlvariable name="json" type="org.versly.rest.wsdoc.JsonObject" -->
+<#-- @ftlvariable name="json" type="org.versly.rest.wsdoc.impl.JsonObject" -->
     <span class="json-object">{
     <div class="json-fields">
         <#list json.fields as field>
@@ -209,6 +209,6 @@
 </#macro>
 
 <#macro render_json_recursive_object json>
-<#-- @ftlvariable name="json" type="org.versly.rest.wsdoc.JsonRecursiveObject" -->
+<#-- @ftlvariable name="json" type="org.versly.rest.wsdoc.impl.JsonRecursiveObject" -->
     <span class="json-primitive-type">${json.recursedObjectTypeName} &#x21ba;</span>
 </#macro>

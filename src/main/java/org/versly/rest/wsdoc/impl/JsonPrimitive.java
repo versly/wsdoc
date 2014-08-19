@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package org.versly.rest.wsdoc;
+package org.versly.rest.wsdoc.impl;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.URI;
 import java.net.URL;
 import java.sql.Timestamp;
 import java.util.Date;
@@ -49,9 +50,9 @@ public class JsonPrimitive implements JsonType, Serializable {
         _primitiveTypeNamesByJavaTypeName.put(BigDecimal.class.getName(), "double");
         _primitiveTypeNamesByJavaTypeName.put(float.class.getName(), "float");
         _primitiveTypeNamesByJavaTypeName.put(Float.class.getName(), "float");
-        _primitiveTypeNamesByJavaTypeName.put(int.class.getName(), "int");
-        _primitiveTypeNamesByJavaTypeName.put(Integer.class.getName(), "int");
-        _primitiveTypeNamesByJavaTypeName.put(BigInteger.class.getName(), "int");
+        _primitiveTypeNamesByJavaTypeName.put(int.class.getName(), "integer");
+        _primitiveTypeNamesByJavaTypeName.put(Integer.class.getName(), "integer");
+        _primitiveTypeNamesByJavaTypeName.put(BigInteger.class.getName(), "integer");
         _primitiveTypeNamesByJavaTypeName.put(long.class.getName(), "long");
         _primitiveTypeNamesByJavaTypeName.put(Long.class.getName(), "long");
         _primitiveTypeNamesByJavaTypeName.put(short.class.getName(), "short");
@@ -60,6 +61,7 @@ public class JsonPrimitive implements JsonType, Serializable {
         _primitiveTypeNamesByJavaTypeName.put(Void.class.getName(), "void");
 
         _primitiveTypeNamesByJavaTypeName.put(URL.class.getName(), "url");
+        _primitiveTypeNamesByJavaTypeName.put(URI.class.getName(), "url");
         _primitiveTypeNamesByJavaTypeName.put(UUID.class.getName(), "uuid");
 
         _primitiveTypeNamesByJavaTypeName.put(Date.class.getName(), "timestamp");

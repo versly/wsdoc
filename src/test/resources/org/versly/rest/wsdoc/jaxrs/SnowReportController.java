@@ -14,20 +14,21 @@
  * limitations under the License.
  */
 
-package org.versly.rest.wsdoc;
+package org.versly.rest.wsdoc.jaxrs;
 
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 
 public class SnowReportController {
 
     /**
      * Retrieves the current snow report for the specified mountain.
      */
-    @RequestMapping(value = "/snow-report/{mountainId}", method = RequestMethod.GET)
+    @GET
+    @Path("/snow-report/{mountainId}")
     public SnowReport getReportForMountain(
-            @PathVariable("mountainId") String mountainId) {
+            @PathParam("mountainId") String mountainId) {
         return null;
     }
 

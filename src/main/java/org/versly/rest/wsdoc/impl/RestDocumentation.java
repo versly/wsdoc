@@ -14,8 +14,13 @@
  * limitations under the License.
  */
 
-package org.versly.rest.wsdoc;
+package org.versly.rest.wsdoc.impl;
 
+import org.apache.commons.lang3.StringUtils;
+
+import javax.lang.model.type.TypeMirror;
+import java.io.*;
+import java.util.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -78,10 +83,35 @@ public class RestDocumentation implements Serializable {
         return filtered;
     }
 
+    /**
+     * This inspects the method paths and establishes parent/child relationships.  This helps in particular
+     * with generating RAML documentation, as RAML represents endpoints hierarchically.
+     */
+    public void postProcess()
+    {
+        for (Resource visitor: _resources.values())
+        {
+            for (Resource visitee: _resources.values())
+            {
+                if (visitee != visitor && visitee.path.startsWith(visitor.path + "/") &&
+                        (visitee._parent == null || visitee._parent.path.length() < visitor.path.length()))
+                {
+                    if (visitee._parent != null) {
+                        visitee._parent._children.remove(visitee);
+                    }
+                    visitee._parent = visitor;
+                    visitor._children.add(visitee);
+                }
+            }
+        }
+    }
+
     public class Resource implements Serializable {
 
         private String path;
         private Collection<Method> _methods = new LinkedList<Method>();
+        private Resource _parent;
+        private Collection<Resource> _children = new LinkedList<Resource>();
 
         public Resource(String path) {
             this.path = path;
@@ -95,13 +125,21 @@ public class RestDocumentation implements Serializable {
             return _methods;
         }
 
+        public Resource getParent() { return _parent; };
+
+        public String getPathLeaf() {
+            return (_parent != null) ? path.substring(_parent.path.length()) : path;
+        }
+
+        public Collection<Resource> getChildren() { return _children; }
+
         /**
          * Creates and returns a new {@link Method} instance, and adds it to
          * the current resource location. If this is invoked multiple times
          * with the same argument, multiple distinct {@link Method} objects
          * will be returned.
          */
-        public Method newMethodDocumentation(RequestMethod meth) {
+        public Method newMethodDocumentation(String meth) {
             Method method = new Method(meth);
             _methods.add(method);
             return method;
@@ -109,7 +147,7 @@ public class RestDocumentation implements Serializable {
 
         public class Method implements Serializable {
 
-            private RequestMethod meth;
+            private String meth;
             private JsonType _requestBody;
             private UrlFields _urlSubstitutions = new UrlFields();
             private UrlFields _urlParameters = new UrlFields();
@@ -117,12 +155,30 @@ public class RestDocumentation implements Serializable {
             private String _commentText;
             private boolean _isMultipartRequest;
             private UrlFields queryParameters = new UrlFields();
+            private String _requestSchema;
+            private String _responseSchema;
 
-            public Method(RequestMethod meth) {
+            public String getResponseSchema() {
+                return _responseSchema;
+            }
+
+            public void setResponseSchema(String _responseSchema) {
+                this._responseSchema = _responseSchema;
+            }
+
+            public String getRequestSchema() {
+                return _requestSchema;
+            }
+
+            public void setRequestSchema(String _requestSchema) {
+                this._requestSchema = _requestSchema;
+            }
+
+            public Method(String meth) {
                 this.meth = meth;
             }
 
-            public RequestMethod getRequestMethod() {
+            public String getRequestMethod() {
                 return meth;
             }
 
@@ -154,6 +210,14 @@ public class RestDocumentation implements Serializable {
                 return _commentText;
             }
 
+            public String getIndentedCommentText(int indent) {
+                if (_commentText != null) {
+                    String whitespace = StringUtils.leftPad("", indent);
+                    return whitespace + _commentText.split("\n @")[0].replaceAll("\n", "\n" + whitespace);
+                }
+                return null;
+            }
+
             public void setCommentText(String text) {
                 _commentText = text;
             }
@@ -165,11 +229,11 @@ public class RestDocumentation implements Serializable {
             public void setMultipartRequest(boolean multipart) {
                 _isMultipartRequest = multipart;
             }
-            
+
             public void setQueryParameters(UrlFields queryParams) {
                 this.queryParameters = queryParams;
             }
-            
+
             public UrlFields getQueryParameters() {
                 return queryParameters;
             }
@@ -178,7 +242,7 @@ public class RestDocumentation implements Serializable {
              * An HTML-safe, textual key that uniquely identifies this endpoint.
              */
             public String getKey() {
-                String key = path + "_" + meth.name();
+                String key = path + "_" + meth;
                 for (String param : _urlParameters.getFields().keySet()) {
                     key += "_" + param;
                 }
@@ -187,14 +251,41 @@ public class RestDocumentation implements Serializable {
 
             public class UrlFields implements Serializable {
 
-                private Map<String, JsonType> _jsonTypes = new LinkedHashMap();
+                private Map<String, UrlField> _jsonFields = new LinkedHashMap();
 
-                public Map<String, JsonType> getFields() {
-                    return _jsonTypes;
+                public class UrlField implements Serializable {
+
+                    private JsonType fieldType;
+                    private String fieldDescription;
+
+                    public UrlField(JsonType type, String desc) {
+                        fieldType = type;
+                        fieldDescription = desc;
+                    }
+
+                    public JsonType getFieldType() {
+                        return fieldType;
+                    }
+
+                    public void setFieldType(JsonType fieldType) {
+                        this.fieldType = fieldType;
+                    }
+
+                    public String getFieldDescription() {
+                        return fieldDescription;
+                    }
+
+                    public void setFieldDescription(String fieldDescription) {
+                        this.fieldDescription = fieldDescription;
+                    }
                 }
 
-                public void addField(String name, JsonType jsonType) {
-                    _jsonTypes.put(name, jsonType);
+                public Map<String, UrlField> getFields() {
+                    return _jsonFields;
+                }
+
+                public void addField(String name, JsonType jsonType, String description) {
+                    _jsonFields.put(name, new UrlField(jsonType, description));
                 }
             }
 

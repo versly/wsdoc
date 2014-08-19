@@ -14,8 +14,20 @@
  * limitations under the License.
  */
 
-package org.versly.rest.wsdoc;
+package org.versly.rest.wsdoc.springmvc.genericdomain;
 
-public interface JsonType {
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.versly.rest.wsdoc.model.genericdomain.Child;
+
+public class ChildController {
+
+    /**
+     * Retrieves the child
+     */
+    @RequestMapping(value = "/child", method = RequestMethod.GET)
+    public Child getChild() {
+        return null;
+    }
+
 }
-

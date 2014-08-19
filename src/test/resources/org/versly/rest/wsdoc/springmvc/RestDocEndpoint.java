@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-package org.versly.rest.wsdoc;
+package org.versly.rest.wsdoc.springmvc;
 
-import java.io.Serializable;
 import java.util.*;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.versly.rest.wsdoc.RestApiMountPoint;
+import org.versly.rest.wsdoc.model.ParameterizedTypeReferrer;
 
 @RestApiMountPoint("/mount")
 public class RestDocEndpoint {
@@ -71,6 +72,15 @@ public class RestDocEndpoint {
     public @ResponseBody ValueWithListRecursion recursiveListReturn(HttpServletRequest req)
     {
         return null;
+    }
+
+    @RequestMapping(value="endpointWithParameterizedType", method = RequestMethod.GET)
+    public ParameterizedTypeReferrer endpointWithParameterizedType() {
+        return null;
+    }
+
+    @RequestMapping(value = { "multiple-bindings-a", "multiple-bindings-b" }, method = RequestMethod.GET)
+    public void multipleBindings() {
     }
 
     public class ExcitingReturnValue {
