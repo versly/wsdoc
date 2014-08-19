@@ -18,9 +18,6 @@ package org.versly.rest.wsdoc.impl;
 
 import org.apache.commons.lang3.StringUtils;
 
-import javax.lang.model.type.TypeMirror;
-import java.io.*;
-import java.util.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -32,8 +29,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.regex.Pattern;
-
-import org.springframework.web.bind.annotation.RequestMethod;
 
 public class RestDocumentation implements Serializable {
 
@@ -288,7 +283,6 @@ public class RestDocumentation implements Serializable {
                     _jsonFields.put(name, new UrlField(jsonType, description));
                 }
             }
-
         }
     }
 }

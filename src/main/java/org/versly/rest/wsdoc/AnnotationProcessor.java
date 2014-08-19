@@ -16,9 +16,28 @@
 
 package org.versly.rest.wsdoc;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.versly.rest.wsdoc.impl.JaxRSRestImplementationSupport;
+import org.versly.rest.wsdoc.impl.JsonArray;
+import org.versly.rest.wsdoc.impl.JsonDict;
+import org.versly.rest.wsdoc.impl.JsonObject;
+import org.versly.rest.wsdoc.impl.JsonPrimitive;
+import org.versly.rest.wsdoc.impl.JsonRecursiveObject;
+import org.versly.rest.wsdoc.impl.JsonType;
+import org.versly.rest.wsdoc.impl.RestDocumentation;
+import org.versly.rest.wsdoc.impl.SpringMVCRestImplementationSupport;
+import org.versly.rest.wsdoc.impl.Utils;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -27,14 +46,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator;
-import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
-import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
-import org.versly.rest.wsdoc.impl.*;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -60,24 +71,9 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.AbstractTypeVisitor6;
 import javax.lang.model.util.ElementFilter;
-import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.lang.annotation.Annotation;
-import java.util.*;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Generates an HTML documentation file describing the REST / JSON endpoints as defined with the
@@ -293,18 +289,21 @@ public class AnnotationProcessor extends AbstractProcessor {
         return desc;
     }
 
-    private void buildQueryParameters(ExecutableElement executableElement, RestDocumentation.Resource.Method doc) {
-        if (doc.getRequestMethod().equals(RequestMethod.GET)) {
+    private void buildQueryParameters(ExecutableElement executableElement, RestDocumentation.Resource.Method doc,
+                                      RestImplementationSupport implementationSupport) {
+        if (doc.getRequestMethod().equals(RequestMethod.GET.name())) {
             for (VariableElement var : executableElement.getParameters()) {
-                if (var.getAnnotation(RequestParam.class) == null && var.getAnnotation(PathVariable.class) == null) {
+                // TODO ACE - Assuming any unannotated method params are query params is probably bad, could be Errors, ModelMap etc
+                // TODO ACE - Consider using ModelAttribute annotation here - would have to then use that annotation on RequestMapping methods' params
+                if (implementationSupport.getRequestParam(var) == null && implementationSupport.getPathVariable(var) == null) {
                     Element paramType = ((DeclaredType) var.asType()).asElement();
                     List<ExecutableElement> methods = ElementFilter.methodsIn(paramType.getEnclosedElements());
                     for (ExecutableElement method : methods) {
                         if (method.getSimpleName().toString().startsWith("set") && method.getParameters().size() == 1) {
                             TypeMirror setterType = method.getParameters().get(0).asType();
-                            JsonType jsonType = jsonTypeFromTypeMirror(setterType, new ArrayList<DeclaredType>());
+                            JsonType jsonType = jsonTypeFromTypeMirror(setterType, new HashSet<String>());
                             String propName = StringUtils.uncapitalize(method.getSimpleName().toString().substring(3));
-                            doc.getQueryParameters().addField(propName, jsonType);
+                            doc.getQueryParameters().addField(propName, jsonType, findParamDescription(var.getSimpleName().toString(), doc.getCommentText()));
                         }
                     }
                 }
