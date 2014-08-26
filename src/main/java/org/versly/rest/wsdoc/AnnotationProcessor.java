@@ -246,7 +246,8 @@ public class AnnotationProcessor extends AbstractProcessor {
         for (VariableElement var : executableElement.getParameters()) {
             String pathVariable = implementationSupport.getPathVariable(var);
             if (pathVariable != null) {
-                addUrlField(subs, var, pathVariable, findParamDescription(pathVariable, doc.getCommentText()));
+                String paramName = var.getSimpleName().toString();
+                addUrlField(subs, var, pathVariable, findParamDescription(paramName, doc.getCommentText()));
             }
         }
     }
@@ -264,7 +265,8 @@ public class AnnotationProcessor extends AbstractProcessor {
         for (VariableElement var : executableElement.getParameters()) {
             String reqParam = implementationSupport.getRequestParam(var);
             if (reqParam != null) {
-                addUrlField(subs, var, reqParam, findParamDescription(reqParam, doc.getCommentText()));
+                String paramName = var.getSimpleName().toString();
+                addUrlField(subs, var, reqParam, findParamDescription(paramName, doc.getCommentText()));
             }
         }
     }
@@ -272,7 +274,7 @@ public class AnnotationProcessor extends AbstractProcessor {
     String findParamDescription(String paramName, String methodJavaDoc)
     {
         String desc = null;
-        if (methodJavaDoc != null) {
+        if (methodJavaDoc != null && StringUtils.isNotEmpty(paramName)) {
             String token = "@param " + paramName;
             int startIndex = methodJavaDoc.indexOf(token);
             if (startIndex != -1) {
@@ -285,11 +287,15 @@ public class AnnotationProcessor extends AbstractProcessor {
                 } else {
                     desc = methodJavaDoc.substring(startIndex + token.length());
                 }
-                desc = StringUtils.strip(desc.replace("\n", " ").replace("\r", " ").replaceAll(" {2,}", " "));
+                desc = fixCommentWhitespace(desc);
             }
         }
 
         return desc;
+    }
+
+    private String fixCommentWhitespace(String desc) {
+        return desc == null ? null : StringUtils.strip(desc.replace("\n", " ").replace("\r", " ").replaceAll(" {2,}", " "));
     }
 
     private void buildQueryParameters(ExecutableElement executableElement, RestDocumentation.Resource.Method doc,
