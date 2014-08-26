@@ -4,7 +4,7 @@
 title: REST
 protocols: [ HTTPS ]
 mediaType: application/json
-
+<#-- Consider adding something like baseUri: http://{baseUri} -->
 
 <#list docs as doc>
 <#list doc.resources as resource>
@@ -45,6 +45,7 @@ mediaType: application/json
   -- write out the method name, description, parameters, body, and response for the given method
   -->
 <#macro write_method methodDoc depth>
+<@write_uri_parameters methodDoc=methodDoc depth=depth />
 <#list 1..depth as i> </#list>${methodDoc.requestMethod?lower_case}:
 <#if methodDoc.commentText??>
 <@write_description methodDoc=methodDoc depth=depth+4/>
@@ -68,16 +69,22 @@ mediaType: application/json
 ${methodDoc.indentedCommentText(depth+4)}
 </#macro>
 
-
 <#--
-  -- write out all url parameters for a method
+  -- write out all URI parameters for a method
   -->
-<#macro write_parameters methodDoc depth>
-<#list 1..depth as i> </#list>queryParameters:
-<#assign fields=methodDoc.urlSubstitutions.fields>
+<#macro write_uri_parameters methodDoc depth>
+<#list 1..depth as i> </#list>uriParameters:
+<#assign fields=methodDoc.methodSpecificUrlSubstitutions.fields>
 <#list fields?keys as key>
 <@write_parameter fields=fields key=key depth=depth+4/>
 </#list>
+</#macro>
+
+<#--
+  -- write out all query parameters for a method
+  -->
+<#macro write_parameters methodDoc depth>
+<#list 1..depth as i> </#list>queryParameters:
 <#assign fields=methodDoc.urlParameters.fields>
 <#list fields?keys as key>
 <@write_parameter fields=fields key=key depth=depth+4/>
@@ -98,14 +105,12 @@ ${methodDoc.indentedCommentText(depth+4)}
   -- write out a single url parameter type
   -->
 <#macro write_parameter_info field depth>
-<#if field.fieldDescription??>
 <#list 1..depth as i> </#list>description: |
-<#list 1..depth as i> </#list>    ${field.fieldDescription}
-</#if>
+<#list 1..depth as i> </#list>    ${field.fieldDescription!}
 <#if field.fieldType.class.name == "org.versly.rest.wsdoc.impl.JsonPrimitive">
 <#list 1..depth as i> </#list>type: <@write_raml_type field.fieldType.typeName/>
 <#if field.fieldType.restrictions??><#t>
-one of [ <#list field.fieldType.restrictions as restricton>${restricton}<#if restricton_has_next>, </#if></#list> ]</#if>
+<#list 1..depth as i> </#list>enum: [ <#list field.fieldType.restrictions as restricton>${restricton}<#if restricton_has_next>, </#if></#list> ]</#if>
 <#else>
 <#list 1..depth as i> </#list>type: string
 </#if>

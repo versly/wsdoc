@@ -25,6 +25,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -149,7 +150,6 @@ public class RestDocumentation implements Serializable {
             private JsonType _responseBody;
             private String _commentText;
             private boolean _isMultipartRequest;
-            private UrlFields queryParameters = new UrlFields();
             private String _requestSchema;
             private String _responseSchema;
 
@@ -189,6 +189,24 @@ public class RestDocumentation implements Serializable {
                 return _urlSubstitutions;
             }
 
+            /**
+             * Get the URI parameters specific to this method (useful in RAML where the parent hierarchy will already include it's own)
+             * @return
+             */
+            public UrlFields getMethodSpecificUrlSubstitutions() {
+                Resource parent = _parent;
+                Map<String, UrlFields.UrlField> methodFields = new HashMap<String, UrlFields.UrlField>(_urlSubstitutions.getFields());
+                while (parent != null) {
+                    for (String key : parent.getRequestMethodDocs().iterator().next()._urlSubstitutions.getFields().keySet()) {
+                        methodFields.remove(key);
+                    }
+                    parent = parent._parent;
+                }
+                UrlFields urlFields = new UrlFields();
+                urlFields.getFields().putAll(methodFields);
+                return urlFields;
+            }
+
             public UrlFields getUrlParameters() {
                 return _urlParameters;
             }
@@ -223,14 +241,6 @@ public class RestDocumentation implements Serializable {
 
             public void setMultipartRequest(boolean multipart) {
                 _isMultipartRequest = multipart;
-            }
-
-            public void setQueryParameters(UrlFields queryParams) {
-                this.queryParameters = queryParams;
-            }
-
-            public UrlFields getQueryParameters() {
-                return queryParameters;
             }
 
             /**
