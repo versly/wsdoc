@@ -400,6 +400,11 @@ public class AnnotationProcessor extends AbstractProcessor {
             if (Object.class.getName().equals(elem.getQualifiedName().toString()))
                 return;
 
+            if (elem.getSuperclass() instanceof DeclaredType) {
+                DeclaredType sup = (DeclaredType) elem.getSuperclass();
+                loadTypeElements(sup, sup.getTypeArguments());
+            }
+
             List<? extends TypeParameterElement> generics = elem.getTypeParameters();
             for (int i = 0; i < generics.size(); i++) {
                 DeclaredType value =
@@ -408,10 +413,6 @@ public class AnnotationProcessor extends AbstractProcessor {
                 _typeArguments.put(generics.get(i).getSimpleName(), value);
             }
 
-            if (elem.getSuperclass() instanceof DeclaredType) {
-                DeclaredType sup = (DeclaredType) elem.getSuperclass();
-                loadTypeElements(sup, sup.getTypeArguments());
-            }
         }
 
         @Override
