@@ -17,8 +17,8 @@
 package org.versly.rest.wsdoc;
 
 import freemarker.template.TemplateException;
+
 import org.testng.AssertJUnit;
-import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -59,6 +59,20 @@ public class SpringMVCRestAnnotationProcessorTest extends AbstractRestAnnotation
         processResource("genericdomain/ParentController.java", "html");
         AssertJUnit.assertTrue("expected parentField in docs; got: \n" + output,
                 output.contains(">parentField<"));
+    }
+
+    @Test
+    public void assertQueryParams() {
+        processResource("RestDocEndpoint.java", "html");
+        AssertJUnit.assertTrue("expected queryParam1 and queryParam2 in docs; got: \n" + output,
+                               output.contains(">queryParamVal1<") && output.contains(">queryParamVal2<"));
+    }
+
+    @Test
+    public void processControllerThatReturnsEnumSetExpectsSuccess() {
+        processResource("EnumSetController.java", "html");
+        AssertJUnit.assertTrue("expected enumsets in docs; got: \n" + output,
+                               output.contains(">myEnumSet<") && output.contains(">myEnum<") && output.contains(">one of [ TEST1, TEST2 ]<"));
     }
 
     @Test

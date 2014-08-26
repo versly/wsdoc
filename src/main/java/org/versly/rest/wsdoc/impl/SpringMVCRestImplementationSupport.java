@@ -1,14 +1,15 @@
 package org.versly.rest.wsdoc.impl;
 
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.versly.rest.wsdoc.AnnotationProcessor;
+
+import java.lang.annotation.Annotation;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import java.lang.annotation.Annotation;
 
 public class SpringMVCRestImplementationSupport implements AnnotationProcessor.RestImplementationSupport {
 
@@ -58,6 +59,22 @@ public class SpringMVCRestImplementationSupport implements AnnotationProcessor.R
         RequestParam reqParam = var.getAnnotation(RequestParam.class);
         return reqParam == null ? null : reqParam.value();
     }
+
+    /**
+     * Return whether this variable is an un-annotated POJO.
+     * This catches the case where a model is bound to directly. We explicitly exclude spring classes so that we don't look at the
+     * magical spring bound parameters like Errors or ModelMap
+     */
+    @Override
+    public String getPojoRequestParam(VariableElement var) {
+        if (getRequestParam(var) == null && getPathVariable(var) == null && !var.asType().toString().startsWith("org.springframework")) {
+            return ""; // No annotations to parse
+        } else {
+            return null;
+        }
+
+    }
+
 
     @Override
     public boolean isRequestBody(VariableElement var) {

@@ -41,10 +41,20 @@ public class RestDocEndpoint {
     public void methodWithVoidReturn(HttpServletRequest req) {
     }
 
+    /**
+     * Returns void
+     * @param req Nothing interesting
+     * @param p0 The integer request parameter 0
+     * @param param1 The integer request parameter 1
+     */
     @RequestMapping(value = "voidreturn", method = RequestMethod.GET, params = { "param0", "param1" })
     public void methodWithVoidReturnAndParams(HttpServletRequest req,
                                               @RequestParam("param0") int p0,
                                               @RequestParam int param1) {
+    }
+
+    @RequestMapping(value = "pojoQueryParams", method = RequestMethod.GET)
+    public void methodWithPojoArgs(PojoValue pojoQueryParams) {
     }
 
     @RequestMapping(value = "multipart", method = RequestMethod.GET)
@@ -81,6 +91,26 @@ public class RestDocEndpoint {
 
     @RequestMapping(value = { "multiple-bindings-a", "multiple-bindings-b" }, method = RequestMethod.GET)
     public void multipleBindings() {
+    }
+
+    public class PojoValue {
+
+        public String getQueryParamVal1() {
+            return null;
+        }
+
+        public int getQueryParamVal2() {
+            return 1;
+        }
+
+        /**
+         * The first query param
+         */
+        public void setQueryParamVal1(String str) {
+        }
+
+        public void setQueryParamVal2(int i) {
+        }
     }
 
     public class ExcitingReturnValue {

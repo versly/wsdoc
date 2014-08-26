@@ -200,7 +200,7 @@ public class AnnotationProcessor extends AbstractProcessor {
         scanForSpringMVCMultipart(executableElement, doc);
         buildPathVariables(executableElement, doc, implementationSupport);
         buildUrlParameters(executableElement, doc, implementationSupport);
-        buildQueryParameters(executableElement, doc, implementationSupport);
+        buildPojoQueryParameters(executableElement, doc, implementationSupport);
         buildRequestBodies(executableElement, doc, implementationSupport);
     }
 
@@ -298,21 +298,24 @@ public class AnnotationProcessor extends AbstractProcessor {
         return desc == null ? null : StringUtils.strip(desc.replace("\n", " ").replace("\r", " ").replaceAll(" {2,}", " "));
     }
 
-    private void buildQueryParameters(ExecutableElement executableElement, RestDocumentation.Resource.Method doc,
-                                      RestImplementationSupport implementationSupport) {
+    /**
+     * Finds any request parameters that can be bound to (which are pojos) and adds each of the POJOs fields to the url parameters
+     */
+    private void buildPojoQueryParameters(ExecutableElement executableElement, RestDocumentation.Resource.Method doc,
+                                          RestImplementationSupport implementationSupport) {
         if (doc.getRequestMethod().equals(RequestMethod.GET.name())) {
+            RestDocumentation.Resource.Method.UrlFields subs = doc.getUrlParameters();
             for (VariableElement var : executableElement.getParameters()) {
-                // TODO ACE - Assuming any unannotated method params are query params is probably bad, could be Errors, ModelMap etc
-                // TODO ACE - Consider using ModelAttribute annotation here - would have to then use that annotation on RequestMapping methods' params
-                if (implementationSupport.getRequestParam(var) == null && implementationSupport.getPathVariable(var) == null) {
+                if (implementationSupport.getPojoRequestParam(var) != null) {
                     Element paramType = _typeUtils.asElement(var.asType());
                     List<ExecutableElement> methods = ElementFilter.methodsIn(paramType.getEnclosedElements());
                     for (ExecutableElement method : methods) {
                         if (method.getSimpleName().toString().startsWith("set") && method.getParameters().size() == 1) {
+                            String setterComment = processingEnv.getElementUtils().getDocComment(method);
                             TypeMirror setterType = method.getParameters().get(0).asType();
                             JsonType jsonType = jsonTypeFromTypeMirror(setterType, new HashSet<String>());
                             String propName = StringUtils.uncapitalize(method.getSimpleName().toString().substring(3));
-                            doc.getQueryParameters().addField(propName, jsonType, findParamDescription(var.getSimpleName().toString(), doc.getCommentText()));
+                            subs.addField(propName, jsonType, fixCommentWhitespace(setterComment));
                         }
                     }
                 }
@@ -673,6 +676,8 @@ public class AnnotationProcessor extends AbstractProcessor {
         String getPathVariable(VariableElement var);
 
         String getRequestParam(VariableElement var);
+
+        String getPojoRequestParam(VariableElement var);
 
         boolean isRequestBody(VariableElement var);
     }
