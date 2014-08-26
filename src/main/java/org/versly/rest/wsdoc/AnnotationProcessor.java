@@ -71,6 +71,7 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.AbstractTypeVisitor6;
 import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
@@ -95,11 +96,13 @@ public class AnnotationProcessor extends AbstractProcessor {
     private Map<TypeMirror, JsonType> _memoizedTypeMirrors = new HashMap<TypeMirror, JsonType>();
     private Map<DeclaredType, JsonType> _memoizedDeclaredTypes = new HashMap<DeclaredType, JsonType>();
     private ProcessingEnvironment _processingEnv;
+    private Types _typeUtils;
 
     @Override
     public void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
         _processingEnv = processingEnv;
+        _typeUtils = _processingEnv.getTypeUtils();
     }
 
     @Override
@@ -296,7 +299,7 @@ public class AnnotationProcessor extends AbstractProcessor {
                 // TODO ACE - Assuming any unannotated method params are query params is probably bad, could be Errors, ModelMap etc
                 // TODO ACE - Consider using ModelAttribute annotation here - would have to then use that annotation on RequestMapping methods' params
                 if (implementationSupport.getRequestParam(var) == null && implementationSupport.getPathVariable(var) == null) {
-                    Element paramType = ((DeclaredType) var.asType()).asElement();
+                    Element paramType = _typeUtils.asElement(var.asType());
                     List<ExecutableElement> methods = ElementFilter.methodsIn(paramType.getEnclosedElements());
                     for (ExecutableElement method : methods) {
                         if (method.getSimpleName().toString().startsWith("set") && method.getParameters().size() == 1) {
@@ -679,7 +682,7 @@ public class AnnotationProcessor extends AbstractProcessor {
         // note: Types.erasure() provides canonical names whereas Class.forName() wants a "regular" name,
         // so forName will fail for nested and inner classes as "regular" names use $ between parent and child.
         Class dtoClass = null;
-        StringBuffer erasure = new StringBuffer(_processingEnv.getTypeUtils().erasure(type).toString());
+        StringBuffer erasure = new StringBuffer(_typeUtils.erasure(type).toString());
         for (boolean done = false; !done; ) {
             try {
                 dtoClass = Class.forName(erasure.toString());
