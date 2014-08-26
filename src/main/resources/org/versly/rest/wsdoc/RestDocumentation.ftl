@@ -78,7 +78,7 @@
                                     ?<#list params?keys as key><#t>
                                         <span class="url-param-key">${key}</span><#t>
                                         =<#t>
-                                        <span class="url-param-expected-type"><@render_json params[key]/></span><#t>
+                                        <span class="url-param-expected-type"><@render_json params[key].fieldType/></span><#t>
                                         <#if key_has_next>&</#if><#t>
                                     </#list><#t>
                                 </#if><#t>
@@ -99,29 +99,31 @@
                             <div class="url-info">
                                 <table>
                                     <thead>
-                                        <tr><td>URL Substitution Key</td><td>Expected Type</td></tr>
+                                        <tr><td>URL Substitution Key</td><td>Expected Type</td><td>Description</td></tr>
                                     </thead>
                                     <#list subs?keys as key>
                                         <tr>
                                             <td class="url-info-key">${key}</td>
-                                            <td class="url-info-expected-type"><@render_json subs[key]/></td>
+                                            <td class="url-info-expected-type"><@render_json subs[key].fieldType/></td>
+                                            <td class="json-field-comment">${subs[key].fieldDescription!}</td>
                                         </tr>
                                     </#list>
                                 </table>
                             </div>
                         </#if>
-                        
-                        <#assign queryParams=methodDoc.queryParameters.fields>
+
+                        <#assign queryParams=methodDoc.urlParameters.fields>
                         <#if (queryParams?keys?size > 0)>
                             <div class="url-info">
                                 <table>
                                     <thead>
-                                        <tr><td>Query Parameter</td><td>Expected Type</td></tr>
+                                        <tr><td>Query Parameter</td><td>Expected Type</td><td>Description</td></tr>
                                     </thead>
                                     <#list queryParams?keys as key>
                                         <tr>
                                             <td class="url-info-key">${key}</td>
-                                            <td class="url-info-expected-type"><@render_json queryParams[key]/></td>
+                                            <td class="url-info-expected-type"><@render_json queryParams[key].fieldType/></td>
+                                            <td class="json-field-comment">${queryParams[key].fieldDescription!}</td>
                                         </tr>
                                     </#list>
                                 </table>
