@@ -18,9 +18,11 @@ package org.versly.rest.wsdoc;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.versly.rest.wsdoc.impl.JaxRSRestImplementationSupport;
@@ -42,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -75,6 +78,9 @@ import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
+
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+import static org.apache.commons.lang3.StringUtils.join;
 
 /**
  * Generates an HTML documentation file describing the REST / JSON endpoints as defined with the
@@ -237,6 +243,7 @@ public class AnnotationProcessor extends AbstractProcessor {
     private void buildRequestBody(VariableElement var, RestDocumentation.Resource.Method doc) {
         doc.setRequestBody(jsonTypeFromTypeMirror(var.asType(), new HashSet<String>()));
         doc.setRequestSchema(jsonSchemaFromTypeMirror(var.asType()));
+        doc.setRequestExample(exampleFromJsonType(doc.getRequestBody()));
     }
 
     private void buildPathVariables(ExecutableElement executableElement, RestDocumentation.Resource.Method doc,
@@ -375,6 +382,7 @@ public class AnnotationProcessor extends AbstractProcessor {
     private void buildResponseFormat(TypeMirror type, RestDocumentation.Resource.Method doc) {
         doc.setResponseBody(jsonTypeFromTypeMirror(type, new HashSet<String>()));
         doc.setResponseSchema(jsonSchemaFromTypeMirror(type));
+        doc.setResponseExample(exampleFromJsonType(doc.getResponseBody()));
     }
 
     private String[] getClassLevelUrlPaths(TypeElement cls, RestImplementationSupport implementationSupport) {
@@ -682,6 +690,75 @@ public class AnnotationProcessor extends AbstractProcessor {
         boolean isRequestBody(VariableElement var);
     }
 
+    String exampleFromJsonType(JsonType type) {
+        return renderJson(type);
+    }
+
+    String renderJson(JsonType type) {
+        String schema = "";
+        if (type instanceof org.versly.rest.wsdoc.impl.JsonPrimitive) {
+            schema = schema + renderJsonPrimitive((JsonPrimitive) type, null);
+        } else if (type instanceof org.versly.rest.wsdoc.impl.JsonObject) {
+            schema = schema + renderJsonObject((JsonObject) type);
+        } else if (type instanceof org.versly.rest.wsdoc.impl.JsonRecursiveObject){
+            schema = schema + renderJsonRecursiveObject((JsonRecursiveObject) type);
+        } else if (type instanceof org.versly.rest.wsdoc.impl.JsonArray) {
+            schema = schema + renderJsonArray((JsonArray) type);
+        } else if (type instanceof org.versly.rest.wsdoc.impl.JsonDict) {
+            schema = schema + renderJsonDict((JsonDict) type);
+        }
+        return schema;
+    }
+
+    private String renderJsonArray(JsonArray type) {
+        return "[" + renderJson(type.getElementType()) + "]";
+    }
+
+    private String renderJsonDict(JsonDict type) {
+        return "{" + renderJson(type.getKeyType()) + ": " + renderJson(type.getValueType()) + " }";
+    }
+
+    private String renderJsonPrimitive(JsonPrimitive type, String comment) {
+        String primStr = "\"" + type.getTypeName();
+        if (!CollectionUtils.isEmpty(type.getRestrictions())) {
+            primStr = primStr + " one of [" + join(type.getRestrictions().toArray(), ",") + "]";
+        }
+        if (comment != null) {
+            primStr = primStr + " /* " + comment + " */";
+        }
+        return primStr + "\"";
+    }
+
+    private String renderJsonObject(JsonObject type) {
+        String objStr = "{";
+        Iterator<JsonObject.JsonField> fieldIt = type.getFields().iterator();
+        while (fieldIt.hasNext()) {
+            JsonObject.JsonField jsonField = fieldIt.next();
+            objStr = objStr + "\"" + jsonField.getFieldName() + "\": ";
+            if (jsonField.getFieldType() instanceof JsonPrimitive) {
+                objStr = objStr + renderJsonPrimitive((JsonPrimitive) jsonField.getFieldType(), getComment(jsonField));
+            } else {
+                objStr = objStr + renderJson(jsonField.getFieldType());
+            }
+            if (fieldIt.hasNext()) {
+                objStr = objStr + ",";
+            }
+        }
+        return objStr + "}";
+    }
+
+    private String getComment(JsonObject.JsonField jsonField) {
+        String comment = null;
+        if (isNotEmpty(jsonField.getCommentText())) {
+            comment =  jsonField.getCommentText().replaceAll("(\r|\n)+| {2,}", " ");
+        }
+        return comment;
+    }
+
+    private String renderJsonRecursiveObject(JsonRecursiveObject type) {
+        return "\"" + type.getRecursedObjectTypeName() + " recursive\"";
+    }
+
     String jsonSchemaFromTypeMirror(TypeMirror type) {
         String serializedSchema = null;
 
@@ -714,6 +791,7 @@ public class AnnotationProcessor extends AbstractProcessor {
         if (dtoClass != null) {
             try {
                 ObjectMapper m = new ObjectMapper();
+                m.registerModule(new JodaModule());
                 SchemaFactoryWrapper visitor = new SchemaFactoryWrapper();
                 m.acceptJsonFormatVisitor(m.constructType(dtoClass), visitor);
                 serializedSchema = m.writeValueAsString(visitor.finalSchema());

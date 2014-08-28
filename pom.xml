@@ -24,7 +24,7 @@
     <groupId>org.versly</groupId>
     <artifactId>versly-wsdoc</artifactId>
     <packaging>jar</packaging>
-    <version>1.0.6</version>
+    <version>1.0.7</version>
     <url>http://github.com/versly/wsdoc</url>
 
     <dependencies>
@@ -52,7 +52,7 @@
         <dependency>
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
-            <version>1.6</version>
+            <version>2.2</version>
         </dependency>
         <dependency>
             <groupId>org.freemarker</groupId>
@@ -76,7 +76,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-            <version>2.4.1</version>
+            <version>2.4.2</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -84,9 +84,14 @@
             <version>2.4.1</version>
         </dependency>
         <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-joda</artifactId>
+            <version>2.4.2</version>
+        </dependency>
+        <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.4.1</version>
+            <version>2.4.2</version>
         </dependency>
         <dependency>
             <groupId>org.testng</groupId>
@@ -97,7 +102,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-jsonSchema</artifactId>
-            <version>2.4.1</version>
+            <version>2.4.2</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>

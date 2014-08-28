@@ -152,6 +152,8 @@ public class RestDocumentation implements Serializable {
             private boolean _isMultipartRequest;
             private String _requestSchema;
             private String _responseSchema;
+            private String _responseExample;
+            private String _requestExample;
 
             public String getResponseSchema() {
                 return _responseSchema;
@@ -167,6 +169,22 @@ public class RestDocumentation implements Serializable {
 
             public void setRequestSchema(String _requestSchema) {
                 this._requestSchema = _requestSchema;
+            }
+
+            public void setResponseExample(String wsDocResponseSchema) {
+                this._responseExample = wsDocResponseSchema;
+            }
+
+            public String getResponseExample() {
+                return _responseExample;
+            }
+
+            public void setRequestExample(String wsDocRequestSchema) {
+                this._requestExample = wsDocRequestSchema;
+            }
+
+            public String getRequestExample() {
+                return _requestExample;
             }
 
             public Method(String meth) {
