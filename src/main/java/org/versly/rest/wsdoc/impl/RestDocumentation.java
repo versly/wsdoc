@@ -16,6 +16,9 @@
 
 package org.versly.rest.wsdoc.impl;
 
+import org.apache.commons.lang3.StringUtils;
+
+import javax.lang.model.type.TypeMirror;
 import java.io.*;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -68,13 +71,17 @@ public class RestDocumentation implements Serializable {
         return filtered;
     }
 
+    /**
+     * This inspects the method paths and establishes parent/child relationships.  This helps in particular
+     * with generating RAML documentation, as RAML represents endpoints hierarchically.
+     */
     public void postProcess()
     {
         for (Resource visitor: _resources.values())
         {
             for (Resource visitee: _resources.values())
             {
-                if (visitee != visitor && visitee.path.startsWith(visitor.path) &&
+                if (visitee != visitor && visitee.path.startsWith(visitor.path + "/") &&
                         (visitee._parent == null || visitee._parent.path.length() < visitor.path.length()))
                 {
                     if (visitee._parent != null) {
@@ -84,10 +91,6 @@ public class RestDocumentation implements Serializable {
                     visitor._children.add(visitee);
                 }
             }
-        }
-        for (Resource res: _resources.values())
-        {
-
         }
     }
 
@@ -139,6 +142,24 @@ public class RestDocumentation implements Serializable {
             private JsonType _responseBody;
             private String _commentText;
             private boolean _isMultipartRequest;
+            private String _requestSchema;
+            private String _responseSchema;
+
+            public String getResponseSchema() {
+                return _responseSchema;
+            }
+
+            public void setResponseSchema(String _responseSchema) {
+                this._responseSchema = _responseSchema;
+            }
+
+            public String getRequestSchema() {
+                return _requestSchema;
+            }
+
+            public void setRequestSchema(String _requestSchema) {
+                this._requestSchema = _requestSchema;
+            }
 
             public Method(String meth) {
                 this.meth = meth;
@@ -176,6 +197,14 @@ public class RestDocumentation implements Serializable {
                 return _commentText;
             }
 
+            public String getIndentedCommentText(int indent) {
+                if (_commentText != null) {
+                    String whitespace = StringUtils.leftPad("", indent);
+                    return whitespace + _commentText.split("\n @")[0].replaceAll("\n", "\n" + whitespace);
+                }
+                return null;
+            }
+
             public void setCommentText(String text) {
                 _commentText = text;
             }
@@ -201,14 +230,41 @@ public class RestDocumentation implements Serializable {
 
             public class UrlFields implements Serializable {
 
-                private Map<String, JsonType> _jsonTypes = new LinkedHashMap();
+                private Map<String, UrlField> _jsonFields = new LinkedHashMap();
 
-                public Map<String, JsonType> getFields() {
-                    return _jsonTypes;
+                public class UrlField implements Serializable {
+
+                    private JsonType fieldType;
+                    private String fieldDescription;
+
+                    public UrlField(JsonType type, String desc) {
+                        fieldType = type;
+                        fieldDescription = desc;
+                    }
+
+                    public JsonType getFieldType() {
+                        return fieldType;
+                    }
+
+                    public void setFieldType(JsonType fieldType) {
+                        this.fieldType = fieldType;
+                    }
+
+                    public String getFieldDescription() {
+                        return fieldDescription;
+                    }
+
+                    public void setFieldDescription(String fieldDescription) {
+                        this.fieldDescription = fieldDescription;
+                    }
                 }
 
-                public void addField(String name, JsonType jsonType) {
-                    _jsonTypes.put(name, jsonType);
+                public Map<String, UrlField> getFields() {
+                    return _jsonFields;
+                }
+
+                public void addField(String name, JsonType jsonType, String description) {
+                    _jsonFields.put(name, new UrlField(jsonType, description));
                 }
             }
         }

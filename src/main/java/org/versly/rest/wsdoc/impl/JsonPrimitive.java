@@ -42,8 +42,8 @@ public class JsonPrimitive implements JsonType, Serializable {
         _primitiveTypeNamesByJavaTypeName.put(Double.class.getName(), "double");
         _primitiveTypeNamesByJavaTypeName.put(float.class.getName(), "float");
         _primitiveTypeNamesByJavaTypeName.put(Float.class.getName(), "float");
-        _primitiveTypeNamesByJavaTypeName.put(int.class.getName(), "int");
-        _primitiveTypeNamesByJavaTypeName.put(Integer.class.getName(), "int");
+        _primitiveTypeNamesByJavaTypeName.put(int.class.getName(), "integer");
+        _primitiveTypeNamesByJavaTypeName.put(Integer.class.getName(), "integer");
         _primitiveTypeNamesByJavaTypeName.put(long.class.getName(), "long");
         _primitiveTypeNamesByJavaTypeName.put(Long.class.getName(), "long");
         _primitiveTypeNamesByJavaTypeName.put(short.class.getName(), "short");

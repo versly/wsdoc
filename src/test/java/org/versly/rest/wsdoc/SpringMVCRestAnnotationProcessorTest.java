@@ -40,29 +40,30 @@ public class SpringMVCRestAnnotationProcessorTest extends AbstractRestAnnotation
 
     @Test
     public void assertMultipart() {
-        processResource("RestDocEndpoint.java");
+        processResource("RestDocEndpoint.java", "html");
         AssertJUnit.assertTrue("expected multipart info docs; got: \n" + output,
-            output.contains("Note: this endpoint expects a multipart"));
+                output.contains("Note: this endpoint expects a multipart"));
     }
 
     @Test
     public void processControllerThatReturnsDomainObjectWithGenericParentsExpectsSuccess() {
-        processResource("genericdomain/ChildController.java");
+        processResource("genericdomain/ChildController.java", "html");
         AssertJUnit.assertTrue("expected firstGrandparentField and secondGrandparentField in docs; got: \n" + output,
                 output.contains(">firstGrandparentField<") && output.contains(">secondGrandparentField<")
-                        && output.contains(">parentField<") && output.contains(">childField<"));
+                        && output.contains(">parentField<") && output.contains(">childField<")
+        );
     }
 
     @Test
     public void processControllerThatReturnsGenericDomainObjectExpectsSuccess() {
-        processResource("genericdomain/ParentController.java");
+        processResource("genericdomain/ParentController.java", "html");
         AssertJUnit.assertTrue("expected parentField in docs; got: \n" + output,
                 output.contains(">parentField<"));
     }
 
     @Test
     public void multipleBindingsForOneEndpoint() {
-        processResource("RestDocEndpoint.java");
+        processResource("RestDocEndpoint.java", "html");
         AssertJUnit.assertTrue("expected multiple-bindings-a and multiple-bindings-b in docs; got: \n" + output,
                 output.contains("multiple-bindings-a<") && output.contains("multiple-bindings-b<"));
     }

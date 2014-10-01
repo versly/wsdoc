@@ -17,15 +17,22 @@
 package org.versly.rest.wsdoc;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator;
+import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
+import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.versly.rest.wsdoc.impl.*;
 
 import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 import javax.lang.model.util.AbstractTypeVisitor6;
+import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
@@ -55,6 +62,13 @@ public class AnnotationProcessor extends AbstractProcessor {
     private boolean _isComplete = false;
     private Map<TypeMirror, JsonType> _memoizedTypeMirrors = new HashMap<TypeMirror, JsonType>();
     private Map<DeclaredType, JsonType> _memoizedDeclaredTypes = new HashMap<DeclaredType, JsonType>();
+    private ProcessingEnvironment _processingEnv;
+
+    @Override
+    public void init(ProcessingEnvironment processingEnv) {
+        super.init(processingEnv);
+        _processingEnv = processingEnv;
+    }
 
     @Override
     public boolean process(Set<? extends TypeElement> supportedAnnotations, RoundEnvironment roundEnvironment) {
@@ -186,6 +200,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 
     private void buildRequestBody(VariableElement var, RestDocumentation.Resource.Method doc) {
         doc.setRequestBody(jsonTypeFromTypeMirror(var.asType(), new HashSet<String>()));
+        doc.setRequestSchema(jsonSchemaFromTypeMirror(var.asType()));
     }
 
     private void buildPathVariables(ExecutableElement executableElement, RestDocumentation.Resource.Method doc,
@@ -195,14 +210,15 @@ public class AnnotationProcessor extends AbstractProcessor {
         for (VariableElement var : executableElement.getParameters()) {
             String pathVariable = implementationSupport.getPathVariable(var);
             if (pathVariable != null) {
-                addUrlField(subs, var, pathVariable);
+                addUrlField(subs, var, pathVariable, findParamDescription(pathVariable, doc.getCommentText()));
             }
         }
     }
 
-    private void addUrlField(RestDocumentation.Resource.Method.UrlFields subs, VariableElement var, String annoValue) {
+    private void addUrlField(RestDocumentation.Resource.Method.UrlFields subs, VariableElement var, String annoValue,
+            String description) {
         String name = (annoValue == null || annoValue.isEmpty()) ? var.getSimpleName().toString() : annoValue;
-        subs.addField(name, jsonTypeFromTypeMirror(var.asType(), new HashSet<String>()));
+        subs.addField(name, jsonTypeFromTypeMirror(var.asType(), new HashSet<String>()), description);
     }
 
     private void buildUrlParameters(ExecutableElement executableElement, RestDocumentation.Resource.Method doc,
@@ -212,9 +228,32 @@ public class AnnotationProcessor extends AbstractProcessor {
         for (VariableElement var : executableElement.getParameters()) {
             String reqParam = implementationSupport.getRequestParam(var);
             if (reqParam != null) {
-                addUrlField(subs, var, reqParam);
+                addUrlField(subs, var, reqParam, findParamDescription(reqParam, doc.getCommentText()));
             }
         }
+    }
+
+    String findParamDescription(String paramName, String methodJavaDoc)
+    {
+        String desc = null;
+        if (methodJavaDoc != null) {
+            String token = "@param " + paramName;
+            int startIndex = methodJavaDoc.indexOf(token);
+            if (startIndex != -1) {
+                int endIndex = methodJavaDoc.indexOf("@param", startIndex + 1);
+                if (endIndex == -1) {
+                    endIndex = methodJavaDoc.indexOf("@return", startIndex + 1);
+                }
+                if (endIndex != -1) {
+                    desc = methodJavaDoc.substring(startIndex + token.length(), endIndex);
+                } else {
+                    desc = methodJavaDoc.substring(startIndex + token.length());
+                }
+                desc = StringUtils.strip(desc.replace("\n", " ").replace("\r", " ").replaceAll(" {2,}", " "));
+            }
+        }
+
+        return desc;
     }
 
     private JsonType jsonTypeFromTypeMirror(TypeMirror typeMirror, Collection<String> typeRecursionGuard) {
@@ -267,6 +306,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 
     private void buildResponseFormat(TypeMirror type, RestDocumentation.Resource.Method doc) {
         doc.setResponseBody(jsonTypeFromTypeMirror(type, new HashSet<String>()));
+        doc.setResponseSchema(jsonSchemaFromTypeMirror(type));
     }
 
     private String[] getClassLevelUrlPaths(TypeElement cls, RestImplementationSupport implementationSupport) {
@@ -569,5 +609,56 @@ public class AnnotationProcessor extends AbstractProcessor {
         String getRequestParam(VariableElement var);
 
         boolean isRequestBody(VariableElement var);
+    }
+
+    String jsonSchemaFromTypeMirror(TypeMirror type) {
+        String serializedSchema = null;
+
+        if (type.getKind().isPrimitive() || type.getKind() == TypeKind.VOID) {
+            return null;
+        }
+
+        // we need the dto class to generate schema using jackson json-schema module
+        // note: Types.erasure() provides canonical names whereas Class.forName() wants a "regular" name,
+        // so forName will fail for nested and inner classes as "regular" names use $ between parent and child.
+        Class dtoClass = null;
+        StringBuffer erasure = new StringBuffer(_processingEnv.getTypeUtils().erasure(type).toString());
+        for (boolean done = false; !done; ) {
+            try {
+                dtoClass = Class.forName(erasure.toString());
+                done = true;
+            } catch (ClassNotFoundException e) {
+                if (erasure.lastIndexOf(".") != -1) {
+                    erasure.setCharAt(erasure.lastIndexOf("."), '$');
+                }
+                else
+                {
+                    done = true;
+                }
+            }
+        }
+
+        // if we were able to figure out the dto class, use jackson json-schema module to serialize it
+        Exception e = null;
+        if (dtoClass != null) {
+            try {
+                ObjectMapper m = new ObjectMapper();
+                SchemaFactoryWrapper visitor = new SchemaFactoryWrapper();
+                m.acceptJsonFormatVisitor(m.constructType(dtoClass), visitor);
+                serializedSchema = m.writeValueAsString(visitor.finalSchema());
+            } catch (Exception ex) {
+                e = ex;
+            }
+        }
+
+        // report warning if we were not able to generate schema for non-primitive type
+        if (serializedSchema == null)
+        {
+            this.processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING,
+                    "cannot generate json-schema for class " + type.toString() + " (erasure " + erasure + "), " +
+                            ((e != null) ? ("exception: " + e.getMessage()) : "class not found"));
+        }
+
+        return serializedSchema;
     }
 }
