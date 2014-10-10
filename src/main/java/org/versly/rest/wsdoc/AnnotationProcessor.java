@@ -557,10 +557,17 @@ public class AnnotationProcessor extends AbstractProcessor {
         @Override
         public JsonType visitTypeVariable(TypeVariable typeVariable, Void o) {
             DeclaredType type = getDeclaredTypeForTypeVariable(typeVariable);
-            if (type != null) // null: un-parameterized usage of a generics-having type
-                return type.accept(this, o);
-            else
+            if (type != null) { // null: un-parameterized usage of a generics-having type
+                try {
+                    return type.accept(this, o);
+                } catch (UnsupportedOperationException e) {
+                    // likely we ran into a type we can't work with (e.g. ErrorType), continue with best effort
+                    return null;
+                }
+            }
+            else {
                 return null;
+            }
         }
 
         private DeclaredType getDeclaredTypeForTypeVariable(TypeVariable typeVariable) {
