@@ -17,12 +17,19 @@
 package org.versly.rest.wsdoc.impl;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.net.URI;
 import java.net.URL;
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
 
 public class JsonPrimitive implements JsonType, Serializable {
 
@@ -40,10 +47,12 @@ public class JsonPrimitive implements JsonType, Serializable {
         _primitiveTypeNamesByJavaTypeName.put(Character.class.getName(), "char");
         _primitiveTypeNamesByJavaTypeName.put(double.class.getName(), "double");
         _primitiveTypeNamesByJavaTypeName.put(Double.class.getName(), "double");
+        _primitiveTypeNamesByJavaTypeName.put(BigDecimal.class.getName(), "double");
         _primitiveTypeNamesByJavaTypeName.put(float.class.getName(), "float");
         _primitiveTypeNamesByJavaTypeName.put(Float.class.getName(), "float");
         _primitiveTypeNamesByJavaTypeName.put(int.class.getName(), "integer");
         _primitiveTypeNamesByJavaTypeName.put(Integer.class.getName(), "integer");
+        _primitiveTypeNamesByJavaTypeName.put(BigInteger.class.getName(), "integer");
         _primitiveTypeNamesByJavaTypeName.put(long.class.getName(), "long");
         _primitiveTypeNamesByJavaTypeName.put(Long.class.getName(), "long");
         _primitiveTypeNamesByJavaTypeName.put(short.class.getName(), "short");
@@ -59,7 +68,8 @@ public class JsonPrimitive implements JsonType, Serializable {
         _primitiveTypeNamesByJavaTypeName.put(java.sql.Date.class.getName(), "date");
         _primitiveTypeNamesByJavaTypeName.put(java.sql.Time.class.getName(), "time");
         _primitiveTypeNamesByJavaTypeName.put(Timestamp.class.getName(), "timestamp");
-        _primitiveTypeNamesByJavaTypeName.put(DateTime.class.getName(), "iso-8610 timestamp string");
+        _primitiveTypeNamesByJavaTypeName.put(DateTime.class.getName(), "datetime");
+        _primitiveTypeNamesByJavaTypeName.put(LocalDate.class.getName(), "date");
     }
 
     private String typeName;

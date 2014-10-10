@@ -4,7 +4,7 @@
 title: REST
 protocols: [ HTTPS ]
 mediaType: application/json
-
+<#-- Consider adding something like baseUri: http://{baseUri} -->
 
 <#list docs as doc>
 <#list doc.resources as resource>
@@ -45,6 +45,7 @@ mediaType: application/json
   -- write out the method name, description, parameters, body, and response for the given method
   -->
 <#macro write_method methodDoc depth>
+<@write_uri_parameters methodDoc=methodDoc depth=depth />
 <#list 1..depth as i> </#list>${methodDoc.requestMethod?lower_case}:
 <#if methodDoc.commentText??>
 <@write_description methodDoc=methodDoc depth=depth+4/>
@@ -53,7 +54,7 @@ mediaType: application/json
 <@write_parameters methodDoc=methodDoc depth=depth+4/>
 
 <#if methodDoc.requestSchema??>
-<@write_body body=methodDoc.requestSchema depth=depth+4/>
+<@write_body schema=methodDoc.requestSchema example=methodDoc.requestExample depth=depth+4/>
 
 </#if>
 <@write_response methodDoc=methodDoc depth=depth+4/>
@@ -68,16 +69,22 @@ mediaType: application/json
 ${methodDoc.indentedCommentText(depth+4)}
 </#macro>
 
-
 <#--
-  -- write out all url parameters for a method
+  -- write out all URI parameters for a method
   -->
-<#macro write_parameters methodDoc depth>
-<#list 1..depth as i> </#list>queryParameters:
-<#assign fields=methodDoc.urlSubstitutions.fields>
+<#macro write_uri_parameters methodDoc depth>
+<#list 1..depth as i> </#list>uriParameters:
+<#assign fields=methodDoc.methodSpecificUrlSubstitutions.fields>
 <#list fields?keys as key>
 <@write_parameter fields=fields key=key depth=depth+4/>
 </#list>
+</#macro>
+
+<#--
+  -- write out all query parameters for a method
+  -->
+<#macro write_parameters methodDoc depth>
+<#list 1..depth as i> </#list>queryParameters:
 <#assign fields=methodDoc.urlParameters.fields>
 <#list fields?keys as key>
 <@write_parameter fields=fields key=key depth=depth+4/>
@@ -98,14 +105,12 @@ ${methodDoc.indentedCommentText(depth+4)}
   -- write out a single url parameter type
   -->
 <#macro write_parameter_info field depth>
-<#if field.fieldDescription??>
 <#list 1..depth as i> </#list>description: |
-<#list 1..depth as i> </#list>    ${field.fieldDescription}
-</#if>
+<#list 1..depth as i> </#list>    ${field.fieldDescription!}
 <#if field.fieldType.class.name == "org.versly.rest.wsdoc.impl.JsonPrimitive">
 <#list 1..depth as i> </#list>type: <@write_raml_type field.fieldType.typeName/>
 <#if field.fieldType.restrictions??><#t>
-one of [ <#list field.fieldType.restrictions as restricton>${restricton}<#if restricton_has_next>, </#if></#list> ]</#if>
+<#list 1..depth as i> </#list>enum: [ <#list field.fieldType.restrictions as restricton>${restricton}<#if restricton_has_next>, </#if></#list> ]</#if>
 <#else>
 <#list 1..depth as i> </#list>type: string
 </#if>
@@ -115,9 +120,9 @@ one of [ <#list field.fieldType.restrictions as restricton>${restricton}<#if res
 <#--
   -- write out request or response body
   -->
-<#macro write_body body depth>
+<#macro write_body schema example depth>
 <#list 1..depth as i> </#list>body:
-<@write_body_media_type body=body depth=depth+4/>
+<@write_body_media_type schema=schema example=example depth=depth+4/>
 </#macro>
 
 
@@ -125,19 +130,23 @@ one of [ <#list field.fieldType.restrictions as restricton>${restricton}<#if res
   -- write out media type of request body
   -- (TODO: allow for more interesting media types)
   -->
-<#macro write_body_media_type body depth>
+<#macro write_body_media_type schema example depth>
 <#list 1..depth as i> </#list>application/json:
-<@write_body_schema body=body depth=depth+4/>
+<@write_body_schema schema=schema depth=depth+4/>
+<@write_body_example example=example depth=depth+4/>
 </#macro>
 
 
 <#--
   -- write out all url parameters for a method
   -->
-<#macro write_body_schema body depth>
-<#list 1..depth as i> </#list>schema: '${body?trim}'
+<#macro write_body_schema schema depth>
+<#list 1..depth as i> </#list>schema: '${schema?trim}'
 </#macro>
 
+<#macro write_body_example example depth>
+<#list 1..depth as i> </#list>example: '${example?trim}'
+</#macro>
 
 <#--
   -- write out response for a method
@@ -154,7 +163,7 @@ one of [ <#list field.fieldType.restrictions as restricton>${restricton}<#if res
 <#macro write_response_code methodDoc depth>
 <#list 1..depth as i> </#list>200:
 <#if methodDoc.responseSchema??>
-<@write_body body=methodDoc.responseSchema depth=depth+4/>
+<@write_body schema=methodDoc.responseSchema example=methodDoc.responseExample depth=depth+4/>
 </#if>
 </#macro>
 

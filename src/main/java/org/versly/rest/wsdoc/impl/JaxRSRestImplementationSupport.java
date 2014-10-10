@@ -2,13 +2,20 @@ package org.versly.rest.wsdoc.impl;
 
 import org.versly.rest.wsdoc.AnnotationProcessor;
 
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-import javax.ws.rs.*;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 
 public class JaxRSRestImplementationSupport implements AnnotationProcessor.RestImplementationSupport {
     @Override
@@ -69,6 +76,11 @@ public class JaxRSRestImplementationSupport implements AnnotationProcessor.RestI
     public String getRequestParam(VariableElement var) {
         QueryParam param = var.getAnnotation(QueryParam.class);
         return param == null ? null : param.value();
+    }
+
+    @Override
+    public String getPojoRequestParam(VariableElement var) {
+        return null; // Not sure if this concept exists with JaxRS
     }
 
     @Override

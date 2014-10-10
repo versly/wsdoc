@@ -18,9 +18,17 @@ package org.versly.rest.wsdoc.impl;
 
 import org.apache.commons.lang3.StringUtils;
 
-import javax.lang.model.type.TypeMirror;
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 public class RestDocumentation implements Serializable {
@@ -144,6 +152,8 @@ public class RestDocumentation implements Serializable {
             private boolean _isMultipartRequest;
             private String _requestSchema;
             private String _responseSchema;
+            private String _responseExample;
+            private String _requestExample;
 
             public String getResponseSchema() {
                 return _responseSchema;
@@ -159,6 +169,22 @@ public class RestDocumentation implements Serializable {
 
             public void setRequestSchema(String _requestSchema) {
                 this._requestSchema = _requestSchema;
+            }
+
+            public void setResponseExample(String wsDocResponseSchema) {
+                this._responseExample = wsDocResponseSchema;
+            }
+
+            public String getResponseExample() {
+                return _responseExample;
+            }
+
+            public void setRequestExample(String wsDocRequestSchema) {
+                this._requestExample = wsDocRequestSchema;
+            }
+
+            public String getRequestExample() {
+                return _requestExample;
             }
 
             public Method(String meth) {
@@ -179,6 +205,24 @@ public class RestDocumentation implements Serializable {
 
             public UrlFields getUrlSubstitutions() {
                 return _urlSubstitutions;
+            }
+
+            /**
+             * Get the URI parameters specific to this method (useful in RAML where the parent hierarchy will already include it's own)
+             * @return
+             */
+            public UrlFields getMethodSpecificUrlSubstitutions() {
+                Resource parent = _parent;
+                Map<String, UrlFields.UrlField> methodFields = new HashMap<String, UrlFields.UrlField>(_urlSubstitutions.getFields());
+                while (parent != null) {
+                    for (String key : parent.getRequestMethodDocs().iterator().next()._urlSubstitutions.getFields().keySet()) {
+                        methodFields.remove(key);
+                    }
+                    parent = parent._parent;
+                }
+                UrlFields urlFields = new UrlFields();
+                urlFields.getFields().putAll(methodFields);
+                return urlFields;
             }
 
             public UrlFields getUrlParameters() {
