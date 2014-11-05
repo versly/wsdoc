@@ -141,11 +141,13 @@ ${methodDoc.indentedCommentText(depth+4)}
   -- write out all url parameters for a method
   -->
 <#macro write_body_schema schema depth>
-<#list 1..depth as i> </#list>schema: '${schema?trim}'
+<#list 1..depth as i> </#list>schema: |
+<#list 1..depth as i> </#list>    ${schema?trim}
 </#macro>
 
 <#macro write_body_example example depth>
-<#list 1..depth as i> </#list>example: '${example?trim}'
+<#list 1..depth as i> </#list>example: |
+<#list 1..depth as i> </#list>    ${example?trim}
 </#macro>
 
 <#--
