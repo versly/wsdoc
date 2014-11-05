@@ -21,6 +21,7 @@ mediaType: application/json
   -->
 <#macro write_resource resource depth>
 <#if (depth > 0)><#list 1..depth as i> </#list></#if>${resource.pathLeaf?replace(":.*}", "}", "r")}:
+<@write_uri_parameters resource=resource depth=depth+4 />
 <@write_resource_parts resource=resource depth=depth+4/>
 
 </#macro>
@@ -45,7 +46,6 @@ mediaType: application/json
   -- write out the method name, description, parameters, body, and response for the given method
   -->
 <#macro write_method methodDoc depth>
-<@write_uri_parameters methodDoc=methodDoc depth=depth />
 <#list 1..depth as i> </#list>${methodDoc.requestMethod?lower_case}:
 <#if methodDoc.commentText??>
 <@write_description methodDoc=methodDoc depth=depth+4/>
@@ -72,9 +72,9 @@ ${methodDoc.indentedCommentText(depth+4)}
 <#--
   -- write out all URI parameters for a method
   -->
-<#macro write_uri_parameters methodDoc depth>
+<#macro write_uri_parameters resource depth>
 <#list 1..depth as i> </#list>uriParameters:
-<#assign fields=methodDoc.methodSpecificUrlSubstitutions.fields>
+<#assign fields=resource.resourceUrlSubstitutions.fields>
 <#list fields?keys as key>
 <@write_parameter fields=fields key=key depth=depth+4/>
 </#list>
@@ -141,11 +141,13 @@ ${methodDoc.indentedCommentText(depth+4)}
   -- write out all url parameters for a method
   -->
 <#macro write_body_schema schema depth>
-<#list 1..depth as i> </#list>schema: '${schema?trim}'
+<#list 1..depth as i> </#list>schema: |
+<#list 1..depth as i> </#list>    ${schema?trim}
 </#macro>
 
 <#macro write_body_example example depth>
-<#list 1..depth as i> </#list>example: '${example?trim}'
+<#list 1..depth as i> </#list>example: |
+<#list 1..depth as i> </#list>    ${example?trim}
 </#macro>
 
 <#--
