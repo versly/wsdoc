@@ -248,7 +248,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 
     private void buildPathVariables(ExecutableElement executableElement, RestDocumentation.Resource.Method doc,
                                     RestImplementationSupport implementationSupport) {
-        RestDocumentation.Resource.Method.UrlFields subs = doc.getUrlSubstitutions();
+        RestDocumentation.Resource.UrlFields subs = doc.getUrlSubstitutions();
 
         for (VariableElement var : executableElement.getParameters()) {
             String pathVariable = implementationSupport.getPathVariable(var);
@@ -259,7 +259,7 @@ public class AnnotationProcessor extends AbstractProcessor {
         }
     }
 
-    private void addUrlField(RestDocumentation.Resource.Method.UrlFields subs, VariableElement var, String annoValue,
+    private void addUrlField(RestDocumentation.Resource.UrlFields subs, VariableElement var, String annoValue,
             String description) {
         String name = (annoValue == null || annoValue.isEmpty()) ? var.getSimpleName().toString() : annoValue;
         subs.addField(name, jsonTypeFromTypeMirror(var.asType(), new HashSet<String>()), description);
@@ -267,7 +267,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 
     private void buildUrlParameters(ExecutableElement executableElement, RestDocumentation.Resource.Method doc,
                                     RestImplementationSupport implementationSupport) {
-        RestDocumentation.Resource.Method.UrlFields subs = doc.getUrlParameters();
+        RestDocumentation.Resource.UrlFields subs = doc.getUrlParameters();
 
         for (VariableElement var : executableElement.getParameters()) {
             String reqParam = implementationSupport.getRequestParam(var);
@@ -311,7 +311,7 @@ public class AnnotationProcessor extends AbstractProcessor {
     private void buildPojoQueryParameters(ExecutableElement executableElement, RestDocumentation.Resource.Method doc,
                                           RestImplementationSupport implementationSupport) {
         if (doc.getRequestMethod().equals(RequestMethod.GET.name())) {
-            RestDocumentation.Resource.Method.UrlFields subs = doc.getUrlParameters();
+            RestDocumentation.Resource.UrlFields subs = doc.getUrlParameters();
             for (VariableElement var : executableElement.getParameters()) {
                 if (implementationSupport.getPojoRequestParam(var) != null) {
                     Element paramType = _typeUtils.asElement(var.asType());

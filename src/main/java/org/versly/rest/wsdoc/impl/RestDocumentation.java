@@ -141,6 +141,15 @@ public class RestDocumentation implements Serializable {
             return method;
         }
 
+        public UrlFields getResourceUrlSubstitutions() {
+            UrlFields aggregateUrlFields = new UrlFields();
+            for (Method method: _methods) {
+                UrlFields fields = method.getMethodSpecificUrlSubstitutions();
+                aggregateUrlFields.getFields().putAll(fields.getFields());
+            }
+            return aggregateUrlFields;
+        }
+
         public class Method implements Serializable {
 
             private String meth;
@@ -209,6 +218,7 @@ public class RestDocumentation implements Serializable {
 
             /**
              * Get the URI parameters specific to this method (useful in RAML where the parent hierarchy will already include it's own)
+             *
              * @return
              */
             public UrlFields getMethodSpecificUrlSubstitutions() {
@@ -271,45 +281,45 @@ public class RestDocumentation implements Serializable {
                 }
                 return key;
             }
+        }
 
-            public class UrlFields implements Serializable {
+        public class UrlFields implements Serializable {
 
-                private Map<String, UrlField> _jsonFields = new LinkedHashMap();
+            private Map<String, UrlField> _jsonFields = new LinkedHashMap();
 
-                public class UrlField implements Serializable {
+            public class UrlField implements Serializable {
 
-                    private JsonType fieldType;
-                    private String fieldDescription;
+                private JsonType fieldType;
+                private String fieldDescription;
 
-                    public UrlField(JsonType type, String desc) {
-                        fieldType = type;
-                        fieldDescription = desc;
-                    }
-
-                    public JsonType getFieldType() {
-                        return fieldType;
-                    }
-
-                    public void setFieldType(JsonType fieldType) {
-                        this.fieldType = fieldType;
-                    }
-
-                    public String getFieldDescription() {
-                        return fieldDescription;
-                    }
-
-                    public void setFieldDescription(String fieldDescription) {
-                        this.fieldDescription = fieldDescription;
-                    }
+                public UrlField(JsonType type, String desc) {
+                    fieldType = type;
+                    fieldDescription = desc;
                 }
 
-                public Map<String, UrlField> getFields() {
-                    return _jsonFields;
+                public JsonType getFieldType() {
+                    return fieldType;
                 }
 
-                public void addField(String name, JsonType jsonType, String description) {
-                    _jsonFields.put(name, new UrlField(jsonType, description));
+                public void setFieldType(JsonType fieldType) {
+                    this.fieldType = fieldType;
                 }
+
+                public String getFieldDescription() {
+                    return fieldDescription;
+                }
+
+                public void setFieldDescription(String fieldDescription) {
+                    this.fieldDescription = fieldDescription;
+                }
+            }
+
+            public Map<String, UrlField> getFields() {
+                return _jsonFields;
+            }
+
+            public void addField(String name, JsonType jsonType, String description) {
+                _jsonFields.put(name, new UrlField(jsonType, description));
             }
         }
     }

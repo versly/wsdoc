@@ -37,7 +37,7 @@ public class RestDocEndpoint {
         return null;
     }
 
-    @RequestMapping(value = "voidreturn", method = RequestMethod.GET)
+    @RequestMapping(value = "voidreturn1", method = RequestMethod.GET)
     public void methodWithVoidReturn(HttpServletRequest req) {
     }
 
@@ -47,7 +47,7 @@ public class RestDocEndpoint {
      * @param p0 The integer request parameter 0
      * @param param1 The integer request parameter 1
      */
-    @RequestMapping(value = "voidreturn", method = RequestMethod.GET, params = { "param0", "param1" })
+    @RequestMapping(value = "voidreturn2", method = RequestMethod.GET, params = { "param0", "param1" })
     public void methodWithVoidReturnAndParams(HttpServletRequest req,
                                               @RequestParam("param0") int p0,
                                               @RequestParam int param1) {
@@ -149,5 +149,31 @@ public class RestDocEndpoint {
 
         public void setOthers(List<ValueWithRecursion> others) {
         }
+    }
+
+    /**
+     * This endpoint creates things.
+     * @param id1 The widget identifier.
+     */
+    @RequestMapping(value = "widgets/{id1}/gizmos", method = RequestMethod.POST)
+    public void createThing(@PathVariable("id1") String id1) {
+    }
+
+    /**
+     * This endpoint gets things.
+     * @param id1 The widget identifier.
+     * @param id2 The gizmo identifier.
+     */
+    @RequestMapping(value = "widgets/{id1}/gizmos/{id2}", method = RequestMethod.GET)
+    public void getThing(@PathVariable("id1") String id1, @PathVariable("id2") String id2) {
+    }
+
+    /**
+     * This endpoint Deletes things.
+     * @param id1 The widget identifier.
+     * @param id2 The gizmo identifier.
+     */
+    @RequestMapping(value = "widgets/{id1}/gizmos/{id2}", method = RequestMethod.DELETE)
+    public void deleteThing(@PathVariable("id1") String id1, @PathVariable("id2") String id2) {
     }
 }
