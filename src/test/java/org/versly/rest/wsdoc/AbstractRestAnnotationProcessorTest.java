@@ -198,17 +198,5 @@ public abstract class AbstractRestAnnotationProcessorTest {
         }
     }
 
-    // issue #29
-    @Test
-    public void assertNoRedundantUriParametersForResource() {
-        processResource("RestDocEndpoint.java", "raml");
-        int firstOccurrence = output.indexOf("uriParameters:\n            id2:");
-        AssertJUnit.assertTrue("No occurrence of widgets/{id1}/gizmos/{id2} 'uriParameters' found in RAML",
-                firstOccurrence != -1);
-        int secondOccurrence = output.indexOf("uriParameters:\n            id2:", firstOccurrence + 1);
-        AssertJUnit.assertTrue("Occurrence of multiple widgets/{id1}/gizmos/{id2} 'uriParameters' found in RAML",
-                secondOccurrence == -1);
-    }
-
     protected abstract String getPackageToTest();
 }

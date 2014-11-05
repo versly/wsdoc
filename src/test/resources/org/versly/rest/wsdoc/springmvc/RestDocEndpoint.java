@@ -151,6 +151,8 @@ public class RestDocEndpoint {
         }
     }
 
+    // this following widges/{id1}/gizmos endpoints are for verifying issue #29
+
     /**
      * This endpoint creates things.
      * @param id1 The widget identifier.
