@@ -22,12 +22,9 @@ import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
 
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
-import org.versly.rest.wsdoc.DocumentationScope.Scope;
 import org.versly.rest.wsdoc.impl.JaxRSRestImplementationSupport;
 import org.versly.rest.wsdoc.impl.JsonArray;
 import org.versly.rest.wsdoc.impl.JsonDict;
@@ -43,15 +40,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -100,27 +89,27 @@ import static org.apache.commons.lang3.StringUtils.join;
 @SupportedAnnotationTypes({"org.springframework.web.bind.annotation.RequestMapping", "javax.ws.rs.Path"})
 public class AnnotationProcessor extends AbstractProcessor {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(AnnotationProcessor.class);
-	
     private RestDocumentation _docs = new RestDocumentation();
     private boolean _isComplete = false;
     private Map<TypeMirror, JsonType> _memoizedTypeMirrors = new HashMap<TypeMirror, JsonType>();
     private Map<DeclaredType, JsonType> _memoizedDeclaredTypes = new HashMap<DeclaredType, JsonType>();
     private ProcessingEnvironment _processingEnv;
     private Types _typeUtils;
+    private final Set<String> _desiredScopes = new HashSet<String>();
 
     @Override
     public void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
         _processingEnv = processingEnv;
         _typeUtils = _processingEnv.getTypeUtils();
+
+        // TODO this should be a configurable list, and we should move it to the doc generation phase
+        _desiredScopes.add("public");
     }
 
     @Override
     public boolean process(Set<? extends TypeElement> supportedAnnotations, RoundEnvironment roundEnvironment) {
 
-    	LOGGER.info("Calling process");
-    	
         // short-circuit if there are multiple rounds
         if (_isComplete)
             return true;
@@ -157,19 +146,23 @@ public class AnnotationProcessor extends AbstractProcessor {
         return true;
     }
 
-    private boolean isExecutableElementMarkedAsUndocumented(Element executableElement) {
+    private boolean shouldIncludeDocumentation(Element executableElement) {
+
+        // TODO this logic should move to RestDocAssembler, so it can be dynamically applied
+    	while (executableElement.getKind().compareTo(ElementKind.PACKAGE) != 0) {
     	
-    	while(executableElement.getKind().compareTo(ElementKind.PACKAGE) != 0) {
-    	
-    		DocumentationScope unDocumented = executableElement.getAnnotation(DocumentationScope.class);
-    		if (unDocumented != null && unDocumented.value() == Scope.Internal) {
-    			return true;
-    		}
-    	
+    		DocumentationScope scope = executableElement.getAnnotation(DocumentationScope.class);
+            Set<String> scopeNames = new HashSet<String>(Arrays.asList(scope.value()));
+            scopeNames.retainAll(_desiredScopes);
+            if (scopeNames.isEmpty()) {
+                // we found a scope annotation but it doesn't include any of our desired scopes; skip
+                return false;
+            }
     		executableElement = executableElement.getEnclosingElement();
     	}
-    	
-    	return false;
+
+        // we didn't find any doc scope annotations; include by default
+    	return true;
     }
     
     private void processElements(RoundEnvironment roundEnvironment,
@@ -180,7 +173,7 @@ public class AnnotationProcessor extends AbstractProcessor {
         	
         	if (e instanceof ExecutableElement) {
             
-        		if (isExecutableElementMarkedAsUndocumented((ExecutableElement)e)) {
+        		if (!shouldIncludeDocumentation(e)) {
             		continue;
             	}
         		
