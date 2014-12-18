@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.versly.rest.wsdoc.DocumentationScope.Scope;
 import org.versly.rest.wsdoc.impl.JaxRSRestImplementationSupport;
 import org.versly.rest.wsdoc.impl.JsonArray;
 import org.versly.rest.wsdoc.impl.JsonDict;
@@ -160,8 +161,8 @@ public class AnnotationProcessor extends AbstractProcessor {
     	
     	while(executableElement.getKind().compareTo(ElementKind.PACKAGE) != 0) {
     	
-    		UnDocumented unDocumented = executableElement.getAnnotation(UnDocumented.class);
-    		if (unDocumented != null && unDocumented.value()) {
+    		DocumentationScope unDocumented = executableElement.getAnnotation(DocumentationScope.class);
+    		if (unDocumented != null && unDocumented.value() == Scope.Internal) {
     			return true;
     		}
     	
