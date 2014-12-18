@@ -22,6 +22,8 @@ import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
@@ -97,6 +99,8 @@ import static org.apache.commons.lang3.StringUtils.join;
 @SupportedAnnotationTypes({"org.springframework.web.bind.annotation.RequestMapping", "javax.ws.rs.Path"})
 public class AnnotationProcessor extends AbstractProcessor {
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(AnnotationProcessor.class);
+	
     private RestDocumentation _docs = new RestDocumentation();
     private boolean _isComplete = false;
     private Map<TypeMirror, JsonType> _memoizedTypeMirrors = new HashMap<TypeMirror, JsonType>();
@@ -114,6 +118,8 @@ public class AnnotationProcessor extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> supportedAnnotations, RoundEnvironment roundEnvironment) {
 
+    	LOGGER.info("Calling process");
+    	
         // short-circuit if there are multiple rounds
         if (_isComplete)
             return true;
@@ -150,12 +156,34 @@ public class AnnotationProcessor extends AbstractProcessor {
         return true;
     }
 
+    private boolean isExecutableElementMarkedAsUndocumented(Element executableElement) {
+    	
+    	while(executableElement.getKind().compareTo(ElementKind.PACKAGE) != 0) {
+    	
+    		UnDocumented unDocumented = executableElement.getAnnotation(UnDocumented.class);
+    		if (unDocumented != null && unDocumented.value()) {
+    			return true;
+    		}
+    	
+    		executableElement = executableElement.getEnclosingElement();
+    	}
+    	
+    	return false;
+    }
+    
     private void processElements(RoundEnvironment roundEnvironment,
                                  Collection<String> processedPackageNames,
                                  RestImplementationSupport implementationSupport) {
-        for (Element e : roundEnvironment.getElementsAnnotatedWith(implementationSupport.getMappingAnnotationType())) {
-            if (e instanceof ExecutableElement) {
-                addPackageName(processedPackageNames, e);
+    	
+    	for (Element e : roundEnvironment.getElementsAnnotatedWith(implementationSupport.getMappingAnnotationType())) {
+        	
+        	if (e instanceof ExecutableElement) {
+            
+        		if (isExecutableElementMarkedAsUndocumented((ExecutableElement)e)) {
+            		continue;
+            	}
+        		
+        		addPackageName(processedPackageNames, e);
                 processRequestMappingMethod((ExecutableElement) e, implementationSupport);
             }
         }
