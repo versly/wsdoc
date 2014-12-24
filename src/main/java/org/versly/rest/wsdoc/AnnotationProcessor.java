@@ -152,12 +152,16 @@ public class AnnotationProcessor extends AbstractProcessor {
     	while (executableElement.getKind().compareTo(ElementKind.PACKAGE) != 0) {
     	
     		DocumentationScope scope = executableElement.getAnnotation(DocumentationScope.class);
-            Set<String> scopeNames = new HashSet<String>(Arrays.asList(scope.value()));
-            scopeNames.retainAll(_desiredScopes);
-            if (scopeNames.isEmpty()) {
-                // we found a scope annotation but it doesn't include any of our desired scopes; skip
-                return false;
-            }
+    		if (scope != null) {
+    			
+	            Set<String> scopeNames = new HashSet<String>(Arrays.asList(scope.value()));
+	            scopeNames.retainAll(_desiredScopes);
+	            if (scopeNames.isEmpty()) {
+	                // we found a scope annotation but it doesn't include any of our desired scopes; skip
+	                return false;
+	            }
+    		}
+    		
     		executableElement = executableElement.getEnclosingElement();
     	}
 
