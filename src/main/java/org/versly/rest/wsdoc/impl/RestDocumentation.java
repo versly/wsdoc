@@ -25,15 +25,17 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.Map;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 public class RestDocumentation implements Serializable {
 
-    private Map<String, Resource> _resources = new LinkedHashMap();
+    private Map<String, Resource> _resources = new TreeMap<String, Resource>();
 
     public Collection<Resource> getResources() {
         return _resources.values();
@@ -105,9 +107,9 @@ public class RestDocumentation implements Serializable {
     public class Resource implements Serializable {
 
         private String path;
-        private Collection<Method> _methods = new LinkedList<Method>();
+        private Collection<Method> _methods = new TreeSet<Method>(new MethodNameComparator());
         private Resource _parent;
-        private Collection<Resource> _children = new LinkedList<Resource>();
+        private Collection<Resource> _children = new TreeSet<Resource>(new PathComparator());
 
         public Resource(String path) {
             this.path = path;
@@ -320,6 +322,20 @@ public class RestDocumentation implements Serializable {
 
             public void addField(String name, JsonType jsonType, String description) {
                 _jsonFields.put(name, new UrlField(jsonType, description));
+            }
+        }
+
+        private class MethodNameComparator implements Comparator<Method>, Serializable {
+            @Override
+            public int compare(Method m1, Method m2) {
+                return m1.meth.compareTo(m2.meth);
+            }
+        }
+
+        private class PathComparator implements Comparator<Resource>, Serializable {
+            @Override
+            public int compare(Resource r1, Resource r2) {
+                return r1.path.compareTo(r2.path);
             }
         }
     }
