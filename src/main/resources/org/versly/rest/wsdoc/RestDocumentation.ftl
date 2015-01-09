@@ -26,12 +26,13 @@
 
             div.resource { border-top: 1px solid gray; padding-top: 5px; margin-top: 15px; }
             div.resource-header { font-family: monospace; font-size: 18px; font-weight: bold; padding-bottom: 15px; }
-            div.resource-docs { padding-bottom: 20px; }
+            div.resource-docs { padding-bottom: 20px; white-space: pre; }
 
             div.url-info { padding-bottom: 20px; }
-            div.url-info table { width: 400px; border-spacing: 0px; }
+            div.url-info table { width: auto; border-spacing: 0px; }
             div.url-info thead td { border-bottom: 1px dashed gray; }
-            .url-info-key { font-family: monospace; }
+            div.url-info thead td,.url-info-key { padding-right: 50px; }
+            .url-info-key { font-family: monospace; vertical-align: top; }
             .url-info-expected-type { font-family: monospace; }
 
             div.request-body { padding-bottom: 20px; }
@@ -77,16 +78,14 @@
                                     ?<#list params?keys as key><#t>
                                         <span class="url-param-key">${key}</span><#t>
                                         =<#t>
-                                        <span class="url-param-expected-type"><@render_json params[key]/></span><#t>
+                                        <span class="url-param-expected-type"><@render_json params[key].fieldType/></span><#t>
                                         <#if key_has_next>&</#if><#t>
                                     </#list><#t>
                                 </#if><#t>
                         </div>
 
                         <#if (methodDoc.commentText??)>
-                            <div class="resource-docs">
-                                ${methodDoc.commentText}
-                            </div>
+                            <div class="resource-docs">${methodDoc.commentText}</div>
                         </#if>
 
                         <#if methodDoc.multipartRequest>
@@ -100,17 +99,37 @@
                             <div class="url-info">
                                 <table>
                                     <thead>
-                                        <tr><td>URL Substitution Key</td><td>Expected Type</td></tr>
+                                        <tr><td>URL Substitution Key</td><td>Expected Type</td><td>Description</td></tr>
                                     </thead>
                                     <#list subs?keys as key>
                                         <tr>
                                             <td class="url-info-key">${key}</td>
-                                            <td class="url-info-expected-type"><@render_json subs[key]/></td>
+                                            <td class="url-info-expected-type"><@render_json subs[key].fieldType/></td>
+                                            <td class="json-field-comment">${subs[key].fieldDescription!}</td>
                                         </tr>
                                     </#list>
                                 </table>
                             </div>
                         </#if>
+
+                        <#assign queryParams=methodDoc.urlParameters.fields>
+                        <#if (queryParams?keys?size > 0)>
+                            <div class="url-info">
+                                <table>
+                                    <thead>
+                                        <tr><td>Query Parameter</td><td>Expected Type</td><td>Description</td></tr>
+                                    </thead>
+                                    <#list queryParams?keys as key>
+                                        <tr>
+                                            <td class="url-info-key">${key}</td>
+                                            <td class="url-info-expected-type"><@render_json queryParams[key].fieldType/></td>
+                                            <td class="json-field-comment">${queryParams[key].fieldDescription!}</td>
+                                        </tr>
+                                    </#list>
+                                </table>
+                            </div>
+                        </#if>
+
 
                         <#if (methodDoc.requestBody??)>
                             <div class="request-body">

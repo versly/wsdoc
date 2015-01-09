@@ -1,19 +1,31 @@
 package org.versly.rest.wsdoc;
 
 import freemarker.template.TemplateException;
+
 import org.testng.AssertJUnit;
 import org.testng.annotations.Test;
 import org.versly.rest.wsdoc.impl.RestDocumentation;
 import org.versly.rest.wsdoc.impl.Utils;
 
-import javax.tools.*;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.regex.Pattern;
+
+import javax.tools.JavaCompiler;
+import javax.tools.JavaFileObject;
+import javax.tools.SimpleJavaFileObject;
+import javax.tools.StandardJavaFileManager;
+import javax.tools.StandardLocation;
+import javax.tools.ToolProvider;
 
 public abstract class AbstractRestAnnotationProcessorTest {
     protected static String output;

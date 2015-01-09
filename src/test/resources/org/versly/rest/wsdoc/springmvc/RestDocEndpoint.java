@@ -37,14 +37,24 @@ public class RestDocEndpoint {
         return null;
     }
 
-    @RequestMapping(value = "voidreturn", method = RequestMethod.GET)
+    @RequestMapping(value = "voidreturn1", method = RequestMethod.GET)
     public void methodWithVoidReturn(HttpServletRequest req) {
     }
 
-    @RequestMapping(value = "voidreturn", method = RequestMethod.GET, params = { "param0", "param1" })
+    /**
+     * Returns void
+     * @param req Nothing interesting
+     * @param p0 The integer request parameter 0
+     * @param param1 The integer request parameter 1
+     */
+    @RequestMapping(value = "voidreturn2", method = RequestMethod.GET, params = { "param0", "param1" })
     public void methodWithVoidReturnAndParams(HttpServletRequest req,
                                               @RequestParam("param0") int p0,
                                               @RequestParam int param1) {
+    }
+
+    @RequestMapping(value = "pojoQueryParams", method = RequestMethod.GET)
+    public void methodWithPojoArgs(PojoValue pojoQueryParams) {
     }
 
     @RequestMapping(value = "multipart", method = RequestMethod.GET)
@@ -83,6 +93,26 @@ public class RestDocEndpoint {
     public void multipleBindings() {
     }
 
+    public class PojoValue {
+
+        public String getQueryParamVal1() {
+            return null;
+        }
+
+        public int getQueryParamVal2() {
+            return 1;
+        }
+
+        /**
+         * The first query param
+         */
+        public void setQueryParamVal1(String str) {
+        }
+
+        public void setQueryParamVal2(int i) {
+        }
+    }
+
     public class ExcitingReturnValue {
         /**
          * The exciting return value's date!
@@ -119,5 +149,33 @@ public class RestDocEndpoint {
 
         public void setOthers(List<ValueWithRecursion> others) {
         }
+    }
+
+    // this following widges/{id1}/gizmos endpoints are for verifying issue #29
+
+    /**
+     * This endpoint creates things.
+     * @param id1 The widget identifier.
+     */
+    @RequestMapping(value = "widgets/{id1}/gizmos", method = RequestMethod.POST)
+    public void createThing(@PathVariable("id1") String id1) {
+    }
+
+    /**
+     * This endpoint gets things.
+     * @param id1 The widget identifier.
+     * @param id2 The gizmo identifier.
+     */
+    @RequestMapping(value = "widgets/{id1}/gizmos/{id2}", method = RequestMethod.GET)
+    public void getThing(@PathVariable("id1") String id1, @PathVariable("id2") String id2) {
+    }
+
+    /**
+     * This endpoint Deletes things.
+     * @param id1 The widget identifier.
+     * @param id2 The gizmo identifier.
+     */
+    @RequestMapping(value = "widgets/{id1}/gizmos/{id2}", method = RequestMethod.DELETE)
+    public void deleteThing(@PathVariable("id1") String id1, @PathVariable("id2") String id2) {
     }
 }

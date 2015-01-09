@@ -17,8 +17,8 @@
 package org.versly.rest.wsdoc;
 
 import freemarker.template.TemplateException;
+
 import org.testng.AssertJUnit;
-import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -62,11 +62,38 @@ public class SpringMVCRestAnnotationProcessorTest extends AbstractRestAnnotation
     }
 
     @Test
+    public void assertQueryParams() {
+        processResource("RestDocEndpoint.java", "html");
+        AssertJUnit.assertTrue("expected queryParam1 and queryParam2 in docs; got: \n" + output,
+                               output.contains(">queryParamVal1<") && output.contains(">queryParamVal2<"));
+    }
+
+    @Test
+    public void processControllerThatReturnsEnumSetExpectsSuccess() {
+        processResource("EnumSetController.java", "html");
+        AssertJUnit.assertTrue("expected enumsets in docs; got: \n" + output,
+                               output.contains(">myEnumSet<") && output.contains(">myEnum<") && output.contains(">one of [ TEST1, TEST2 ]<"));
+    }
+
+    @Test
     public void multipleBindingsForOneEndpoint() {
         processResource("RestDocEndpoint.java", "html");
         AssertJUnit.assertTrue("expected multiple-bindings-a and multiple-bindings-b in docs; got: \n" + output,
                 output.contains("multiple-bindings-a<") && output.contains("multiple-bindings-b<"));
     }
+
+    // issue #29
+    @Test
+    public void assertNoRedundantUriParametersForResource() {
+        processResource("RestDocEndpoint.java", "raml");
+        int firstOccurrence = output.indexOf("uriParameters:\n            id2:");
+        AssertJUnit.assertTrue("No occurrence of widgets/{id1}/gizmos/{id2} 'uriParameters' found in RAML",
+                firstOccurrence != -1);
+        int secondOccurrence = output.indexOf("uriParameters:\n            id2:", firstOccurrence + 1);
+        AssertJUnit.assertTrue("Occurrence of multiple widgets/{id1}/gizmos/{id2} 'uriParameters' found in RAML",
+                secondOccurrence == -1);
+    }
+
 
     public static void main(String[] args) throws IOException, URISyntaxException {
         File dir = new File(args[0]);

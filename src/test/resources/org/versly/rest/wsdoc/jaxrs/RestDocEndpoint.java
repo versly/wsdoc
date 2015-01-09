@@ -43,12 +43,12 @@ public class RestDocEndpoint {
     }
 
     @GET
-    @Path("voidreturn")
+    @Path("voidreturn1")
     public void methodWithVoidReturn(@Context HttpServletRequest req) {
     }
 
     @GET
-    @Path("voidreturn")
+    @Path("voidreturn2")
     public void methodWithVoidReturnAndParams(@Context HttpServletRequest req,
                                               @QueryParam("param0") int p0,
                                               @QueryParam("param1") int param1) {
@@ -129,5 +129,17 @@ public class RestDocEndpoint {
 
         public void setOthers(List<ValueWithRecursion> others) {
         }
+    }
+
+    @GET
+    @Path("things/{id}")
+    public void getThing(@Context HttpServletRequest req,
+                         @PathParam("id") String id) {
+    }
+
+    @POST
+    @Path("things/{id}")
+    public void deleteThing(@Context HttpServletRequest req,
+                            @PathParam("id") String id) {
     }
 }

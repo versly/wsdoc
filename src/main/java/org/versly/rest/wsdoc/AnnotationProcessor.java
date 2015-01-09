@@ -18,34 +18,65 @@ package org.versly.rest.wsdoc;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator;
-import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
+import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
-import org.versly.rest.wsdoc.impl.*;
 
-import javax.annotation.processing.AbstractProcessor;
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
-import javax.lang.model.element.*;
-import javax.lang.model.type.*;
-import javax.lang.model.util.AbstractTypeVisitor6;
-import javax.lang.model.util.Types;
-import javax.tools.Diagnostic;
-import javax.tools.FileObject;
-import javax.tools.StandardLocation;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.versly.rest.wsdoc.impl.JaxRSRestImplementationSupport;
+import org.versly.rest.wsdoc.impl.JsonArray;
+import org.versly.rest.wsdoc.impl.JsonDict;
+import org.versly.rest.wsdoc.impl.JsonObject;
+import org.versly.rest.wsdoc.impl.JsonPrimitive;
+import org.versly.rest.wsdoc.impl.JsonRecursiveObject;
+import org.versly.rest.wsdoc.impl.JsonType;
+import org.versly.rest.wsdoc.impl.RestDocumentation;
+import org.versly.rest.wsdoc.impl.SpringMVCRestImplementationSupport;
+import org.versly.rest.wsdoc.impl.Utils;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.util.*;
 
+import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ErrorType;
+import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.NoType;
+import javax.lang.model.type.NullType;
+import javax.lang.model.type.PrimitiveType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.WildcardType;
+import javax.lang.model.util.AbstractTypeVisitor6;
+import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Types;
+import javax.tools.Diagnostic;
+import javax.tools.FileObject;
+import javax.tools.StandardLocation;
+
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+import static org.apache.commons.lang3.StringUtils.join;
+
 /**
  * Generates an HTML documentation file describing the REST / JSON endpoints as defined with the
- * Spring {@link org.springframework.web.bind.annotation.RequestMapping} annotation. Outputs to
- * <code>rest-api.html</code> in the top of the classes directory.
+ * Spring {@link org.springframework.web.bind.annotation.RequestMapping} annotation. Outputs to <code>rest-api.html</code> in the top of the classes directory.
  */
 // TODO:
 //   - @CookieValue
@@ -63,11 +94,17 @@ public class AnnotationProcessor extends AbstractProcessor {
     private Map<TypeMirror, JsonType> _memoizedTypeMirrors = new HashMap<TypeMirror, JsonType>();
     private Map<DeclaredType, JsonType> _memoizedDeclaredTypes = new HashMap<DeclaredType, JsonType>();
     private ProcessingEnvironment _processingEnv;
+    private Types _typeUtils;
+    private final Set<String> _desiredScopes = new HashSet<String>();
 
     @Override
     public void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
         _processingEnv = processingEnv;
+        _typeUtils = _processingEnv.getTypeUtils();
+
+        // TODO this should be a configurable list, and we should move it to the doc generation phase
+        _desiredScopes.add("public");
     }
 
     @Override
@@ -109,12 +146,42 @@ public class AnnotationProcessor extends AbstractProcessor {
         return true;
     }
 
+    private boolean shouldIncludeDocumentation(Element executableElement) {
+
+        // TODO this logic should move to RestDocAssembler, so it can be dynamically applied
+    	while (executableElement.getKind().compareTo(ElementKind.PACKAGE) != 0) {
+    	
+    		DocumentationScope scope = executableElement.getAnnotation(DocumentationScope.class);
+    		if (scope != null) {
+    			
+	            Set<String> scopeNames = new HashSet<String>(Arrays.asList(scope.value()));
+	            scopeNames.retainAll(_desiredScopes);
+	            if (scopeNames.isEmpty()) {
+	                // we found a scope annotation but it doesn't include any of our desired scopes; skip
+	                return false;
+	            }
+    		}
+    		
+    		executableElement = executableElement.getEnclosingElement();
+    	}
+
+        // we didn't find any doc scope annotations; include by default
+    	return true;
+    }
+    
     private void processElements(RoundEnvironment roundEnvironment,
                                  Collection<String> processedPackageNames,
                                  RestImplementationSupport implementationSupport) {
-        for (Element e : roundEnvironment.getElementsAnnotatedWith(implementationSupport.getMappingAnnotationType())) {
-            if (e instanceof ExecutableElement) {
-                addPackageName(processedPackageNames, e);
+    	
+    	for (Element e : roundEnvironment.getElementsAnnotatedWith(implementationSupport.getMappingAnnotationType())) {
+        	
+        	if (e instanceof ExecutableElement) {
+            
+        		if (!shouldIncludeDocumentation(e)) {
+            		continue;
+            	}
+        		
+        		addPackageName(processedPackageNames, e);
                 processRequestMappingMethod((ExecutableElement) e, implementationSupport);
             }
         }
@@ -165,6 +232,7 @@ public class AnnotationProcessor extends AbstractProcessor {
         scanForSpringMVCMultipart(executableElement, doc);
         buildPathVariables(executableElement, doc, implementationSupport);
         buildUrlParameters(executableElement, doc, implementationSupport);
+        buildPojoQueryParameters(executableElement, doc, implementationSupport);
         buildRequestBodies(executableElement, doc, implementationSupport);
     }
 
@@ -201,21 +269,23 @@ public class AnnotationProcessor extends AbstractProcessor {
     private void buildRequestBody(VariableElement var, RestDocumentation.Resource.Method doc) {
         doc.setRequestBody(jsonTypeFromTypeMirror(var.asType(), new HashSet<String>()));
         doc.setRequestSchema(jsonSchemaFromTypeMirror(var.asType()));
+        doc.setRequestExample(exampleFromJsonType(doc.getRequestBody()));
     }
 
     private void buildPathVariables(ExecutableElement executableElement, RestDocumentation.Resource.Method doc,
                                     RestImplementationSupport implementationSupport) {
-        RestDocumentation.Resource.Method.UrlFields subs = doc.getUrlSubstitutions();
+        RestDocumentation.Resource.UrlFields subs = doc.getUrlSubstitutions();
 
         for (VariableElement var : executableElement.getParameters()) {
             String pathVariable = implementationSupport.getPathVariable(var);
             if (pathVariable != null) {
-                addUrlField(subs, var, pathVariable, findParamDescription(pathVariable, doc.getCommentText()));
+                String paramName = var.getSimpleName().toString();
+                addUrlField(subs, var, pathVariable, findParamDescription(paramName, doc.getCommentText()));
             }
         }
     }
 
-    private void addUrlField(RestDocumentation.Resource.Method.UrlFields subs, VariableElement var, String annoValue,
+    private void addUrlField(RestDocumentation.Resource.UrlFields subs, VariableElement var, String annoValue,
             String description) {
         String name = (annoValue == null || annoValue.isEmpty()) ? var.getSimpleName().toString() : annoValue;
         subs.addField(name, jsonTypeFromTypeMirror(var.asType(), new HashSet<String>()), description);
@@ -223,12 +293,13 @@ public class AnnotationProcessor extends AbstractProcessor {
 
     private void buildUrlParameters(ExecutableElement executableElement, RestDocumentation.Resource.Method doc,
                                     RestImplementationSupport implementationSupport) {
-        RestDocumentation.Resource.Method.UrlFields subs = doc.getUrlParameters();
+        RestDocumentation.Resource.UrlFields subs = doc.getUrlParameters();
 
         for (VariableElement var : executableElement.getParameters()) {
             String reqParam = implementationSupport.getRequestParam(var);
             if (reqParam != null) {
-                addUrlField(subs, var, reqParam, findParamDescription(reqParam, doc.getCommentText()));
+                String paramName = var.getSimpleName().toString();
+                addUrlField(subs, var, reqParam, findParamDescription(paramName, doc.getCommentText()));
             }
         }
     }
@@ -236,7 +307,7 @@ public class AnnotationProcessor extends AbstractProcessor {
     String findParamDescription(String paramName, String methodJavaDoc)
     {
         String desc = null;
-        if (methodJavaDoc != null) {
+        if (methodJavaDoc != null && StringUtils.isNotEmpty(paramName)) {
             String token = "@param " + paramName;
             int startIndex = methodJavaDoc.indexOf(token);
             if (startIndex != -1) {
@@ -249,11 +320,41 @@ public class AnnotationProcessor extends AbstractProcessor {
                 } else {
                     desc = methodJavaDoc.substring(startIndex + token.length());
                 }
-                desc = StringUtils.strip(desc.replace("\n", " ").replace("\r", " ").replaceAll(" {2,}", " "));
+                desc = fixCommentWhitespace(desc);
             }
         }
 
         return desc;
+    }
+
+    private String fixCommentWhitespace(String desc) {
+        return desc == null ? null : StringUtils.strip(desc.replace("\n", " ").replace("\r", " ").replaceAll(" {2,}", " "));
+    }
+
+    /**
+     * Finds any request parameters that can be bound to (which are pojos) and adds each of the POJOs fields to the url parameters
+     */
+    private void buildPojoQueryParameters(ExecutableElement executableElement, RestDocumentation.Resource.Method doc,
+                                          RestImplementationSupport implementationSupport) {
+        if (doc.getRequestMethod().equals(RequestMethod.GET.name())) {
+            RestDocumentation.Resource.UrlFields subs = doc.getUrlParameters();
+            for (VariableElement var : executableElement.getParameters()) {
+                if (implementationSupport.getPojoRequestParam(var) != null) {
+                    Element paramType = _typeUtils.asElement(var.asType());
+                    List<ExecutableElement> methods = ElementFilter.methodsIn(paramType.getEnclosedElements());
+                    for (ExecutableElement method : methods) {
+                        if (method.getSimpleName().toString().startsWith("set") && method.getParameters().size() == 1) {
+                            String setterComment = processingEnv.getElementUtils().getDocComment(method);
+                            TypeMirror setterType = method.getParameters().get(0).asType();
+                            JsonType jsonType = jsonTypeFromTypeMirror(setterType, new HashSet<String>());
+                            String propName = StringUtils.uncapitalize(method.getSimpleName().toString().substring(3));
+                            subs.addField(propName, jsonType, fixCommentWhitespace(setterComment));
+                        }
+                    }
+                }
+            }
+        }
+
     }
 
     private JsonType jsonTypeFromTypeMirror(TypeMirror typeMirror, Collection<String> typeRecursionGuard) {
@@ -301,12 +402,13 @@ public class AnnotationProcessor extends AbstractProcessor {
 
     private boolean isJsonPrimitive(TypeMirror typeMirror) {
         return (typeMirror.getKind().isPrimitive()
-                || JsonPrimitive.isPrimitive(typeMirror.toString()));
+        || JsonPrimitive.isPrimitive(typeMirror.toString()));
     }
 
     private void buildResponseFormat(TypeMirror type, RestDocumentation.Resource.Method doc) {
         doc.setResponseBody(jsonTypeFromTypeMirror(type, new HashSet<String>()));
         doc.setResponseSchema(jsonSchemaFromTypeMirror(type));
+        doc.setResponseExample(exampleFromJsonType(doc.getResponseBody()));
     }
 
     private String[] getClassLevelUrlPaths(TypeElement cls, RestImplementationSupport implementationSupport) {
@@ -344,6 +446,11 @@ public class AnnotationProcessor extends AbstractProcessor {
             if (Object.class.getName().equals(elem.getQualifiedName().toString()))
                 return;
 
+            if (elem.getSuperclass() instanceof DeclaredType) {
+                DeclaredType sup = (DeclaredType) elem.getSuperclass();
+                loadTypeElements(sup, sup.getTypeArguments());
+            }
+
             List<? extends TypeParameterElement> generics = elem.getTypeParameters();
             for (int i = 0; i < generics.size(); i++) {
                 DeclaredType value =
@@ -352,10 +459,6 @@ public class AnnotationProcessor extends AbstractProcessor {
                 _typeArguments.put(generics.get(i).getSimpleName(), value);
             }
 
-            if (elem.getSuperclass() instanceof DeclaredType) {
-                DeclaredType sup = (DeclaredType) elem.getSuperclass();
-                loadTypeElements(sup, sup.getTypeArguments());
-            }
         }
 
         @Override
@@ -418,7 +521,7 @@ public class AnnotationProcessor extends AbstractProcessor {
                             enumConstants.add(e.toString());
                         }
                     }
-                    JsonPrimitive primitive = new JsonPrimitive(String.class.getName());  // TODO is this always a string?
+                    JsonPrimitive primitive = new JsonPrimitive(String.class.getName()); // TODO is this always a string?
                     primitive.setRestrictions(enumConstants);
                     return primitive;
                 } else {
@@ -540,7 +643,7 @@ public class AnnotationProcessor extends AbstractProcessor {
                 return false;
 
             if (!(executableElement.getSimpleName().toString().startsWith("get")
-                    || executableElement.getSimpleName().toString().startsWith("is")))
+            || executableElement.getSimpleName().toString().startsWith("is")))
                 return false;
 
             if (executableElement.getParameters().size() > 0)
@@ -615,7 +718,78 @@ public class AnnotationProcessor extends AbstractProcessor {
 
         String getRequestParam(VariableElement var);
 
+        String getPojoRequestParam(VariableElement var);
+
         boolean isRequestBody(VariableElement var);
+    }
+
+    String exampleFromJsonType(JsonType type) {
+        return renderJson(type);
+    }
+
+    String renderJson(JsonType type) {
+        String schema = "";
+        if (type instanceof org.versly.rest.wsdoc.impl.JsonPrimitive) {
+            schema = schema + renderJsonPrimitive((JsonPrimitive) type, null);
+        } else if (type instanceof org.versly.rest.wsdoc.impl.JsonObject) {
+            schema = schema + renderJsonObject((JsonObject) type);
+        } else if (type instanceof org.versly.rest.wsdoc.impl.JsonRecursiveObject){
+            schema = schema + renderJsonRecursiveObject((JsonRecursiveObject) type);
+        } else if (type instanceof org.versly.rest.wsdoc.impl.JsonArray) {
+            schema = schema + renderJsonArray((JsonArray) type);
+        } else if (type instanceof org.versly.rest.wsdoc.impl.JsonDict) {
+            schema = schema + renderJsonDict((JsonDict) type);
+        }
+        return schema;
+    }
+
+    private String renderJsonArray(JsonArray type) {
+        return "[" + renderJson(type.getElementType()) + "]";
+    }
+
+    private String renderJsonDict(JsonDict type) {
+        return "{" + renderJson(type.getKeyType()) + ": " + renderJson(type.getValueType()) + " }";
+    }
+
+    private String renderJsonPrimitive(JsonPrimitive type, String comment) {
+        String primStr = "\"" + type.getTypeName();
+        if (!CollectionUtils.isEmpty(type.getRestrictions())) {
+            primStr = primStr + " one of [" + join(type.getRestrictions().toArray(), ",") + "]";
+        }
+        if (comment != null) {
+            primStr = primStr + " /* " + comment + " */";
+        }
+        return primStr + "\"";
+    }
+
+    private String renderJsonObject(JsonObject type) {
+        String objStr = "{";
+        Iterator<JsonObject.JsonField> fieldIt = type.getFields().iterator();
+        while (fieldIt.hasNext()) {
+            JsonObject.JsonField jsonField = fieldIt.next();
+            objStr = objStr + "\"" + jsonField.getFieldName() + "\": ";
+            if (jsonField.getFieldType() instanceof JsonPrimitive) {
+                objStr = objStr + renderJsonPrimitive((JsonPrimitive) jsonField.getFieldType(), getComment(jsonField));
+            } else {
+                objStr = objStr + renderJson(jsonField.getFieldType());
+            }
+            if (fieldIt.hasNext()) {
+                objStr = objStr + ",";
+            }
+        }
+        return objStr + "}";
+    }
+
+    private String getComment(JsonObject.JsonField jsonField) {
+        String comment = null;
+        if (isNotEmpty(jsonField.getCommentText())) {
+            comment =  jsonField.getCommentText().replaceAll("(\r|\n)+| {2,}", " ");
+        }
+        return comment;
+    }
+
+    private String renderJsonRecursiveObject(JsonRecursiveObject type) {
+        return "\"" + type.getRecursedObjectTypeName() + " recursive\"";
     }
 
     String jsonSchemaFromTypeMirror(TypeMirror type) {
@@ -629,7 +803,7 @@ public class AnnotationProcessor extends AbstractProcessor {
         // note: Types.erasure() provides canonical names whereas Class.forName() wants a "regular" name,
         // so forName will fail for nested and inner classes as "regular" names use $ between parent and child.
         Class dtoClass = null;
-        StringBuffer erasure = new StringBuffer(_processingEnv.getTypeUtils().erasure(type).toString());
+        StringBuffer erasure = new StringBuffer(_typeUtils.erasure(type).toString());
         for (boolean done = false; !done; ) {
             try {
                 dtoClass = Class.forName(erasure.toString());
@@ -650,6 +824,7 @@ public class AnnotationProcessor extends AbstractProcessor {
         if (dtoClass != null) {
             try {
                 ObjectMapper m = new ObjectMapper();
+                m.registerModule(new JodaModule());
                 SchemaFactoryWrapper visitor = new SchemaFactoryWrapper();
                 m.acceptJsonFormatVisitor(m.constructType(dtoClass), visitor);
                 serializedSchema = m.writeValueAsString(visitor.finalSchema());
