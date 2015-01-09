@@ -42,10 +42,7 @@ import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.util.*;
 
-import javax.annotation.processing.AbstractProcessor;
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.annotation.processing.*;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -64,6 +61,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.util.AbstractTypeVisitor6;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
@@ -87,6 +85,7 @@ import static org.apache.commons.lang3.StringUtils.join;
 //   - plural RequestMapping value support (i.e., two paths bound to one method)
 //   - support for methods not marked with @RequestMapping whose class does have a @RequestMapping annotation
 @SupportedAnnotationTypes({"org.springframework.web.bind.annotation.RequestMapping", "javax.ws.rs.Path"})
+@SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class AnnotationProcessor extends AbstractProcessor {
 
     private RestDocumentation _docs = new RestDocumentation();
