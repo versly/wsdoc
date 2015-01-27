@@ -17,7 +17,10 @@
 package org.versly.rest.wsdoc;
 
 import freemarker.template.TemplateException;
-
+import org.raml.model.Raml;
+import org.raml.model.Resource;
+import org.raml.model.parameter.UriParameter;
+import org.raml.parser.visitor.RamlDocumentBuilder;
 import org.testng.AssertJUnit;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -86,12 +89,29 @@ public class SpringMVCRestAnnotationProcessorTest extends AbstractRestAnnotation
     @Test
     public void assertNoRedundantUriParametersForResource() {
         processResource("RestDocEndpoint.java", "raml");
-        int firstOccurrence = output.indexOf("uriParameters:\n            id2:");
-        AssertJUnit.assertTrue("No occurrence of widgets/{id1}/gizmos/{id2} 'uriParameters' found in RAML",
-                firstOccurrence != -1);
-        int secondOccurrence = output.indexOf("uriParameters:\n            id2:", firstOccurrence + 1);
-        AssertJUnit.assertTrue("Occurrence of multiple widgets/{id1}/gizmos/{id2} 'uriParameters' found in RAML",
-                secondOccurrence == -1);
+        Raml raml = new RamlDocumentBuilder().build(output, "http://example.com");
+        AssertJUnit.assertNotNull("RAML not parseable", raml);
+        Resource resource = raml.getResource("/mount/widgets/{id1}/gizmos");
+        AssertJUnit.assertNotNull("Resource /mount/widgets/{id1}/gizmos not found", resource);
+        resource = resource.getResource("/{id2}");
+        AssertJUnit.assertNotNull("Resource /mount/widgets/{id1}/gizmos/{id2} not found", resource);
+    }
+
+    @Test
+    public void assertUriParameterNormalization() {
+        processResource("UriParameterNormalization.java", "raml");
+        Raml raml = new RamlDocumentBuilder().build(output, "http://example.com");
+        AssertJUnit.assertNotNull("RAML not parseable", raml);
+        Resource resource = raml.getResource("/widgets/{id}");
+        AssertJUnit.assertNotNull("Resource /widgets/{id} not found", resource);
+        UriParameter id = resource.getUriParameters().get("id");
+        AssertJUnit.assertNotNull("Resource /widgets/{id} has no id URI parameter", id);
+        AssertJUnit.assertEquals("Resource /widgets/{id} id URI parameter description is wrong",
+                "The widget identifier.", id.getDescription().trim());
+        resource = resource.getResource("/gadgets");
+        AssertJUnit.assertNotNull("Resource /widgets/{id}/gadgets not found", resource);
+        id = resource.getUriParameters().get("id");
+        AssertJUnit.assertNull("Resource /widgets/{id}/gadgets has it's own id URI parameter when it should not", id);
     }
 
     @Test
