@@ -91,10 +91,10 @@ public class SpringMVCRestAnnotationProcessorTest extends AbstractRestAnnotation
         processResource("RestDocEndpoint.java", "raml");
         Raml raml = new RamlDocumentBuilder().build(output, "http://example.com");
         AssertJUnit.assertNotNull("RAML not parseable", raml);
-        Resource resource = raml.getResource("/mount/widgets/{id1}/gizmos");
-        AssertJUnit.assertNotNull("Resource /mount/widgets/{id1}/gizmos not found", resource);
+        Resource resource = raml.getResource("/mount/api/v1/widgets/{id1}/gizmos");
+        AssertJUnit.assertNotNull("Resource /mount/api/v1/widgets/{id1}/gizmos not found", resource);
         resource = resource.getResource("/{id2}");
-        AssertJUnit.assertNotNull("Resource /mount/widgets/{id1}/gizmos/{id2} not found", resource);
+        AssertJUnit.assertNotNull("Resource /mount/api/v1/widgets/{id1}/gizmos/{id2} not found", resource);
     }
 
     @Test

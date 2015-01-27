@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestApiMountPoint("/mount")
+@Path("/api/v1")
 public class RestDocEndpoint {
 
     /**

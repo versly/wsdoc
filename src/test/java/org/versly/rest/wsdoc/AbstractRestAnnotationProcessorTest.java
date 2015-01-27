@@ -152,7 +152,7 @@ public abstract class AbstractRestAnnotationProcessorTest {
     public void assertOverriddenPaths() {
         processResource("RestDocEndpoint.java", "html");
         AssertJUnit.assertTrue("expected multiple voidreturn sections; got: \n" + output,
-                output.indexOf("<a id=\"/mount/voidreturn") != output.lastIndexOf("<a id=\"/mount/voidreturn"));
+                output.indexOf("<a id=\"/mount/api/v1/voidreturn") != output.lastIndexOf("<a id=\"/mount/api/v1/voidreturn"));
     }
 
     @Test

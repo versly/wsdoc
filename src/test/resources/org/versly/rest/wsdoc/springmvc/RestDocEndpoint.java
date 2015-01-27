@@ -25,6 +25,7 @@ import org.versly.rest.wsdoc.RestApiMountPoint;
 import org.versly.rest.wsdoc.model.ParameterizedTypeReferrer;
 
 @RestApiMountPoint("/mount")
+@RequestMapping("/api/v1")
 public class RestDocEndpoint {
 
     /**
