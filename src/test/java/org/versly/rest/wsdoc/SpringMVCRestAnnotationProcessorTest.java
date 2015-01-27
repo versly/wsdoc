@@ -94,6 +94,17 @@ public class SpringMVCRestAnnotationProcessorTest extends AbstractRestAnnotation
                 secondOccurrence == -1);
     }
 
+    @Test
+    public void assertAllMethods() {
+        super.assertAllMethods();
+        for (String format : _outputFormats) {
+            processResource("AllMethods.java", format);
+            AssertJUnit.assertTrue(
+                    "expected 'allMethodsPatch' in doc string; got: \n" + output,
+                    output.contains("allMethodsPatch"));
+        }
+    }
+
 
     public static void main(String[] args) throws IOException, URISyntaxException {
         File dir = new File(args[0]);

@@ -182,6 +182,25 @@ public abstract class AbstractRestAnnotationProcessorTest {
     }
 
     @Test
+    public void assertAllMethods() {
+        for (String format : _outputFormats) {
+            processResource("AllMethods.java", format);
+            AssertJUnit.assertTrue(
+                    "expected 'allMethodsGet' in doc string; got: \n" + output,
+                    output.contains("allMethodsGet"));
+            AssertJUnit.assertTrue(
+                    "expected 'allMethodsPost' in doc string; got: \n" + output,
+                    output.contains("allMethodsPost"));
+            AssertJUnit.assertTrue(
+                    "expected 'allMethodsPut' in doc string; got: \n" + output,
+                    output.contains("allMethodsPut"));
+            AssertJUnit.assertTrue(
+                    "expected 'allMethodsDelete' in doc string; got: \n" + output,
+                    output.contains("allMethodsDelete"));
+        }
+    }
+
+    @Test
     public void excludePatterns() {
         for (String format: _outputFormats) {
             processResource("SnowReportController.java", format,
