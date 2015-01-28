@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.versly.rest.wsdoc.RestApiMountPoint;
+import org.versly.rest.wsdoc.PublicationScope;
 import org.versly.rest.wsdoc.model.ParameterizedTypeReferrer;
 
 @RestApiMountPoint("/mount")

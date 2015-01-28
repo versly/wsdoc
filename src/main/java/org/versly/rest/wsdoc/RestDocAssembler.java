@@ -65,7 +65,7 @@ public class RestDocAssembler {
             for (String pattern : arguments.excludes)
                 excludePatterns.add(Pattern.compile(pattern));
             new RestDocAssembler(arguments.outputFileName, arguments.outputFormat)
-                    .writeDocumentation(docs, excludePatterns);
+                    .writeDocumentation(docs, excludePatterns, arguments.scope);
         }
     }
 
@@ -86,9 +86,10 @@ public class RestDocAssembler {
         this(outputFileName, "html");
     }
 
-    void writeDocumentation(List<RestDocumentation> docs, Iterable<Pattern> excludePatterns)
+    void writeDocumentation(List<RestDocumentation> docs, Iterable<Pattern> excludePatterns, String scope)
         throws IOException, ClassNotFoundException, TemplateException {
 
+        // filter doc objects by client provided exclude patterns
         List<RestDocumentation> filteredDocs;
         if (excludePatterns != null) {
             filteredDocs = new ArrayList<RestDocumentation>();
@@ -97,7 +98,38 @@ public class RestDocAssembler {
         } else {
             filteredDocs = docs;
         }
+        
+        // filter methods and resources by client provided scoping request ("public" or "all")
+        final String[] PUBLIC_SCOPES = { PublicationScope.PUBLIC };
+        final String[] ALL_SCOPES = { PublicationScope.PUBLIC, PublicationScope.PRIVATE };
+        HashSet<String> requestedScopes = (scope.equals("all")) ? 
+                new HashSet<>(Arrays.asList(ALL_SCOPES)) :
+                new HashSet<>(Arrays.asList(PUBLIC_SCOPES));
 
+        // ugly old-style iterating because we need to be able to remove elements as we go
+        Iterator<RestDocumentation> docIter = docs.iterator();
+        while (docIter.hasNext()) {
+            RestDocumentation doc = docIter.next();
+            Iterator<RestDocumentation.Resource> resIter = doc.getResources().iterator();
+            while (resIter.hasNext()) {
+                RestDocumentation.Resource resource = resIter.next();
+                Iterator<RestDocumentation.Resource.Method> methIter = resource.getRequestMethodDocs().iterator();
+                while (methIter.hasNext()) {
+                    HashSet<String> scopes = methIter.next().getScopes();
+                    scopes.retainAll(requestedScopes);
+                    if (scopes.isEmpty()) {
+                        methIter.remove();
+                    }
+                }
+                if (resource.getRequestMethodDocs().isEmpty()) {
+                    resIter.remove();
+                }
+            }
+            if (doc.getResources().isEmpty()) {
+                docIter.remove();
+            }
+        }
+        
         Configuration conf = new Configuration();
         conf.setClassForTemplateLoading(RestDocAssembler.class, "");
         conf.setObjectWrapper(new DefaultObjectWrapper());
@@ -138,5 +170,8 @@ public class RestDocAssembler {
 
         @Parameter(names = { "-f", "--format" }, description = "Format for output: html or raml")
         String outputFormat = "html";
+        
+        @Parameter(names = { "-s", "--scope" }, description = "Publication scope for output: public or all")
+        String scope = "public";
     }
 }

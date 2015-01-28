@@ -45,14 +45,14 @@ public class SpringMVCRestAnnotationProcessorTest extends AbstractRestAnnotation
 
     @Test
     public void assertMultipart() {
-        processResource("RestDocEndpoint.java", "html");
+        processResource("RestDocEndpoint.java", "html", "public");
         AssertJUnit.assertTrue("expected multipart info docs; got: \n" + output,
                 output.contains("Note: this endpoint expects a multipart"));
     }
 
     @Test
     public void processControllerThatReturnsDomainObjectWithGenericParentsExpectsSuccess() {
-        processResource("genericdomain/ChildController.java", "html");
+        processResource("genericdomain/ChildController.java", "html", "public");
         AssertJUnit.assertTrue("expected firstGrandparentField and secondGrandparentField in docs; got: \n" + output,
                 output.contains(">firstGrandparentField<") && output.contains(">secondGrandparentField<")
                         && output.contains(">parentField<") && output.contains(">childField<")
@@ -61,28 +61,28 @@ public class SpringMVCRestAnnotationProcessorTest extends AbstractRestAnnotation
 
     @Test
     public void processControllerThatReturnsGenericDomainObjectExpectsSuccess() {
-        processResource("genericdomain/ParentController.java", "html");
+        processResource("genericdomain/ParentController.java", "html", "public");
         AssertJUnit.assertTrue("expected parentField in docs; got: \n" + output,
                 output.contains(">parentField<"));
     }
 
     @Test
     public void assertQueryParams() {
-        processResource("RestDocEndpoint.java", "html");
+        processResource("RestDocEndpoint.java", "html", "public");
         AssertJUnit.assertTrue("expected queryParam1 and queryParam2 in docs; got: \n" + output,
                                output.contains(">queryParamVal1<") && output.contains(">queryParamVal2<"));
     }
 
     @Test
     public void processControllerThatReturnsEnumSetExpectsSuccess() {
-        processResource("EnumSetController.java", "html");
+        processResource("EnumSetController.java", "html", "public");
         AssertJUnit.assertTrue("expected enumsets in docs; got: \n" + output,
                                output.contains(">myEnumSet<") && output.contains(">myEnum<") && output.contains(">one of [ TEST1, TEST2 ]<"));
     }
 
     @Test
     public void multipleBindingsForOneEndpoint() {
-        processResource("RestDocEndpoint.java", "html");
+        processResource("RestDocEndpoint.java", "html", "public");
         AssertJUnit.assertTrue("expected multiple-bindings-a and multiple-bindings-b in docs; got: \n" + output,
                 output.contains("multiple-bindings-a<") && output.contains("multiple-bindings-b<"));
     }
@@ -90,7 +90,7 @@ public class SpringMVCRestAnnotationProcessorTest extends AbstractRestAnnotation
     // issue #29
     @Test
     public void assertNoRedundantUriParametersForResource() {
-        processResource("RestDocEndpoint.java", "raml");
+        processResource("RestDocEndpoint.java", "raml", "public");
         Raml raml = new RamlDocumentBuilder().build(output, "http://example.com");
         AssertJUnit.assertNotNull("RAML not parseable", raml);
         Resource resource = raml.getResource("/mount/api/v1/widgets/{id1}/gizmos");
@@ -101,7 +101,7 @@ public class SpringMVCRestAnnotationProcessorTest extends AbstractRestAnnotation
 
     @Test
     public void assertUriParameterNormalization() {
-        processResource("UriParameterNormalization.java", "raml");
+        processResource("UriParameterNormalization.java", "raml", "public");
         Raml raml = new RamlDocumentBuilder().build(output, "http://example.com");
         AssertJUnit.assertNotNull("RAML not parseable", raml);
         Resource resource = raml.getResource("/widgets/{id}");
@@ -120,7 +120,7 @@ public class SpringMVCRestAnnotationProcessorTest extends AbstractRestAnnotation
     public void assertAllMethods() {
         super.assertAllMethods();
         for (String format : _outputFormats) {
-            processResource("AllMethods.java", format);
+            processResource("AllMethods.java", format, "public");
             AssertJUnit.assertTrue(
                     "expected 'allMethodsPatch' in doc string; got: \n" + output,
                     output.contains("allMethodsPatch"));
@@ -129,7 +129,7 @@ public class SpringMVCRestAnnotationProcessorTest extends AbstractRestAnnotation
 
     @Test
     public void testEnumsTypesQuery() {
-        processResource("RestDocEndpoint.java", "raml");
+        processResource("RestDocEndpoint.java", "raml", "public");
         Raml raml = new RamlDocumentBuilder().build(output, "http://example.com");
         Resource resource = raml.getResource("/mount/api/v1/whirlygigs");
         AssertJUnit.assertNotNull("Resource /mount/api/v1/whirlygigs not found", resource);
@@ -144,7 +144,7 @@ public class SpringMVCRestAnnotationProcessorTest extends AbstractRestAnnotation
 
     @Test
     public void testEnumsTypesInPath() {
-        processResource("RestDocEndpoint.java", "raml");
+        processResource("RestDocEndpoint.java", "raml", "public");
         Raml raml = new RamlDocumentBuilder().build(output, "http://example.com");
         Resource resource = raml.getResource("/mount/api/v1/colors/{color}");
         AssertJUnit.assertNotNull("Resource /mount/api/v1/colors/{color} not found", resource);
@@ -155,6 +155,15 @@ public class SpringMVCRestAnnotationProcessorTest extends AbstractRestAnnotation
         AssertJUnit.assertEquals("Color path param on GET /mount/api/v1/colors/{color} is wrong size", 3, enums.size());
     }
 
+    @Test
+    public void testPublicationScope() {
+        processResource("PublicationScopes.java", "raml", "public");
+        System.out.println("-----------------------------------------------------------------------------");
+        System.out.println(output);
+        System.out.println("-----------------------------------------------------------------------------");
+        Raml raml = new RamlDocumentBuilder().build(output, "http://example.com");
+    }
+    
     public static void main(String[] args) throws IOException, URISyntaxException {
         File dir = new File(args[0]);
         for (int i = 1; i < args.length; i++) {

@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -94,16 +95,12 @@ public class AnnotationProcessor extends AbstractProcessor {
     private Map<DeclaredType, JsonType> _memoizedDeclaredTypes = new HashMap<DeclaredType, JsonType>();
     private ProcessingEnvironment _processingEnv;
     private Types _typeUtils;
-    private final Set<String> _desiredScopes = new HashSet<String>();
 
     @Override
     public void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
         _processingEnv = processingEnv;
         _typeUtils = _processingEnv.getTypeUtils();
-
-        // TODO this should be a configurable list, and we should move it to the doc generation phase
-        _desiredScopes.add("public");
     }
 
     @Override
@@ -145,29 +142,6 @@ public class AnnotationProcessor extends AbstractProcessor {
         return true;
     }
 
-    private boolean shouldIncludeDocumentation(Element executableElement) {
-
-        // TODO this logic should move to RestDocAssembler, so it can be dynamically applied
-    	while (executableElement.getKind().compareTo(ElementKind.PACKAGE) != 0) {
-    	
-    		DocumentationScope scope = executableElement.getAnnotation(DocumentationScope.class);
-    		if (scope != null) {
-    			
-	            Set<String> scopeNames = new HashSet<String>(Arrays.asList(scope.value()));
-	            scopeNames.retainAll(_desiredScopes);
-	            if (scopeNames.isEmpty()) {
-	                // we found a scope annotation but it doesn't include any of our desired scopes; skip
-	                return false;
-	            }
-    		}
-    		
-    		executableElement = executableElement.getEnclosingElement();
-    	}
-
-        // we didn't find any doc scope annotations; include by default
-    	return true;
-    }
-    
     private void processElements(RoundEnvironment roundEnvironment,
                                  Collection<String> processedPackageNames,
                                  RestImplementationSupport implementationSupport) {
@@ -175,11 +149,6 @@ public class AnnotationProcessor extends AbstractProcessor {
     	for (Element e : roundEnvironment.getElementsAnnotatedWith(implementationSupport.getMappingAnnotationType())) {
         	
         	if (e instanceof ExecutableElement) {
-            
-        		if (!shouldIncludeDocumentation(e)) {
-            		continue;
-            	}
-        		
         		addPackageName(processedPackageNames, e);
                 processRequestMappingMethod((ExecutableElement) e, implementationSupport);
             }
@@ -213,6 +182,21 @@ public class AnnotationProcessor extends AbstractProcessor {
 
                 RestDocumentation.Resource.Method doc = _docs.getResourceDocumentation(fullPath).newMethodDocumentation(meth);
                 doc.setCommentText(processingEnv.getElementUtils().getDocComment(executableElement));
+                
+                PublicationScope clsScopes = cls.getAnnotation(PublicationScope.class);
+                HashSet<String> scopes = new HashSet<>();
+                if (null != clsScopes) {
+                    scopes.addAll(Arrays.asList(clsScopes.value()));
+                }
+                PublicationScope methodScopes = executableElement.getAnnotation(PublicationScope.class);
+                if (null != methodScopes) {
+                    scopes.addAll(Arrays.asList(methodScopes.value()));
+                }
+                if (scopes.isEmpty()) {
+                    scopes.add(PublicationScope.PUBLIC);
+                }
+                doc.setScopes(scopes);
+                
                 buildParameterData(executableElement, doc, implementationSupport);
                 buildResponseFormat(executableElement.getReturnType(), doc);
             }

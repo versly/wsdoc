@@ -9,8 +9,11 @@ import java.lang.annotation.Target;
  * @author aisac
  *
  */
-@Target(ElementType.TYPE)
-public @interface DocumentationScope {
-	
+@Target({ ElementType.TYPE, ElementType.METHOD })
+public @interface PublicationScope {
+
+	public static final String PUBLIC = "public";
+	public static final String PRIVATE = "private";
+
 	String[] value() default {};
 }

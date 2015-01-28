@@ -39,20 +39,20 @@ public abstract class AbstractRestAnnotationProcessorTest {
         tmpDir.mkdirs();
         tmpDir.deleteOnExit();
         for (String format: _outputFormats) {
-            processResource("RestDocEndpoint.java", format);
+            processResource("RestDocEndpoint.java", format, PublicationScope.PUBLIC);
         }
     }
 
-    protected void processResource(String fileName, String outputFormat) {
-        processResource(fileName, outputFormat, null, true);
+    protected void processResource(String fileName, String outputFormat, String scope) {
+        processResource(fileName, outputFormat, null, scope, true);
     }
 
     private void processResource(
-            String fileName, String outputFormat, Iterable<Pattern> excludes, boolean needsTestPackage) {
+            String fileName, String outputFormat, Iterable<Pattern> excludes, String scope, boolean needsTestPackage) {
         try {
             runAnnotationProcessor(tmpDir, fileName, needsTestPackage);
             String outputFile = tmpDir + "/" + fileName.replace(".java", "." + outputFormat);
-            buildOutput(tmpDir, outputFile, outputFormat, excludes);
+            buildOutput(tmpDir, outputFile, outputFormat, excludes, scope);
             readOutput(outputFile);
         } catch (Exception ex) {
             if (ex instanceof RuntimeException)
@@ -62,7 +62,8 @@ public abstract class AbstractRestAnnotationProcessorTest {
         }
     }
 
-    private static void buildOutput(File buildDir, String outputFile, String outputFormat, Iterable<Pattern> excludes)
+    private static void buildOutput(
+            File buildDir, String outputFile, String outputFormat, Iterable<Pattern> excludes, String scope)
         throws ClassNotFoundException, IOException, TemplateException {
 
         InputStream in = new FileInputStream(new File(buildDir, Utils.SERIALIZED_RESOURCE_LOCATION));
@@ -71,7 +72,7 @@ public abstract class AbstractRestAnnotationProcessorTest {
         new File(outputFile).getParentFile().mkdirs();
 
         new RestDocAssembler(outputFile, outputFormat).writeDocumentation(
-                Collections.singletonList(RestDocumentation.fromStream(in)), excludes);
+                Collections.singletonList(RestDocumentation.fromStream(in)), excludes, scope);
     }
 
     private static void readOutput(String htmlFile) throws IOException {
@@ -118,7 +119,7 @@ public abstract class AbstractRestAnnotationProcessorTest {
     @Test
     public void assertJavaDocComments() {
         for (String format: _outputFormats) {
-            processResource("RestDocEndpoint.java", format);
+            processResource("RestDocEndpoint.java", format, "public");
             AssertJUnit.assertTrue(
                     "expected 'JavaDoc comment' in doc string; got: \n" + output,
                     output.contains("JavaDoc comment"));
@@ -127,7 +128,7 @@ public abstract class AbstractRestAnnotationProcessorTest {
 
     @Test
     public void assertReturnValueComments() {
-        processResource("RestDocEndpoint.java", "html");
+        processResource("RestDocEndpoint.java", "html", "public");
         AssertJUnit.assertTrue("expected \"exciting return value's date\" in doc string; got: \n" + output,
                 output.contains("exciting return value's date"));
     }
@@ -135,7 +136,7 @@ public abstract class AbstractRestAnnotationProcessorTest {
     @Test
     public void assertPathVariableWithOverriddenName() {
         for (String format: _outputFormats) {
-            processResource("RestDocEndpoint.java", format);
+            processResource("RestDocEndpoint.java", format, "public");
             AssertJUnit.assertTrue("expected \"dateParam\" in doc string; got: \n" + output,
                     output.contains("dateParam"));
         }
@@ -143,21 +144,21 @@ public abstract class AbstractRestAnnotationProcessorTest {
 
     @Test
     public void assertParams() {
-        processResource("RestDocEndpoint.java", "html");
+        processResource("RestDocEndpoint.java", "html", "public");
         AssertJUnit.assertTrue("expected param0 and param1 in docs; got: \n" + output,
                 output.contains(">param0<") && output.contains(">param1<"));
     }
 
     @Test
     public void assertOverriddenPaths() {
-        processResource("RestDocEndpoint.java", "html");
+        processResource("RestDocEndpoint.java", "html", "public");
         AssertJUnit.assertTrue("expected multiple voidreturn sections; got: \n" + output,
                 output.indexOf("<a id=\"/mount/api/v1/voidreturn") != output.lastIndexOf("<a id=\"/mount/api/v1/voidreturn"));
     }
 
     @Test
     public void assertUuidIsNotTraversedInto() {
-        processResource("RestDocEndpoint.java", "html");
+        processResource("RestDocEndpoint.java", "html", "public");
         AssertJUnit.assertFalse(
                 "leastSignificantBits field (member field of UUID class) should not be in output",
                 output.contains("leastSignificantBits"));
@@ -168,14 +169,14 @@ public abstract class AbstractRestAnnotationProcessorTest {
     @Test
     public void generateExample() {
         for (String format: _outputFormats) {
-            processResource("SnowReportController.java", format);
+            processResource("SnowReportController.java", format, "public");
         }
     }
 
     @Test
     public void nonRecursiveTypeWithMultipleUsesDoesNotHaveRecursionCircles() {
         for (String format: _outputFormats) {
-            processResource("NonRecursiveMultiUse.java", format);
+            processResource("NonRecursiveMultiUse.java", format, "public");
             AssertJUnit.assertFalse("should not contain the recursion symbol",
                     output.contains("&#x21ba;"));
         }
@@ -184,7 +185,7 @@ public abstract class AbstractRestAnnotationProcessorTest {
     @Test
     public void assertAllMethods() {
         for (String format : _outputFormats) {
-            processResource("AllMethods.java", format);
+            processResource("AllMethods.java", format, "public");
             AssertJUnit.assertTrue(
                     "expected 'allMethodsGet' in doc string; got: \n" + output,
                     output.contains("allMethodsGet"));
@@ -204,7 +205,7 @@ public abstract class AbstractRestAnnotationProcessorTest {
     public void excludePatterns() {
         for (String format: _outputFormats) {
             processResource("SnowReportController.java", format,
-                    Arrays.asList(Pattern.compile("foo"), Pattern.compile(".*snow-report.*")), true);
+                    Arrays.asList(Pattern.compile("foo"), Pattern.compile(".*snow-report.*")), "public", true);
             AssertJUnit.assertFalse("should not contain the snow-report endpoint",
                     output.contains("snow-report"));
         }
@@ -213,7 +214,7 @@ public abstract class AbstractRestAnnotationProcessorTest {
     @Test
     public void genericTypeResolution() throws IOException, URISyntaxException {
         for (String format: _outputFormats) {
-            processResource("RestDocEndpoint.java", format);
+            processResource("RestDocEndpoint.java", format, "public");
         }
     }
 

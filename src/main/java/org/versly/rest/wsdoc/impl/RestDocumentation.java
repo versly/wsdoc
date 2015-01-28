@@ -24,11 +24,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 public class RestDocumentation implements Serializable {
@@ -153,6 +149,7 @@ public class RestDocumentation implements Serializable {
         public class Method implements Serializable {
 
             private String meth;
+            private HashSet<String> scopes;
             private JsonType _requestBody;
             private UrlFields _urlSubstitutions = new UrlFields();
             private UrlFields _urlParameters = new UrlFields();
@@ -163,6 +160,14 @@ public class RestDocumentation implements Serializable {
             private String _responseSchema;
             private String _responseExample;
             private String _requestExample;
+
+            public HashSet<String> getScopes() {
+                return scopes;
+            }
+
+            public void setScopes(HashSet<String> scopes) {
+                this.scopes = scopes;
+            }
 
             public String getResponseSchema() {
                 return _responseSchema;
