@@ -181,9 +181,9 @@ public class AnnotationProcessor extends AbstractProcessor {
 
                 RestDocumentation.Resource.Method doc = _docs.getResourceDocumentation(fullPath).newMethodDocumentation(meth);
                 doc.setCommentText(processingEnv.getElementUtils().getDocComment(executableElement));
-                
-                DocumentationScope clsScopes = cls.getAnnotation(DocumentationScope.class);
+
                 HashSet<String> scopes = new HashSet<String>();
+                DocumentationScope clsScopes = cls.getAnnotation(DocumentationScope.class);
                 if (null != clsScopes) {
                     scopes.addAll(Arrays.asList(clsScopes.value()));
                 }
