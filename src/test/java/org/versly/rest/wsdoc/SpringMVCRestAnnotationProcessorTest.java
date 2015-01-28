@@ -128,7 +128,7 @@ public class SpringMVCRestAnnotationProcessorTest extends AbstractRestAnnotation
     }
 
     @Test
-    public void testEnumsTypesQuery() {
+    public void testEnumsTypesQueryForRaml() {
         processResource("RestDocEndpoint.java", "raml", "public");
         Raml raml = new RamlDocumentBuilder().build(output, "http://example.com");
         Resource resource = raml.getResource("/mount/api/v1/whirlygigs");
@@ -143,7 +143,7 @@ public class SpringMVCRestAnnotationProcessorTest extends AbstractRestAnnotation
     }
 
     @Test
-    public void testEnumsTypesInPath() {
+    public void testEnumsTypesInPathForRaml() {
         processResource("RestDocEndpoint.java", "raml", "public");
         Raml raml = new RamlDocumentBuilder().build(output, "http://example.com");
         Resource resource = raml.getResource("/mount/api/v1/colors/{color}");
@@ -155,15 +155,6 @@ public class SpringMVCRestAnnotationProcessorTest extends AbstractRestAnnotation
         AssertJUnit.assertEquals("Color path param on GET /mount/api/v1/colors/{color} is wrong size", 3, enums.size());
     }
 
-    @Test
-    public void testPublicationScope() {
-        processResource("PublicationScopes.java", "raml", "public");
-        System.out.println("-----------------------------------------------------------------------------");
-        System.out.println(output);
-        System.out.println("-----------------------------------------------------------------------------");
-        Raml raml = new RamlDocumentBuilder().build(output, "http://example.com");
-    }
-    
     public static void main(String[] args) throws IOException, URISyntaxException {
         File dir = new File(args[0]);
         for (int i = 1; i < args.length; i++) {

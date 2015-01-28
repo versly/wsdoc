@@ -103,8 +103,8 @@ public class RestDocAssembler {
         final String[] PUBLIC_SCOPES = { DocumentationScope.PUBLIC };
         final String[] ALL_SCOPES = { DocumentationScope.PUBLIC, DocumentationScope.PRIVATE };
         HashSet<String> requestedScopes = (scope.equals("all")) ? 
-                new HashSet<>(Arrays.asList(ALL_SCOPES)) :
-                new HashSet<>(Arrays.asList(PUBLIC_SCOPES));
+                new HashSet<String>(Arrays.asList(ALL_SCOPES)) :
+                new HashSet<String>(Arrays.asList(PUBLIC_SCOPES));
 
         // ugly old-style iterating because we need to be able to remove elements as we go
         Iterator<RestDocumentation> docIter = docs.iterator();

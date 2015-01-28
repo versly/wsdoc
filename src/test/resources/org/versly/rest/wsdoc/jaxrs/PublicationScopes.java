@@ -2,21 +2,22 @@
  * This endpoint has private publication scope.
  */
 
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
 import org.versly.rest.wsdoc.DocumentationScope;
 import org.versly.rest.wsdoc.RestApiMountPoint;
 
 public class PublicationScopes {
 
-    /** 
+    /**
      * A controller with default publication scopes 
      */
     @RestApiMountPoint("/default")
-    @RequestMapping("/api/v1")
+    @Path("/api/v1")
     public static class DefaultController {
 
-        @RequestMapping(value = "/public1", method = RequestMethod.GET)
+        @GET
+        @Path("/public1")
         public void pub() {
         }
     }
@@ -25,16 +26,18 @@ public class PublicationScopes {
      * A controller with some public and some private scopes 
      */
     @RestApiMountPoint("/mixed")
-    @RequestMapping("/api/v1")
+    @Path("/api/v1")
     public static class MixedController {
 
         @DocumentationScope(DocumentationScope.PUBLIC)
-        @RequestMapping(value = "/public2", method = RequestMethod.GET)
+        @GET
+        @Path("/public2")
         public void pub() {
         }
 
         @DocumentationScope(DocumentationScope.PRIVATE)
-        @RequestMapping(value = "/private2", method = RequestMethod.GET)
+        @GET
+        @Path("/private2")
         public void priv() {
         }
     }
@@ -43,11 +46,12 @@ public class PublicationScopes {
      * A controller with all private scopes. 
      */
     @RestApiMountPoint("/private")
-    @RequestMapping("/api/v1")
+    @Path("/api/v1")
     public static class PrivateController {
 
         @DocumentationScope(DocumentationScope.PRIVATE)
-        @RequestMapping(value = "/private3", method = RequestMethod.GET)
+        @GET
+        @Path("/private3")
         public void priv() {
         }
     }
@@ -57,15 +61,17 @@ public class PublicationScopes {
      */
     @DocumentationScope(DocumentationScope.PRIVATE)
     @RestApiMountPoint("/classpriv")
-    @RequestMapping("/api/v1")
+    @Path("/api/v1")
     public static class ClassPrivateController {
 
-        @RequestMapping(value = "/private4", method = RequestMethod.GET)
+        @GET
+        @Path("/private4")
         public void priv() {
         }
 
         @DocumentationScope(DocumentationScope.PUBLIC)
-        @RequestMapping(value = "/public4", method = RequestMethod.GET)
+        @GET
+        @Path("/public4")
         public void pub() {
         }
     }
@@ -75,15 +81,17 @@ public class PublicationScopes {
      */
     @DocumentationScope(DocumentationScope.PUBLIC)
     @RestApiMountPoint("/classpriv")
-    @RequestMapping("/api/v1")
+    @Path("/api/v1")
     public static class ClassPublicController {
 
-        @RequestMapping(value = "/public5/foo", method = RequestMethod.GET)
+        @GET
+        @Path("/public5/foo")
         public void pub1() {
         }
 
         @DocumentationScope(DocumentationScope.PRIVATE)
-        @RequestMapping(value = "/public5/bar", method = RequestMethod.GET)
+        @GET
+        @Path("/public5/bar")
         public void pub2() {
         }
     }

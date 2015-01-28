@@ -183,7 +183,7 @@ public class AnnotationProcessor extends AbstractProcessor {
                 doc.setCommentText(processingEnv.getElementUtils().getDocComment(executableElement));
                 
                 DocumentationScope clsScopes = cls.getAnnotation(DocumentationScope.class);
-                HashSet<String> scopes = new HashSet<>();
+                HashSet<String> scopes = new HashSet<String>();
                 if (null != clsScopes) {
                     scopes.addAll(Arrays.asList(clsScopes.value()));
                 }

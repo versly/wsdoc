@@ -218,5 +218,26 @@ public abstract class AbstractRestAnnotationProcessorTest {
         }
     }
 
+    @Test
+    public void testPublicationScopes() {
+        for (String format : _outputFormats) {
+            processResource("PublicationScopes.java", format, "public");
+            AssertJUnit.assertTrue("expected 'public1' in doc string; got: \n" + output, output.contains("public1"));
+            AssertJUnit.assertTrue("expected 'public2' in doc string; got: \n" + output, output.contains("public2"));
+            AssertJUnit.assertTrue("expected 'public4' in doc string; got: \n" + output, output.contains("public4"));
+            AssertJUnit.assertTrue("expected 'public5' in doc string; got: \n" + output, output.contains("public5"));
+            AssertJUnit.assertTrue("expected no 'private' in doc string; got: \n" + output, !output.contains("private"));
+
+            processResource("PublicationScopes.java", format, "all");
+            AssertJUnit.assertTrue("expected 'public1' in doc string; got: \n" + output, output.contains("public1"));
+            AssertJUnit.assertTrue("expected 'public2' in doc string; got: \n" + output, output.contains("public2"));
+            AssertJUnit.assertTrue("expected 'public4' in doc string; got: \n" + output, output.contains("public4"));
+            AssertJUnit.assertTrue("expected 'public5' in doc string; got: \n" + output, output.contains("public5"));
+            AssertJUnit.assertTrue("expected 'private2' in doc string; got: \n" + output, output.contains("private2"));
+            AssertJUnit.assertTrue("expected 'private3' in doc string; got: \n" + output, output.contains("private3"));
+            AssertJUnit.assertTrue("expected 'private4' in doc string; got: \n" + output, output.contains("private4"));
+        }
+    }
+
     protected abstract String getPackageToTest();
 }
