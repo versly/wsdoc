@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
  *
  */
 @Target({ ElementType.TYPE, ElementType.METHOD })
-public @interface PublicationScope {
+public @interface DocumentationScope {
 
 	public static final String PUBLIC = "public";
 	public static final String PRIVATE = "private";

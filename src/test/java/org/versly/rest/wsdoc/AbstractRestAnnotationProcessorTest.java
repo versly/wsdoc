@@ -39,7 +39,7 @@ public abstract class AbstractRestAnnotationProcessorTest {
         tmpDir.mkdirs();
         tmpDir.deleteOnExit();
         for (String format: _outputFormats) {
-            processResource("RestDocEndpoint.java", format, PublicationScope.PUBLIC);
+            processResource("RestDocEndpoint.java", format, DocumentationScope.PUBLIC);
         }
     }
 

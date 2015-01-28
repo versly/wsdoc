@@ -100,8 +100,8 @@ public class RestDocAssembler {
         }
         
         // filter methods and resources by client provided scoping request ("public" or "all")
-        final String[] PUBLIC_SCOPES = { PublicationScope.PUBLIC };
-        final String[] ALL_SCOPES = { PublicationScope.PUBLIC, PublicationScope.PRIVATE };
+        final String[] PUBLIC_SCOPES = { DocumentationScope.PUBLIC };
+        final String[] ALL_SCOPES = { DocumentationScope.PUBLIC, DocumentationScope.PRIVATE };
         HashSet<String> requestedScopes = (scope.equals("all")) ? 
                 new HashSet<>(Arrays.asList(ALL_SCOPES)) :
                 new HashSet<>(Arrays.asList(PUBLIC_SCOPES));

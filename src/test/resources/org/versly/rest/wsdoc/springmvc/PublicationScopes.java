@@ -4,7 +4,7 @@
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.versly.rest.wsdoc.PublicationScope;
+import org.versly.rest.wsdoc.DocumentationScope;
 import org.versly.rest.wsdoc.RestApiMountPoint;
 
 public class PublicationScopes {
@@ -28,12 +28,12 @@ public class PublicationScopes {
     @RequestMapping("/api/v1")
     public static class MixedController {
 
-        @PublicationScope(PublicationScope.PUBLIC)
+        @DocumentationScope(DocumentationScope.PUBLIC)
         @RequestMapping(value = "/public", method = RequestMethod.GET)
         public void pub() {
         }
 
-        @PublicationScope(PublicationScope.PRIVATE)
+        @DocumentationScope(DocumentationScope.PRIVATE)
         @RequestMapping(value = "/private", method = RequestMethod.GET)
         public void priv() {
         }
@@ -46,7 +46,7 @@ public class PublicationScopes {
     @RequestMapping("/api/v1")
     public static class PrivateController {
 
-        @PublicationScope(PublicationScope.PRIVATE)
+        @DocumentationScope(DocumentationScope.PRIVATE)
         @RequestMapping(value = "/private", method = RequestMethod.GET)
         public void priv() {
         }
@@ -55,7 +55,7 @@ public class PublicationScopes {
     /**
      * A controller that is private at the class level and containing one public method.
      */
-    @PublicationScope(PublicationScope.PRIVATE)
+    @DocumentationScope(DocumentationScope.PRIVATE)
     @RestApiMountPoint("/classpriv")
     @RequestMapping("/api/v1")
     public static class ClassPrivateController {
@@ -64,7 +64,7 @@ public class PublicationScopes {
         public void priv() {
         }
 
-        @PublicationScope(PublicationScope.PUBLIC)
+        @DocumentationScope(DocumentationScope.PUBLIC)
         @RequestMapping(value = "/public", method = RequestMethod.GET)
         public void pub() {
         }
@@ -79,12 +79,12 @@ public class PublicationScopes {
     @RequestMapping("/api/v1")
     public static class NestedPublicController {
 
-        @PublicationScope(PublicationScope.PRIVATE)
+        @DocumentationScope(DocumentationScope.PRIVATE)
         @RequestMapping(value = "/private/foo", method = RequestMethod.GET)
         public void priv() {
         }
 
-        @PublicationScope(PublicationScope.PUBLIC)
+        @DocumentationScope(DocumentationScope.PUBLIC)
         @RequestMapping(value = "/private/foo/bar", method = RequestMethod.GET)
         public void pub() {
         }

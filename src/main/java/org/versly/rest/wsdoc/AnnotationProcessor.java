@@ -21,7 +21,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -183,17 +182,17 @@ public class AnnotationProcessor extends AbstractProcessor {
                 RestDocumentation.Resource.Method doc = _docs.getResourceDocumentation(fullPath).newMethodDocumentation(meth);
                 doc.setCommentText(processingEnv.getElementUtils().getDocComment(executableElement));
                 
-                PublicationScope clsScopes = cls.getAnnotation(PublicationScope.class);
+                DocumentationScope clsScopes = cls.getAnnotation(DocumentationScope.class);
                 HashSet<String> scopes = new HashSet<>();
                 if (null != clsScopes) {
                     scopes.addAll(Arrays.asList(clsScopes.value()));
                 }
-                PublicationScope methodScopes = executableElement.getAnnotation(PublicationScope.class);
+                DocumentationScope methodScopes = executableElement.getAnnotation(DocumentationScope.class);
                 if (null != methodScopes) {
                     scopes.addAll(Arrays.asList(methodScopes.value()));
                 }
                 if (scopes.isEmpty()) {
-                    scopes.add(PublicationScope.PUBLIC);
+                    scopes.add(DocumentationScope.PUBLIC);
                 }
                 doc.setScopes(scopes);
                 
