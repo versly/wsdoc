@@ -98,7 +98,7 @@ Often, a single REST API is implemented across a number of web archives. As a re
        
   will result in the prefixing of endpoints with "/mount/api/v1/myservice".
   
-  * Controlling Publication Scope
+* Controlling Publication Scope
   
   Publication scoping may be asserted using the @DocumentationScope annotation.  This annotation supports user defined
   scopes but also defines convenient constants for common scopes, such as DocumentationScope.PUBLIC and
