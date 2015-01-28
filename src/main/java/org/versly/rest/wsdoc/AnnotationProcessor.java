@@ -191,11 +191,8 @@ public class AnnotationProcessor extends AbstractProcessor {
                 if (null != methodScopes) {
                     scopes.addAll(Arrays.asList(methodScopes.value()));
                 }
-                if (scopes.isEmpty()) {
-                    scopes.add(DocumentationScope.PUBLIC);
-                }
                 doc.setScopes(scopes);
-                
+
                 buildParameterData(executableElement, doc, implementationSupport);
                 buildResponseFormat(executableElement.getReturnType(), doc);
             }

@@ -35,7 +35,7 @@ public class JaxRSRestAnnotationProcessorTest extends AbstractRestAnnotationProc
 
     @Test
     public void assertRequestBody() {
-        processResource("PostWithRequestBody.java", "html", "public");
+        processResource("PostWithRequestBody.java", "html", "all");
 
         AssertJUnit.assertTrue("expected two Request Body sections; got: \n" + output,
                 output.split("Request Body").length == 3);

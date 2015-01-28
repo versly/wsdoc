@@ -22,10 +22,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import javax.tools.JavaCompiler;
@@ -74,13 +71,13 @@ public abstract class AbstractRestAnnotationProcessorTest {
             File buildDir, String outputFile, String outputFormat, Iterable<Pattern> excludes, String scope)
         throws ClassNotFoundException, IOException, TemplateException {
 
-        InputStream in = new FileInputStream(new File(buildDir, Utils.SERIALIZED_RESOURCE_LOCATION));
+        final InputStream in = new FileInputStream(new File(buildDir, Utils.SERIALIZED_RESOURCE_LOCATION));
 
         // make the parent dirs in case htmlFile is nested
         new File(outputFile).getParentFile().mkdirs();
 
         new RestDocAssembler(outputFile, outputFormat).writeDocumentation(
-                Collections.singletonList(RestDocumentation.fromStream(in)), excludes, scope);
+                new LinkedList<RestDocumentation>() {{ add(RestDocumentation.fromStream(in)); }}, excludes, scope);
     }
 
     private static void readOutput(String htmlFile) throws IOException {
@@ -127,7 +124,7 @@ public abstract class AbstractRestAnnotationProcessorTest {
     @Test
     public void assertJavaDocComments() {
         for (String format: _outputFormats) {
-            processResource("RestDocEndpoint.java", format, "public");
+            processResource("RestDocEndpoint.java", format, "all");
             AssertJUnit.assertTrue(
                     "expected 'JavaDoc comment' in doc string; got: \n" + output,
                     output.contains("JavaDoc comment"));
@@ -136,7 +133,7 @@ public abstract class AbstractRestAnnotationProcessorTest {
 
     @Test
     public void assertReturnValueComments() {
-        processResource("RestDocEndpoint.java", "html", "public");
+        processResource("RestDocEndpoint.java", "html", "all");
         AssertJUnit.assertTrue("expected \"exciting return value's date\" in doc string; got: \n" + output,
                 output.contains("exciting return value's date"));
     }
@@ -144,7 +141,7 @@ public abstract class AbstractRestAnnotationProcessorTest {
     @Test
     public void assertPathVariableWithOverriddenName() {
         for (String format: _outputFormats) {
-            processResource("RestDocEndpoint.java", format, "public");
+            processResource("RestDocEndpoint.java", format, "all");
             AssertJUnit.assertTrue("expected \"dateParam\" in doc string; got: \n" + output,
                     output.contains("dateParam"));
         }
@@ -152,21 +149,21 @@ public abstract class AbstractRestAnnotationProcessorTest {
 
     @Test
     public void assertParams() {
-        processResource("RestDocEndpoint.java", "html", "public");
+        processResource("RestDocEndpoint.java", "html", "all");
         AssertJUnit.assertTrue("expected param0 and param1 in docs; got: \n" + output,
                 output.contains(">param0<") && output.contains(">param1<"));
     }
 
     @Test
     public void assertOverriddenPaths() {
-        processResource("RestDocEndpoint.java", "html", "public");
+        processResource("RestDocEndpoint.java", "html", "all");
         AssertJUnit.assertTrue("expected multiple voidreturn sections; got: \n" + output,
                 output.indexOf("<a id=\"/mount/api/v1/voidreturn") != output.lastIndexOf("<a id=\"/mount/api/v1/voidreturn"));
     }
 
     @Test
     public void assertUuidIsNotTraversedInto() {
-        processResource("RestDocEndpoint.java", "html", "public");
+        processResource("RestDocEndpoint.java", "html", "all");
         AssertJUnit.assertFalse(
                 "leastSignificantBits field (member field of UUID class) should not be in output",
                 output.contains("leastSignificantBits"));
@@ -177,14 +174,14 @@ public abstract class AbstractRestAnnotationProcessorTest {
     @Test
     public void generateExample() {
         for (String format: _outputFormats) {
-            processResource("SnowReportController.java", format, "public");
+            processResource("SnowReportController.java", format, "all");
         }
     }
 
     @Test
     public void nonRecursiveTypeWithMultipleUsesDoesNotHaveRecursionCircles() {
         for (String format: _outputFormats) {
-            processResource("NonRecursiveMultiUse.java", format, "public");
+            processResource("NonRecursiveMultiUse.java", format, "all");
             AssertJUnit.assertFalse("should not contain the recursion symbol",
                     output.contains("&#x21ba;"));
         }
@@ -193,7 +190,7 @@ public abstract class AbstractRestAnnotationProcessorTest {
     @Test
     public void assertAllMethods() {
         for (String format : _outputFormats) {
-            processResource("AllMethods.java", format, "public");
+            processResource("AllMethods.java", format, "all");
             AssertJUnit.assertTrue(
                     "expected 'allMethodsGet' in doc string; got: \n" + output,
                     output.contains("allMethodsGet"));
@@ -213,7 +210,7 @@ public abstract class AbstractRestAnnotationProcessorTest {
     public void excludePatterns() {
         for (String format: _outputFormats) {
             processResource("SnowReportController.java", format,
-                    Arrays.asList(Pattern.compile("foo"), Pattern.compile(".*snow-report.*")), "public", true);
+                    Arrays.asList(Pattern.compile("foo"), Pattern.compile(".*snow-report.*")), "all", true);
             AssertJUnit.assertFalse("should not contain the snow-report endpoint",
                     output.contains("snow-report"));
         }
@@ -222,14 +219,14 @@ public abstract class AbstractRestAnnotationProcessorTest {
     @Test
     public void genericTypeResolution() throws IOException, URISyntaxException {
         for (String format: _outputFormats) {
-            processResource("RestDocEndpoint.java", format, "public");
+            processResource("RestDocEndpoint.java", format, "all");
         }
     }
 
     // issue #29
     @Test
     public void assertNoRedundantUriParametersForResource() {
-        processResource("RestDocEndpoint.java", "raml", "public");
+        processResource("RestDocEndpoint.java", "raml", "all");
         Raml raml = new RamlDocumentBuilder().build(output, "http://example.com");
         AssertJUnit.assertNotNull("RAML not parseable", raml);
         Resource resource = raml.getResource("/mount/api/v1/widgets/{id1}/gizmos");
@@ -240,7 +237,7 @@ public abstract class AbstractRestAnnotationProcessorTest {
 
     @Test
     public void assertUriParameterNormalization() {
-        processResource("UriParameterNormalization.java", "raml", "public");
+        processResource("UriParameterNormalization.java", "raml", "all");
         Raml raml = new RamlDocumentBuilder().build(output, "http://example.com");
         AssertJUnit.assertNotNull("RAML not parseable", raml);
         Resource resource = raml.getResource("/widgets/{id}");
@@ -257,7 +254,7 @@ public abstract class AbstractRestAnnotationProcessorTest {
 
     @Test
     public void testEnumsTypesQueryForRaml() {
-        processResource("RestDocEndpoint.java", "raml", "public");
+        processResource("RestDocEndpoint.java", "raml", "all");
         Raml raml = new RamlDocumentBuilder().build(output, "http://example.com");
         Resource resource = raml.getResource("/mount/api/v1/whirlygigs");
         AssertJUnit.assertNotNull("Resource /mount/api/v1/whirlygigs not found", resource);
@@ -272,7 +269,7 @@ public abstract class AbstractRestAnnotationProcessorTest {
 
     @Test
     public void testEnumsTypesInPathForRaml() {
-        processResource("RestDocEndpoint.java", "raml", "public");
+        processResource("RestDocEndpoint.java", "raml", "all");
         Raml raml = new RamlDocumentBuilder().build(output, "http://example.com");
         Resource resource = raml.getResource("/mount/api/v1/colors/{color}");
         AssertJUnit.assertNotNull("Resource /mount/api/v1/colors/{color} not found", resource);
@@ -286,21 +283,52 @@ public abstract class AbstractRestAnnotationProcessorTest {
     @Test
     public void testPublicationScopes() {
         for (String format : _outputFormats) {
-            processResource("PublicationScopes.java", format, "public");
-            AssertJUnit.assertTrue("expected 'public1' in doc string; got: \n" + output, output.contains("public1"));
-            AssertJUnit.assertTrue("expected 'public2' in doc string; got: \n" + output, output.contains("public2"));
-            AssertJUnit.assertTrue("expected 'public4' in doc string; got: \n" + output, output.contains("public4"));
-            AssertJUnit.assertTrue("expected 'public5' in doc string; got: \n" + output, output.contains("public5"));
-            AssertJUnit.assertTrue("expected no 'private' in doc string; got: \n" + output, !output.contains("private"));
-
             processResource("PublicationScopes.java", format, "all");
-            AssertJUnit.assertTrue("expected 'public1' in doc string; got: \n" + output, output.contains("public1"));
-            AssertJUnit.assertTrue("expected 'public2' in doc string; got: \n" + output, output.contains("public2"));
-            AssertJUnit.assertTrue("expected 'public4' in doc string; got: \n" + output, output.contains("public4"));
-            AssertJUnit.assertTrue("expected 'public5' in doc string; got: \n" + output, output.contains("public5"));
-            AssertJUnit.assertTrue("expected 'private2' in doc string; got: \n" + output, output.contains("private2"));
-            AssertJUnit.assertTrue("expected 'private3' in doc string; got: \n" + output, output.contains("private3"));
-            AssertJUnit.assertTrue("expected 'private4' in doc string; got: \n" + output, output.contains("private4"));
+            AssertJUnit.assertTrue(output.contains("/public1"));
+            AssertJUnit.assertTrue(output.contains("/public2"));
+            AssertJUnit.assertTrue(output.contains("/private2"));
+            AssertJUnit.assertTrue(output.contains("/private3"));
+            AssertJUnit.assertTrue(output.contains("/private4"));
+            AssertJUnit.assertTrue(output.contains("/pubpriv4"));
+            AssertJUnit.assertTrue(output.contains("/public5/foo"));
+            AssertJUnit.assertTrue(output.contains("/pubpriv5/bar"));
+            AssertJUnit.assertTrue(output.contains("/newshakystuff/foo"));
+            AssertJUnit.assertTrue(output.contains("/newshakystuff/bar"));
+
+            processResource("PublicationScopes.java", format, "public");
+            AssertJUnit.assertTrue(output.contains("/public2"));
+            AssertJUnit.assertTrue(!output.contains("/private2"));
+            AssertJUnit.assertTrue(!output.contains("/private3"));
+            AssertJUnit.assertTrue(!output.contains("/private4"));
+            AssertJUnit.assertTrue(output.contains("/pubpriv4"));
+            AssertJUnit.assertTrue(output.contains("/public5/foo"));
+            AssertJUnit.assertTrue(output.contains("/pubpriv5/bar"));
+            AssertJUnit.assertTrue(!output.contains("/newshakystuff/foo"));
+            AssertJUnit.assertTrue(!output.contains("/newshakystuff/bar"));
+
+            processResource("PublicationScopes.java", format, "private");
+            AssertJUnit.assertTrue(!output.contains("/public1"));
+            AssertJUnit.assertTrue(!output.contains("/public2"));
+            AssertJUnit.assertTrue(output.contains("/private2"));
+            AssertJUnit.assertTrue(output.contains("/private3"));
+            AssertJUnit.assertTrue(output.contains("/private4"));
+            AssertJUnit.assertTrue(output.contains("/pubpriv4"));
+            AssertJUnit.assertTrue(!output.contains("/public5/foo"));
+            AssertJUnit.assertTrue(output.contains("/pubpriv5/bar"));
+            AssertJUnit.assertTrue(!output.contains("/newshakystuff/foo"));
+            AssertJUnit.assertTrue(!output.contains("/newshakystuff/bar"));
+
+            processResource("PublicationScopes.java", format, "experimental");
+            AssertJUnit.assertTrue(!output.contains("/public1"));
+            AssertJUnit.assertTrue(!output.contains("/public2"));
+            AssertJUnit.assertTrue(!output.contains("/private2"));
+            AssertJUnit.assertTrue(!output.contains("/private3"));
+            AssertJUnit.assertTrue(!output.contains("/private4"));
+            AssertJUnit.assertTrue(!output.contains("/pubpriv4"));
+            AssertJUnit.assertTrue(!output.contains("/public5/foo"));
+            AssertJUnit.assertTrue(!output.contains("/pubpriv5/bar"));
+            AssertJUnit.assertTrue(output.contains("/newshakystuff/foo"));
+            AssertJUnit.assertTrue(output.contains("/newshakystuff/bar"));
         }
     }
 

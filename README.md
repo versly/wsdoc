@@ -87,8 +87,56 @@ Often, a single REST API is implemented across a number of web archives. As a re
             ...
         }
 
-  All endpoints inside the annotated class will be prefixed with the text provided to the annotation.
+  All endpoints inside the annotated class will be prefixed with the text provided to the annotation.  Note, this will
+  be in addition to the prefixing of any class level request paths contributed by other annotations.  For example:
+  
+       @RestApiMountPoint("/mount/api/v1")
+       @RequestMapping("/myservice")
+       public class RestDocEndpoint {
+           ...
+       }
+       
+  will result in the prefixing of endpoints with "/mount/api/v1/myservice".
+  
+  * Controlling Publication Scope
+  
+  Publication scoping may be asserted using the @DocumentationScope annotation.  This annotation supports user defined
+  scopes but also defines convenient constants for common scopes, such as DocumentationScope.PUBLIC and
+  DocumentationScope.PRIVATE. When executing the doc assembler phase of doc generation, the --scope command line option 
+  can be used to indicate a particular scope on which to filter the production of API documentation, or "all" 
+  to indicate all endpoints are to be documented regardless of scope.
+  
+  If both an endpoint and it's containing class are explicitly annotated with a @DocumentationScope the scopes of that
+  endpoint are regarded as the union of the values provided in both annotations (note an endpoint may belong to multiple
+  scopes). 
 
+     @DocumentationScope(DocumentationScope.PRIVATE)
+     public static class ExperimentalController {
+
+         @DocumentationScope(DocumentationScope.PUBLIC)
+         @RequestMapping(value = "/m1", method = RequestMethod.GET)
+         public void m1() {
+            ...
+         } 
+
+         @RequestMapping(value = "/m2", method = RequestMethod.GET)
+         public void m2() {
+            ...
+         } 
+
+         @DocumentationScope("experimental")
+         @RequestMapping(value = "/m3", method = RequestMethod.GET)
+         public void m3() {
+            ...
+         }
+    }
+        
+  In the above example, m1 will have both public and private scopes, m2 will have only private scope, and m3 will
+  have private and experimental scope.  If, during the doc assembler phase, the --scope command line argument is
+  provided with a value of "public", only m1 will be documented.  Likewise, if a value of "experimental" is provided
+  for --scope, then only m3 will be documented.  If a value of "private" (or "all") is provided than m1, m2, and m3 will 
+  all be documented.
+  
 <a id="maven"/>
 #### wsdoc in a Maven build environment
 

@@ -65,7 +65,7 @@ public class PublicationScopes {
         }
 
         @DocumentationScope(DocumentationScope.PUBLIC)
-        @RequestMapping(value = "/public4", method = RequestMethod.GET)
+        @RequestMapping(value = "/pubpriv4", method = RequestMethod.GET)
         public void pub() {
         }
     }
@@ -83,9 +83,24 @@ public class PublicationScopes {
         }
 
         @DocumentationScope(DocumentationScope.PRIVATE)
-        @RequestMapping(value = "/public5/bar", method = RequestMethod.GET)
+        @RequestMapping(value = "/pubpriv5/bar", method = RequestMethod.GET)
         public void pub2() {
         }
     }
-}
 
+    /**
+     * A controller that is "experimental" scope only.
+     */
+    @DocumentationScope("experimental")
+    @RestApiMountPoint("/newshakystuff")
+    public static class ExperimentalController {
+
+        @RequestMapping(value = "/foo", method = RequestMethod.GET)
+        public void foo() {
+        }
+
+        @RequestMapping(value = "/bar", method = RequestMethod.GET)
+        public void bar() {
+        }
+    }
+}

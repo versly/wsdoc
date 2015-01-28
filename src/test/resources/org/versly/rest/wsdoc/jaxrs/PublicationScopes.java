@@ -71,7 +71,7 @@ public class PublicationScopes {
 
         @DocumentationScope(DocumentationScope.PUBLIC)
         @GET
-        @Path("/public4")
+        @Path("/pubpriv4")
         public void pub() {
         }
     }
@@ -91,9 +91,28 @@ public class PublicationScopes {
 
         @DocumentationScope(DocumentationScope.PRIVATE)
         @GET
-        @Path("/public5/bar")
+        @Path("/pubpriv5/bar")
         public void pub2() {
         }
     }
+
+    /**
+     * A controller that is "experimental" scope only.
+     */
+    @DocumentationScope("experimental")
+    @RestApiMountPoint("/newshakystuff")
+    public static class ExperimentalController {
+
+        @GET
+        @Path("/foo")
+        public void foo() {
+        }
+
+        @GET
+        @Path("/bar")
+        public void bar() {
+        }
+    }
+
 }
 

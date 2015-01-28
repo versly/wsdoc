@@ -45,14 +45,14 @@ public class SpringMVCRestAnnotationProcessorTest extends AbstractRestAnnotation
 
     @Test
     public void assertMultipart() {
-        processResource("RestDocEndpoint.java", "html", "public");
+        processResource("RestDocEndpoint.java", "html", "all");
         AssertJUnit.assertTrue("expected multipart info docs; got: \n" + output,
                 output.contains("Note: this endpoint expects a multipart"));
     }
 
     @Test
     public void processControllerThatReturnsDomainObjectWithGenericParentsExpectsSuccess() {
-        processResource("genericdomain/ChildController.java", "html", "public");
+        processResource("genericdomain/ChildController.java", "html", "all");
         AssertJUnit.assertTrue("expected firstGrandparentField and secondGrandparentField in docs; got: \n" + output,
                 output.contains(">firstGrandparentField<") && output.contains(">secondGrandparentField<")
                         && output.contains(">parentField<") && output.contains(">childField<")
@@ -61,28 +61,28 @@ public class SpringMVCRestAnnotationProcessorTest extends AbstractRestAnnotation
 
     @Test
     public void processControllerThatReturnsGenericDomainObjectExpectsSuccess() {
-        processResource("genericdomain/ParentController.java", "html", "public");
+        processResource("genericdomain/ParentController.java", "html", "all");
         AssertJUnit.assertTrue("expected parentField in docs; got: \n" + output,
                 output.contains(">parentField<"));
     }
 
     @Test
     public void assertQueryParams() {
-        processResource("RestDocEndpoint.java", "html", "public");
+        processResource("RestDocEndpoint.java", "html", "all");
         AssertJUnit.assertTrue("expected queryParam1 and queryParam2 in docs; got: \n" + output,
                                output.contains(">queryParamVal1<") && output.contains(">queryParamVal2<"));
     }
 
     @Test
     public void processControllerThatReturnsEnumSetExpectsSuccess() {
-        processResource("EnumSetController.java", "html", "public");
+        processResource("EnumSetController.java", "html", "all");
         AssertJUnit.assertTrue("expected enumsets in docs; got: \n" + output,
                                output.contains(">myEnumSet<") && output.contains(">myEnum<") && output.contains(">one of [ TEST1, TEST2 ]<"));
     }
 
     @Test
     public void multipleBindingsForOneEndpoint() {
-        processResource("RestDocEndpoint.java", "html", "public");
+        processResource("RestDocEndpoint.java", "html", "all");
         AssertJUnit.assertTrue("expected multiple-bindings-a and multiple-bindings-b in docs; got: \n" + output,
                 output.contains("multiple-bindings-a<") && output.contains("multiple-bindings-b<"));
     }
@@ -91,7 +91,7 @@ public class SpringMVCRestAnnotationProcessorTest extends AbstractRestAnnotation
     public void assertAllMethods() {
         super.assertAllMethods();
         for (String format : _outputFormats) {
-            processResource("AllMethods.java", format, "public");
+            processResource("AllMethods.java", format, "all");
             AssertJUnit.assertTrue(
                     "expected 'allMethodsPatch' in doc string; got: \n" + output,
                     output.contains("allMethodsPatch"));

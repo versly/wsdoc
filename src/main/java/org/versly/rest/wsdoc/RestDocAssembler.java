@@ -92,41 +92,39 @@ public class RestDocAssembler {
         // filter doc objects by client provided exclude patterns
         List<RestDocumentation> filteredDocs;
         if (excludePatterns != null) {
-            filteredDocs = new ArrayList<RestDocumentation>();
+            filteredDocs = new LinkedList<RestDocumentation>();
             for (RestDocumentation doc : docs)
                 filteredDocs.add(doc.filter(excludePatterns));
         } else {
             filteredDocs = docs;
         }
         
-        // filter methods and resources by client provided scoping request ("public" or "all")
-        final String[] PUBLIC_SCOPES = { DocumentationScope.PUBLIC };
-        final String[] ALL_SCOPES = { DocumentationScope.PUBLIC, DocumentationScope.PRIVATE };
-        HashSet<String> requestedScopes = (scope.equals("all")) ? 
-                new HashSet<String>(Arrays.asList(ALL_SCOPES)) :
-                new HashSet<String>(Arrays.asList(PUBLIC_SCOPES));
+        // use command-line --scope value to set the scope on which to filter the generated documentation
+        if (!scope.equals("all")) {
+            HashSet<String> requestedScopes = new HashSet<String>(Arrays.asList(new String[]{scope}));
 
-        // ugly old-style iterating because we need to be able to remove elements as we go
-        Iterator<RestDocumentation> docIter = docs.iterator();
-        while (docIter.hasNext()) {
-            RestDocumentation doc = docIter.next();
-            Iterator<RestDocumentation.Resource> resIter = doc.getResources().iterator();
-            while (resIter.hasNext()) {
-                RestDocumentation.Resource resource = resIter.next();
-                Iterator<RestDocumentation.Resource.Method> methIter = resource.getRequestMethodDocs().iterator();
-                while (methIter.hasNext()) {
-                    HashSet<String> scopes = methIter.next().getScopes();
-                    scopes.retainAll(requestedScopes);
-                    if (scopes.isEmpty()) {
-                        methIter.remove();
+            // ugly old-style iterating because we need to be able to remove elements as we go
+            Iterator<RestDocumentation> docIter = docs.iterator();
+            while (docIter.hasNext()) {
+                RestDocumentation doc = docIter.next();
+                Iterator<RestDocumentation.Resource> resIter = doc.getResources().iterator();
+                while (resIter.hasNext()) {
+                    RestDocumentation.Resource resource = resIter.next();
+                    Iterator<RestDocumentation.Resource.Method> methIter = resource.getRequestMethodDocs().iterator();
+                    while (methIter.hasNext()) {
+                        HashSet<String> scopes = methIter.next().getScopes();
+                        scopes.retainAll(requestedScopes);
+                        if (scopes.isEmpty()) {
+                            methIter.remove();
+                        }
+                    }
+                    if (resource.getRequestMethodDocs().isEmpty()) {
+                        resIter.remove();
                     }
                 }
-                if (resource.getRequestMethodDocs().isEmpty()) {
-                    resIter.remove();
+                if (doc.getResources().isEmpty()) {
+                    docIter.remove();
                 }
-            }
-            if (doc.getResources().isEmpty()) {
-                docIter.remove();
             }
         }
         
@@ -171,7 +169,7 @@ public class RestDocAssembler {
         @Parameter(names = { "-f", "--format" }, description = "Format for output: html or raml")
         String outputFormat = "html";
         
-        @Parameter(names = { "-s", "--scope" }, description = "Publication scope for output: public or all")
+        @Parameter(names = { "-s", "--scope" }, description = "Publication scope for output (e.g. public, private, etc) or \"all\"")
         String scope = "public";
     }
 }
