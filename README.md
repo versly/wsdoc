@@ -97,7 +97,18 @@ Often, a single REST API is implemented across a number of web archives. As a re
        }
        
   will result in the prefixing of endpoints with "/mount/api/v1/myservice".
-  
+ 
+* Set Output Format
+
+  Output can be generated in either HTML or RAML format.  The default format is HTML, however either may be specified
+  using the command-line option --format.  For example:
+
+        java org.versly.rest.wsdoc.RestDocAssembler --format raml --out snow-report.raml *.war
+
+  or 
+
+        java org.versly.rest.wsdoc.RestDocAssembler --format html --out snow-report.html *.war
+
 * Controlling Publication Scope
   
   Publication scoping may be asserted using the @DocumentationScope annotation.  This annotation supports user defined
