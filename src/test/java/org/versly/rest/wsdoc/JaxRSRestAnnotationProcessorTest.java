@@ -18,7 +18,6 @@ package org.versly.rest.wsdoc;
 
 import freemarker.template.TemplateException;
 import org.testng.AssertJUnit;
-import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -37,8 +36,8 @@ public class JaxRSRestAnnotationProcessorTest extends AbstractRestAnnotationProc
     public void assertRequestBody() {
         processResource("PostWithRequestBody.java", "html", "all");
 
-        AssertJUnit.assertTrue("expected two Request Body sections; got: \n" + output,
-                output.split("Request Body").length == 3);
+        AssertJUnit.assertTrue("expected two Request Body sections; got: \n" + defaultApiOutput,
+                defaultApiOutput.split("Request Body").length == 3);
     }
 
     public static void main(String[] args) throws IOException, URISyntaxException {

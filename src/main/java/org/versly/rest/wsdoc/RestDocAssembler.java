@@ -86,17 +86,30 @@ public class RestDocAssembler {
         this(outputFileName, "html");
     }
 
-    void writeDocumentation(List<RestDocumentation> docs, Iterable<Pattern> excludePatterns, String scope)
+    List<String> writeDocumentation(List<RestDocumentation> docs, Iterable<Pattern> excludePatterns, String scope)
         throws IOException, ClassNotFoundException, TemplateException {
-
+        List<String> filesWritten = new ArrayList<String>();
+        
+        Map<String,RestDocumentation.RestApi> aggregatedApis = new LinkedHashMap<String,RestDocumentation.RestApi>();
+        for (RestDocumentation doc : docs) {
+            for (RestDocumentation.RestApi api : doc.getApis()) {
+                if (!aggregatedApis.containsKey(api.getApiBaseUrl())) {
+                    aggregatedApis.put(api.getApiBaseUrl(), api);
+                }
+                else {
+                    aggregatedApis.get(api.getApiBaseUrl()).merge(api);
+                }
+            }
+        }
+        
         // filter doc objects by client provided exclude patterns
-        List<RestDocumentation> filteredDocs;
+        Collection<RestDocumentation.RestApi> filteredApis = null;
         if (excludePatterns != null) {
-            filteredDocs = new LinkedList<RestDocumentation>();
-            for (RestDocumentation doc : docs)
-                filteredDocs.add(doc.filter(excludePatterns));
+            filteredApis = new LinkedList<RestDocumentation.RestApi>();
+            for (RestDocumentation.RestApi api : aggregatedApis.values())
+                filteredApis.add(api.filter(excludePatterns));
         } else {
-            filteredDocs = docs;
+            filteredApis = aggregatedApis.values();
         }
         
         // use command-line --scope value to set the scope on which to filter the generated documentation
@@ -104,13 +117,13 @@ public class RestDocAssembler {
             HashSet<String> requestedScopes = new HashSet<String>(Arrays.asList(new String[]{scope}));
 
             // ugly old-style iterating because we need to be able to remove elements as we go
-            Iterator<RestDocumentation> docIter = docs.iterator();
-            while (docIter.hasNext()) {
-                RestDocumentation doc = docIter.next();
-                Iterator<RestDocumentation.Resource> resIter = doc.getResources().iterator();
+            Iterator<RestDocumentation.RestApi> apiIter = filteredApis.iterator();
+            while (apiIter.hasNext()) {
+                RestDocumentation.RestApi api = apiIter.next();
+                Iterator<RestDocumentation.RestApi.Resource> resIter = api.getResources().iterator();
                 while (resIter.hasNext()) {
-                    RestDocumentation.Resource resource = resIter.next();
-                    Iterator<RestDocumentation.Resource.Method> methIter = resource.getRequestMethodDocs().iterator();
+                    RestDocumentation.RestApi.Resource resource = resIter.next();
+                    Iterator<RestDocumentation.RestApi.Resource.Method> methIter = resource.getRequestMethodDocs().iterator();
                     while (methIter.hasNext()) {
                         HashSet<String> scopes = methIter.next().getScopes();
                         scopes.retainAll(requestedScopes);
@@ -122,8 +135,8 @@ public class RestDocAssembler {
                         resIter.remove();
                     }
                 }
-                if (doc.getResources().isEmpty()) {
-                    docIter.remove();
+                if (api.getResources().isEmpty()) {
+                    apiIter.remove();
                 }
             }
         }
@@ -133,14 +146,18 @@ public class RestDocAssembler {
         conf.setObjectWrapper(new DefaultObjectWrapper());
         Writer out = null;
         try {
-            Template template = conf.getTemplate(_outputTemplate);
-            Map<String, List<RestDocumentation>> root = new HashMap<String, List<RestDocumentation>>();
-            root.put("docs", filteredDocs);
-            File file = getOutputFile();
-            out = new FileWriter(file);
-            template.process(root, out);
-            out.flush();
-            System.err.printf("Wrote REST docs to %s\n", file.getAbsolutePath());
+            for (RestDocumentation.RestApi api : filteredApis) {
+                Template template = conf.getTemplate(_outputTemplate);
+                Map<String, RestDocumentation.RestApi> root = new HashMap<String, RestDocumentation.RestApi>();
+                root.put("api", api);
+                String fileName = getOutputFileName(api);
+                filesWritten.add(fileName);
+                File file = new File(fileName);
+                out = new FileWriter(file);
+                template.process(root, out);
+                out.flush();
+                System.err.printf("Wrote REST docs to %s\n", file.getAbsolutePath());
+            }
         } finally {
             if (out != null) {
                 try {
@@ -150,10 +167,21 @@ public class RestDocAssembler {
                 }
             }
         }
+        return filesWritten;
     }
 
-    File getOutputFile() {
-        return new File(_outputFileName);
+    String getOutputFileName(RestDocumentation.RestApi api) {
+        String outputFileName = _outputFileName;
+        if (!api.getIdentifier().equals(RestDocumentation.RestApi.DEFAULT_IDENTIFIER)) {
+            StringBuilder constructedName = new StringBuilder(_outputFileName);
+            int identifierIndex = constructedName.lastIndexOf(".");
+            if (identifierIndex < 0) {
+                identifierIndex = constructedName.length();
+            }
+            constructedName.insert(identifierIndex, "-" + api.getIdentifier());
+            outputFileName = constructedName.toString();
+        }
+        return outputFileName;
     }
 
     static class Arguments {

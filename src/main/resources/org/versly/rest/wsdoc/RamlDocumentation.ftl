@@ -6,12 +6,10 @@ protocols: [ HTTPS ]
 mediaType: application/json
 <#-- Consider adding something like baseUri: http://{baseUri} -->
 
-<#list docs as doc>
-<#list doc.resources as resource>
+<#list api.resources as resource>
 <#if !resource.parent??>
 <@write_resource resource=resource depth=0/>
 </#if>
-</#list>
 </#list>
 
 

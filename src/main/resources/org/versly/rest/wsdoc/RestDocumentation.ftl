@@ -51,8 +51,7 @@
     <body>
 
         <div class="section-title">Overview</div>
-        <#list docs as doc>
-            <#list doc.resources as resource>
+            <#list api.resources as resource>
                 <div class="resource-summary">
                     <span class="resource-summary-path">${resource.path}</span>
                     <div>
@@ -62,10 +61,8 @@
                     </div>
                 </div>
             </#list>
-        </#list>
 
-        <#list docs as doc>
-            <#list doc.resources as resource>
+            <#list api.resources as resource>
                 <#list resource.requestMethodDocs as methodDoc>
                     <a id="${methodDoc.key}"/>
                     <div class="resource">
@@ -147,7 +144,6 @@
                     </div>
                 </#list>
             </#list>
-        </#list>
     </body>
 </html>
 

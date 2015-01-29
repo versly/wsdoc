@@ -100,6 +100,10 @@ public class AnnotationProcessor extends AbstractProcessor {
         super.init(processingEnv);
         _processingEnv = processingEnv;
         _typeUtils = _processingEnv.getTypeUtils();
+        Map<String,String> options = _processingEnv.getOptions();
+        for (String option : options.keySet()) {
+            System.out.println(option + "=" + options.get(option));
+        }
     }
 
     @Override
@@ -114,7 +118,7 @@ public class AnnotationProcessor extends AbstractProcessor {
         processElements(roundEnvironment, processedPackageNames, new JaxRSRestImplementationSupport());
         _docs.postProcess();
 
-        if (_docs.getResources().size() > 0) {
+        if (_docs.getApis().size() > 0) {
 
             OutputStream fileOutput = null;
             try {
@@ -123,8 +127,8 @@ public class AnnotationProcessor extends AbstractProcessor {
                 fileOutput = file.openOutputStream();
                 _docs.toStream(fileOutput);
                 processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE,
-                        String.format("Wrote REST docs for %s endpoints to %s file at %s",
-                                _docs.getResources().size(), exists ? "existing" : "new", file.getName()));
+                        String.format("Wrote REST docs for %s apis to %s file at %s",
+                                _docs.getApis().size(), exists ? "existing" : "new", file.getName()));
             } catch (Exception e) {
                 throw new RuntimeException(e); // TODO wrap in something nicer
             } finally {
@@ -144,9 +148,9 @@ public class AnnotationProcessor extends AbstractProcessor {
     private void processElements(RoundEnvironment roundEnvironment,
                                  Collection<String> processedPackageNames,
                                  RestImplementationSupport implementationSupport) {
-    	
+
     	for (Element e : roundEnvironment.getElementsAnnotatedWith(implementationSupport.getMappingAnnotationType())) {
-        	
+
         	if (e instanceof ExecutableElement) {
         		addPackageName(processedPackageNames, e);
                 processRequestMappingMethod((ExecutableElement) e, implementationSupport);
@@ -179,8 +183,24 @@ public class AnnotationProcessor extends AbstractProcessor {
                     continue;
                 }
 
-                RestDocumentation.Resource.Method doc = _docs.getResourceDocumentation(fullPath).newMethodDocumentation(meth);
-                doc.setCommentText(processingEnv.getElementUtils().getDocComment(executableElement));
+                RestDocumentation.RestApi api = null;
+                DocumentationRestApi apidoc = cls.getAnnotation(DocumentationRestApi.class);
+                if (null != apidoc) {
+                    api = _docs.getRestApi(apidoc.id());
+                    api.setApiTitle(apidoc.title());
+                    api.setApiVersion(apidoc.version());
+                }
+                else {
+                    api = _docs.getRestApi(RestDocumentation.RestApi.DEFAULT_IDENTIFIER);
+                    api.setApiTitle("");
+                    api.setApiVersion("");
+                }
+                api.setApiBaseUrl(basePath);
+                api.setApiDocumentation(processingEnv.getElementUtils().getDocComment(cls));
+
+                RestDocumentation.RestApi.Resource resource = api.getResourceDocumentation(fullPath); 
+                RestDocumentation.RestApi.Resource.Method method = resource.newMethodDocumentation(meth);
+                method.setCommentText(processingEnv.getElementUtils().getDocComment(executableElement));
 
                 HashSet<String> scopes = new HashSet<String>();
                 DocumentationScope clsScopes = cls.getAnnotation(DocumentationScope.class);
@@ -191,15 +211,15 @@ public class AnnotationProcessor extends AbstractProcessor {
                 if (null != methodScopes) {
                     scopes.addAll(Arrays.asList(methodScopes.value()));
                 }
-                doc.setScopes(scopes);
+                method.setScopes(scopes);
 
-                buildParameterData(executableElement, doc, implementationSupport);
-                buildResponseFormat(executableElement.getReturnType(), doc);
+                buildParameterData(executableElement, method, implementationSupport);
+                buildResponseFormat(executableElement.getReturnType(), method);
             }
         }
     }
 
-    private void buildParameterData(ExecutableElement executableElement, RestDocumentation.Resource.Method doc,
+    private void buildParameterData(ExecutableElement executableElement, RestDocumentation.RestApi.Resource.Method doc,
                                     RestImplementationSupport implementationSupport) {
 
         // only process @RequestBody, @PathVariable and @RequestParam parameters for now.
@@ -218,7 +238,7 @@ public class AnnotationProcessor extends AbstractProcessor {
     /**
      * This is Spring-MVC only -- JAX-RS doesn't have an (obvious) analog.
      */
-    private void scanForSpringMVCMultipart(ExecutableElement executableElement, RestDocumentation.Resource.Method doc) {
+    private void scanForSpringMVCMultipart(ExecutableElement executableElement, RestDocumentation.RestApi.Resource.Method doc) {
         for (VariableElement var : executableElement.getParameters()) {
             TypeMirror varType = var.asType();
             if (varType.toString().startsWith(MultipartHttpServletRequest.class.getName())) {
@@ -228,7 +248,7 @@ public class AnnotationProcessor extends AbstractProcessor {
         }
     }
 
-    private void buildRequestBodies(ExecutableElement executableElement, RestDocumentation.Resource.Method doc,
+    private void buildRequestBodies(ExecutableElement executableElement, RestDocumentation.RestApi.Resource.Method doc,
                                     RestImplementationSupport implementationSupport) {
         List<VariableElement> requestBodies = new ArrayList<VariableElement>();
         for (VariableElement var : executableElement.getParameters()) {
@@ -245,15 +265,15 @@ public class AnnotationProcessor extends AbstractProcessor {
             buildRequestBody(requestBodies.get(0), doc);
     }
 
-    private void buildRequestBody(VariableElement var, RestDocumentation.Resource.Method doc) {
+    private void buildRequestBody(VariableElement var, RestDocumentation.RestApi.Resource.Method doc) {
         doc.setRequestBody(jsonTypeFromTypeMirror(var.asType(), new HashSet<String>()));
         doc.setRequestSchema(jsonSchemaFromTypeMirror(var.asType()));
         doc.setRequestExample(exampleFromJsonType(doc.getRequestBody()));
     }
 
-    private void buildPathVariables(ExecutableElement executableElement, RestDocumentation.Resource.Method doc,
+    private void buildPathVariables(ExecutableElement executableElement, RestDocumentation.RestApi.Resource.Method doc,
                                     RestImplementationSupport implementationSupport) {
-        RestDocumentation.Resource.UrlFields subs = doc.getUrlSubstitutions();
+        RestDocumentation.RestApi.Resource.UrlFields subs = doc.getUrlSubstitutions();
 
         for (VariableElement var : executableElement.getParameters()) {
             String pathVariable = implementationSupport.getPathVariable(var);
@@ -264,15 +284,15 @@ public class AnnotationProcessor extends AbstractProcessor {
         }
     }
 
-    private void addUrlField(RestDocumentation.Resource.UrlFields subs, VariableElement var, String annoValue,
+    private void addUrlField(RestDocumentation.RestApi.Resource.UrlFields subs, VariableElement var, String annoValue,
             String description) {
         String name = (annoValue == null || annoValue.isEmpty()) ? var.getSimpleName().toString() : annoValue;
         subs.addField(name, jsonTypeFromTypeMirror(var.asType(), new HashSet<String>()), description);
     }
 
-    private void buildUrlParameters(ExecutableElement executableElement, RestDocumentation.Resource.Method doc,
+    private void buildUrlParameters(ExecutableElement executableElement, RestDocumentation.RestApi.Resource.Method doc,
                                     RestImplementationSupport implementationSupport) {
-        RestDocumentation.Resource.UrlFields subs = doc.getUrlParameters();
+        RestDocumentation.RestApi.Resource.UrlFields subs = doc.getUrlParameters();
 
         for (VariableElement var : executableElement.getParameters()) {
             String reqParam = implementationSupport.getRequestParam(var);
@@ -313,10 +333,10 @@ public class AnnotationProcessor extends AbstractProcessor {
     /**
      * Finds any request parameters that can be bound to (which are pojos) and adds each of the POJOs fields to the url parameters
      */
-    private void buildPojoQueryParameters(ExecutableElement executableElement, RestDocumentation.Resource.Method doc,
+    private void buildPojoQueryParameters(ExecutableElement executableElement, RestDocumentation.RestApi.Resource.Method doc,
                                           RestImplementationSupport implementationSupport) {
         if (doc.getRequestMethod().equals(RequestMethod.GET.name())) {
-            RestDocumentation.Resource.UrlFields subs = doc.getUrlParameters();
+            RestDocumentation.RestApi.Resource.UrlFields subs = doc.getUrlParameters();
             for (VariableElement var : executableElement.getParameters()) {
                 if (implementationSupport.getPojoRequestParam(var) != null) {
                     Element paramType = _typeUtils.asElement(var.asType());
@@ -384,7 +404,7 @@ public class AnnotationProcessor extends AbstractProcessor {
         || JsonPrimitive.isPrimitive(typeMirror.toString()));
     }
 
-    private void buildResponseFormat(TypeMirror type, RestDocumentation.Resource.Method doc) {
+    private void buildResponseFormat(TypeMirror type, RestDocumentation.RestApi.Resource.Method doc) {
         doc.setResponseBody(jsonTypeFromTypeMirror(type, new HashSet<String>()));
         doc.setResponseSchema(jsonSchemaFromTypeMirror(type));
         doc.setResponseExample(exampleFromJsonType(doc.getResponseBody()));

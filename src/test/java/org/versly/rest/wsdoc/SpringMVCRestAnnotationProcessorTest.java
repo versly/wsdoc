@@ -17,10 +17,6 @@
 package org.versly.rest.wsdoc;
 
 import freemarker.template.TemplateException;
-import org.raml.model.*;
-import org.raml.model.parameter.QueryParameter;
-import org.raml.model.parameter.UriParameter;
-import org.raml.parser.visitor.RamlDocumentBuilder;
 import org.testng.AssertJUnit;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -28,8 +24,7 @@ import org.testng.annotations.Test;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.security.URIParameter;
-import java.util.List;
+import java.util.Map;
 
 public class SpringMVCRestAnnotationProcessorTest extends AbstractRestAnnotationProcessorTest {
 
@@ -46,45 +41,45 @@ public class SpringMVCRestAnnotationProcessorTest extends AbstractRestAnnotation
     @Test
     public void assertMultipart() {
         processResource("RestDocEndpoint.java", "html", "all");
-        AssertJUnit.assertTrue("expected multipart info docs; got: \n" + output,
-                output.contains("Note: this endpoint expects a multipart"));
+        AssertJUnit.assertTrue("expected multipart info docs; got: \n" + defaultApiOutput,
+                defaultApiOutput.contains("Note: this endpoint expects a multipart"));
     }
 
     @Test
     public void processControllerThatReturnsDomainObjectWithGenericParentsExpectsSuccess() {
         processResource("genericdomain/ChildController.java", "html", "all");
-        AssertJUnit.assertTrue("expected firstGrandparentField and secondGrandparentField in docs; got: \n" + output,
-                output.contains(">firstGrandparentField<") && output.contains(">secondGrandparentField<")
-                        && output.contains(">parentField<") && output.contains(">childField<")
+        AssertJUnit.assertTrue("expected firstGrandparentField and secondGrandparentField in docs; got: \n" + defaultApiOutput,
+                defaultApiOutput.contains(">firstGrandparentField<") && defaultApiOutput.contains(">secondGrandparentField<")
+                        && defaultApiOutput.contains(">parentField<") && defaultApiOutput.contains(">childField<")
         );
     }
 
     @Test
     public void processControllerThatReturnsGenericDomainObjectExpectsSuccess() {
         processResource("genericdomain/ParentController.java", "html", "all");
-        AssertJUnit.assertTrue("expected parentField in docs; got: \n" + output,
-                output.contains(">parentField<"));
+        AssertJUnit.assertTrue("expected parentField in docs; got: \n" + defaultApiOutput,
+                defaultApiOutput.contains(">parentField<"));
     }
 
     @Test
     public void assertQueryParams() {
         processResource("RestDocEndpoint.java", "html", "all");
-        AssertJUnit.assertTrue("expected queryParam1 and queryParam2 in docs; got: \n" + output,
-                               output.contains(">queryParamVal1<") && output.contains(">queryParamVal2<"));
+        AssertJUnit.assertTrue("expected queryParam1 and queryParam2 in docs; got: \n" + defaultApiOutput,
+                defaultApiOutput.contains(">queryParamVal1<") && defaultApiOutput.contains(">queryParamVal2<"));
     }
 
     @Test
     public void processControllerThatReturnsEnumSetExpectsSuccess() {
         processResource("EnumSetController.java", "html", "all");
-        AssertJUnit.assertTrue("expected enumsets in docs; got: \n" + output,
-                               output.contains(">myEnumSet<") && output.contains(">myEnum<") && output.contains(">one of [ TEST1, TEST2 ]<"));
+        AssertJUnit.assertTrue("expected enumsets in docs; got: \n" + defaultApiOutput,
+                defaultApiOutput.contains(">myEnumSet<") && defaultApiOutput.contains(">myEnum<") && defaultApiOutput.contains(">one of [ TEST1, TEST2 ]<"));
     }
 
     @Test
     public void multipleBindingsForOneEndpoint() {
         processResource("RestDocEndpoint.java", "html", "all");
-        AssertJUnit.assertTrue("expected multiple-bindings-a and multiple-bindings-b in docs; got: \n" + output,
-                output.contains("multiple-bindings-a<") && output.contains("multiple-bindings-b<"));
+        AssertJUnit.assertTrue("expected multiple-bindings-a and multiple-bindings-b in docs; got: \n" + defaultApiOutput,
+                defaultApiOutput.contains("multiple-bindings-a<") && defaultApiOutput.contains("multiple-bindings-b<"));
     }
 
     @Test
@@ -93,8 +88,19 @@ public class SpringMVCRestAnnotationProcessorTest extends AbstractRestAnnotation
         for (String format : _outputFormats) {
             processResource("AllMethods.java", format, "all");
             AssertJUnit.assertTrue(
-                    "expected 'allMethodsPatch' in doc string; got: \n" + output,
-                    output.contains("allMethodsPatch"));
+                    "expected 'allMethodsPatch' in doc string; got: \n" + defaultApiOutput,
+                    defaultApiOutput.contains("allMethodsPatch"));
+        }
+    }
+
+    @Test
+    public void apiLevelDocs() {
+        processResource("ApiLevelDocs.java", "raml", "all");
+        for (Map.Entry<String,String> entry : output.entrySet()) {
+            System.out.println("--------------------------------------------------------------------------");
+            System.out.println(entry.getKey());
+            System.out.println(entry.getValue());
+            System.out.println("--------------------------------------------------------------------------");
         }
     }
 
