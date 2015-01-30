@@ -1,10 +1,16 @@
-<#-- @ftlvariable name="docs" type="java.util.List<org.versly.rest.wsdoc.impl.RestDocumentation>" -->
+<#-- @ftlvariable name="api" type="org.versly.rest.wsdoc.impl.RestDocumentation.RestApi" -->
 #%RAML 0.8
 ---
-title: REST
-protocols: [ HTTPS ]
-mediaType: application/json
-<#-- Consider adding something like baseUri: http://{baseUri} -->
+title: ${api.apiTitle}
+version: ${api.apiVersion}
+baseUri: ${api.apiBaseUrl}
+
+documentation:
+    - title: Overview
+<#if api.apiDocumentation??>
+      content: |
+${api.indentedApiDocumentationText(10)}
+</#if>
 
 <#list api.resources as resource>
 <#if !resource.parent??>
@@ -57,7 +63,6 @@ mediaType: application/json
 </#if>
 <@write_response methodDoc=methodDoc depth=depth+4/>
 </#macro>
-
 
 <#--
   -- write out method description

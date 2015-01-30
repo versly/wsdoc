@@ -24,7 +24,6 @@ import org.testng.annotations.Test;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Map;
 
 public class SpringMVCRestAnnotationProcessorTest extends AbstractRestAnnotationProcessorTest {
 
@@ -93,17 +92,6 @@ public class SpringMVCRestAnnotationProcessorTest extends AbstractRestAnnotation
         }
     }
 
-    @Test
-    public void apiLevelDocs() {
-        processResource("ApiLevelDocs.java", "raml", "all");
-        for (Map.Entry<String,String> entry : output.entrySet()) {
-            System.out.println("--------------------------------------------------------------------------");
-            System.out.println(entry.getKey());
-            System.out.println(entry.getValue());
-            System.out.println("--------------------------------------------------------------------------");
-        }
-    }
-
     public static void main(String[] args) throws IOException, URISyntaxException {
         File dir = new File(args[0]);
         for (int i = 1; i < args.length; i++) {
@@ -112,5 +100,4 @@ public class SpringMVCRestAnnotationProcessorTest extends AbstractRestAnnotation
                     args[i].substring(args[i].lastIndexOf('/')));
         }
     }
-
 }

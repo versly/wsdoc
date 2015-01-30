@@ -130,6 +130,14 @@ public class RestDocumentation implements Serializable {
             return _apiDocumentation;
         }
 
+        public String getIndentedApiDocumentationText(int indent) {
+            if (_apiDocumentation != null) {
+                String whitespace = StringUtils.leftPad("", indent);
+                return whitespace + _apiDocumentation.replaceAll("\n", "\n" + whitespace);
+            }
+            return "";
+        }
+
         public void setApiDocumentation(String apiDocumentation) {
             _apiDocumentation = apiDocumentation;
         }

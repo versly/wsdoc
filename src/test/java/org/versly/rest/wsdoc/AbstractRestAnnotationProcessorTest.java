@@ -2,10 +2,7 @@ package org.versly.rest.wsdoc;
 
 import freemarker.template.TemplateException;
 
-import org.raml.model.Action;
-import org.raml.model.ActionType;
-import org.raml.model.Raml;
-import org.raml.model.Resource;
+import org.raml.model.*;
 import org.raml.model.parameter.QueryParameter;
 import org.raml.model.parameter.UriParameter;
 import org.raml.parser.visitor.RamlDocumentBuilder;
@@ -264,6 +261,7 @@ public abstract class AbstractRestAnnotationProcessorTest {
     public void testEnumsTypesQueryForRaml() {
         processResource("RestDocEndpoint.java", "raml", "all");
         Raml raml = new RamlDocumentBuilder().build(defaultApiOutput, "http://example.com");
+        AssertJUnit.assertNotNull("RAML not parseable", raml);
         Resource resource = raml.getResource("/mount/api/v1/whirlygigs");
         AssertJUnit.assertNotNull("Resource /mount/api/v1/whirlygigs not found", resource);
         Action action = resource.getAction(ActionType.GET);
@@ -279,6 +277,7 @@ public abstract class AbstractRestAnnotationProcessorTest {
     public void testEnumsTypesInPathForRaml() {
         processResource("RestDocEndpoint.java", "raml", "all");
         Raml raml = new RamlDocumentBuilder().build(defaultApiOutput, "http://example.com");
+        AssertJUnit.assertNotNull("RAML not parseable", raml);
         Resource resource = raml.getResource("/mount/api/v1/colors/{color}");
         AssertJUnit.assertNotNull("Resource /mount/api/v1/colors/{color} not found", resource);
         UriParameter up = resource.getUriParameters().get("color");
@@ -338,6 +337,25 @@ public abstract class AbstractRestAnnotationProcessorTest {
             AssertJUnit.assertTrue(defaultApiOutput.contains("/newshakystuff/foo"));
             AssertJUnit.assertTrue(defaultApiOutput.contains("/newshakystuff/bar"));
         }
+    }
+
+    @Test
+    public void apiLevelDocs() {
+        processResource("ApiLevelDocs.java", "raml", "all");
+        Map.Entry<String,String> entry = output.entrySet().iterator().next();
+        AssertJUnit.assertTrue("expected file named ApiLevelDocs-UltimateApi.raml",
+                entry.getKey().endsWith("ApiLevelDocs-UltimateApi.raml"));
+        Raml raml = new RamlDocumentBuilder().build(entry.getValue(), "http://example.com");
+        AssertJUnit.assertNotNull("RAML not parseable", raml);
+        AssertJUnit.assertEquals("RAML title is incorrect", "The Ultimate REST API", raml.getTitle());
+        AssertJUnit.assertEquals("RAML version is incorrect", "v1", raml.getVersion());
+        AssertJUnit.assertEquals("RAML baseUri is incorrect", "/ultimate/api/v1", raml.getBaseUri());
+        List<DocumentationItem> documentation = raml.getDocumentation();
+        AssertJUnit.assertNotNull("RAML has no documentation items", documentation);
+        AssertJUnit.assertEquals("RAML has too many documentation items", 1, documentation.size());
+        AssertJUnit.assertEquals("RAML documentation item has wrong title", "Overview", documentation.get(0).getTitle());
+        AssertJUnit.assertEquals("RAML documentation item has wrong content", "Some documentation of the API itself.",
+                documentation.get(0).getContent().trim());
     }
 
     protected abstract String getPackageToTest();
