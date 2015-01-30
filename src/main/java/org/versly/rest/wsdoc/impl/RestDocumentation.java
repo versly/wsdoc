@@ -164,6 +164,11 @@ public class RestDocumentation implements Serializable {
             if (null == _apiBaseUrl || _apiBaseUrl.trim().isEmpty()) {
                 _apiBaseUrl = api.getApiBaseUrl();
             }
+            // special logic for baseUrl: if both are non-null and don't equal, just clear it
+            else if (null != _apiBaseUrl && null != api.getApiBaseUrl() &&
+                    !_apiBaseUrl.trim().equals(api.getApiBaseUrl().trim())) {
+                _apiBaseUrl = null;
+            }
             if (null == _apiDocumentation || _apiDocumentation.trim().isEmpty()) {
                 _apiDocumentation = api.getApiDocumentation();
             }

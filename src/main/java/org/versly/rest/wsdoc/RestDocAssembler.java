@@ -198,6 +198,6 @@ public class RestDocAssembler {
         String outputFormat = "html";
         
         @Parameter(names = { "-s", "--scope" }, description = "Publication scope for output (e.g. public, private, etc) or \"all\"")
-        String scope = "public";
+        String scope = "all";
     }
 }

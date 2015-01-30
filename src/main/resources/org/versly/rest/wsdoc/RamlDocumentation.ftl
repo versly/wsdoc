@@ -3,6 +3,8 @@
 ---
 <#if api.apiTitle??>
 title: ${api.apiTitle}
+<#else>
+title:
 </#if>
 <#if api.apiVersion??>
 version: ${api.apiVersion}
