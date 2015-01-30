@@ -20,54 +20,27 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
-import org.versly.rest.wsdoc.impl.JaxRSRestImplementationSupport;
-import org.versly.rest.wsdoc.impl.JsonArray;
-import org.versly.rest.wsdoc.impl.JsonDict;
-import org.versly.rest.wsdoc.impl.JsonObject;
-import org.versly.rest.wsdoc.impl.JsonPrimitive;
-import org.versly.rest.wsdoc.impl.JsonRecursiveObject;
-import org.versly.rest.wsdoc.impl.JsonType;
-import org.versly.rest.wsdoc.impl.RestDocumentation;
-import org.versly.rest.wsdoc.impl.SpringMVCRestImplementationSupport;
-import org.versly.rest.wsdoc.impl.Utils;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.lang.annotation.Annotation;
-import java.util.*;
+import org.versly.rest.wsdoc.impl.*;
 
 import javax.annotation.processing.*;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.TypeParameterElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.ErrorType;
-import javax.lang.model.type.ExecutableType;
-import javax.lang.model.type.NoType;
-import javax.lang.model.type.NullType;
-import javax.lang.model.type.PrimitiveType;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
-import javax.lang.model.type.WildcardType;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.*;
+import javax.lang.model.type.*;
 import javax.lang.model.util.AbstractTypeVisitor6;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.lang.annotation.Annotation;
+import java.util.*;
 
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.join;
@@ -100,10 +73,6 @@ public class AnnotationProcessor extends AbstractProcessor {
         super.init(processingEnv);
         _processingEnv = processingEnv;
         _typeUtils = _processingEnv.getTypeUtils();
-        Map<String,String> options = _processingEnv.getOptions();
-        for (String option : options.keySet()) {
-            System.out.println(option + "=" + options.get(option));
-        }
     }
 
     @Override
