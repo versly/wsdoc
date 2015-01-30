@@ -19,6 +19,14 @@ documentation:
 ${api.indentedApiDocumentationText(10)}
 </#if>
 
+traits:
+    - stable:
+        description: This method is stable.
+    - deprecated:
+        description: This method is deprecated.
+    - experimental:
+        description: This method is experimental.
+
 <#list api.resources as resource>
 <#if !resource.parent??>
 <@write_resource resource=resource depth=0/>
@@ -61,6 +69,8 @@ ${api.indentedApiDocumentationText(10)}
 <#if methodDoc.commentText??>
 <@write_description methodDoc=methodDoc depth=depth+4/>
 </#if>
+  
+<@write_traits methodDoc=methodDoc depth=depth+4/>
 
 <@write_parameters methodDoc=methodDoc depth=depth+4/>
 
@@ -77,6 +87,13 @@ ${api.indentedApiDocumentationText(10)}
 <#macro write_description methodDoc depth>
 <#list 1..depth as i> </#list>description: |
 ${methodDoc.indentedCommentText(depth+4)}
+</#macro>
+
+<#--
+  -- write out method traits
+  -->
+<#macro write_traits methodDoc depth>
+<#list 1..depth as i> </#list>is: ${methodDoc.traitsAsString}
 </#macro>
 
 <#--

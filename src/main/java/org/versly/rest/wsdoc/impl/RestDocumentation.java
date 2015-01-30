@@ -24,6 +24,13 @@ import java.util.regex.Pattern;
 
 public class RestDocumentation implements Serializable {
     public static final String DEFAULT_API = "default";
+    
+    public enum Trait {
+        stable,
+        deprecated,
+        experimental
+    };
+    
     private Map<String, RestApi> _apis = new LinkedHashMap();
 
     public RestApi getRestApi(String apiBaseUrl) {
@@ -254,8 +261,9 @@ public class RestDocumentation implements Serializable {
 
             public class Method implements Serializable {
 
-                private String meth;
-                private HashSet<String> scopes;
+                private String _meth;
+                private HashSet<String> _scopes;
+                private HashSet<Trait> _traits;
                 private JsonType _requestBody;
                 private UrlFields _urlSubstitutions = new UrlFields();
                 private UrlFields _urlParameters = new UrlFields();
@@ -268,11 +276,28 @@ public class RestDocumentation implements Serializable {
                 private String _requestExample;
 
                 public HashSet<String> getScopes() {
-                    return scopes;
+                    return _scopes;
                 }
 
                 public void setScopes(HashSet<String> scopes) {
-                    this.scopes = scopes;
+                    this._scopes = scopes;
+                }
+
+                public HashSet<Trait> getTraits() {
+                    return _traits;
+                }
+
+                public String getTraitsAsString() {
+                    StringBuilder sb = new StringBuilder("[ ");
+                    for (Trait trait : _traits) {
+                        sb.append(trait.name()).append(",");
+                    }
+                    sb.setCharAt(sb.length() - 1, ']');
+                    return sb.toString();
+                }
+
+                public void setTraits(HashSet<Trait> traits) {
+                    this._traits = traits;
                 }
 
                 public String getResponseSchema() {
@@ -308,11 +333,11 @@ public class RestDocumentation implements Serializable {
                 }
 
                 public Method(String meth) {
-                    this.meth = meth;
+                    this._meth = meth;
                 }
 
                 public String getRequestMethod() {
-                    return meth;
+                    return _meth;
                 }
 
                 public JsonType getRequestBody() {
@@ -386,7 +411,7 @@ public class RestDocumentation implements Serializable {
                  * An HTML-safe, textual key that uniquely identifies this endpoint.
                  */
                 public String getKey() {
-                    String key = path + "_" + meth;
+                    String key = path + "_" + _meth;
                     for (String param : _urlParameters.getFields().keySet()) {
                         key += "_" + param;
                     }

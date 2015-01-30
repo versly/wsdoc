@@ -386,5 +386,62 @@ public abstract class AbstractRestAnnotationProcessorTest {
         AssertJUnit.assertEquals("RAML has wrong number of resources", 2, raml.getResources().size());
     }
 
+    @Test
+    public void stabilitySettings() {
+        processResource("Stability.java", "raml", "all");
+        AssertJUnit.assertEquals("Exactly one output file expected", 1, output.size());
+        Iterator<Map.Entry<String, String>> iter = output.entrySet().iterator();
+        Map.Entry<String, String> entry = iter.next();
+        AssertJUnit.assertTrue("expected file named Stability.raml",
+                entry.getKey().endsWith("Stability.raml"));
+        Raml raml = new RamlDocumentBuilder().build(entry.getValue(), "http://example.com");
+        AssertJUnit.assertNotNull("RAML for Stability.raml not parseable", raml);
+
+        Resource res = raml.getResource("/stable1");
+        AssertJUnit.assertNotNull("resource /stable1 not found", res);
+        Action act = res.getAction(ActionType.GET);
+        AssertJUnit.assertNotNull("method GET /stable1 not found", act);
+        List<String> is = act.getIs();
+        AssertJUnit.assertNotNull("resource /stable1 has no \'is\'", is);
+        AssertJUnit.assertEquals("resource /stable1 should have empty \'is\'", 0, is.size());
+
+        res = raml.getResource("/deprecated2");
+        AssertJUnit.assertNotNull("resource /deprecated2 not found", res);
+        act = res.getAction(ActionType.GET);
+        AssertJUnit.assertNotNull("method GET /deprecated2 not found", act);
+        is = act.getIs();
+        AssertJUnit.assertNotNull("resource /deprecated2 has no \'is\'", is);
+        AssertJUnit.assertEquals("resource /deprecated2 should have one \'is\'", 1, is.size());
+        AssertJUnit.assertEquals("resource /deprecated2 should be deprecated", "deprecated", is.iterator().next());
+
+        res = raml.getResource("/stable3");
+        AssertJUnit.assertNotNull("resource /stable3 not found", res);
+        act = res.getAction(ActionType.GET);
+        AssertJUnit.assertNotNull("method GET /stable3 not found", act);
+        is = act.getIs();
+        AssertJUnit.assertNotNull("resource /stable3 has no \'is\'", is);
+        AssertJUnit.assertEquals("resource /stable3 should have empty \'is\'", 0, is.size());
+
+        res = raml.getResource("/deprecated3");
+        AssertJUnit.assertNotNull("resource /deprecated3 not found", res);
+        act = res.getAction(ActionType.GET);
+        AssertJUnit.assertNotNull("method GET /deprecated3 not found", act);
+        is = act.getIs();
+        AssertJUnit.assertNotNull("resource /deprecated3 has no \'is\'", is);
+        AssertJUnit.assertEquals("resource /deprecated3 should have one \'is\'", 1, is.size());
+        AssertJUnit.assertEquals("resource /deprecated3 should be deprecated", "deprecated", is.iterator().next());
+
+        res = raml.getResource("/experimentaldeprecated3");
+        AssertJUnit.assertNotNull("resource /experimentaldeprecated3 not found", res);
+        act = res.getAction(ActionType.GET);
+        AssertJUnit.assertNotNull("method GET /experimentaldeprecated3 not found", act);
+        is = act.getIs();
+        AssertJUnit.assertNotNull("resource /experimentaldeprecated3 has no \'is\'", is);
+        AssertJUnit.assertEquals("resource /experimentaldeprecated3 should have one \'is\'", 2, is.size());
+        Iterator<String> iter2 = is.iterator();
+        AssertJUnit.assertEquals("resource /experimentaldeprecated3 should include experimental", "experimental", iter2.next());
+        AssertJUnit.assertEquals("resource /experimentaldeprecated3 should include deprecated", "deprecated", iter2.next());
+    }
+
     protected abstract String getPackageToTest();
 }

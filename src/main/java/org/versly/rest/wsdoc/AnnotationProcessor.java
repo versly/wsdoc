@@ -152,6 +152,7 @@ public class AnnotationProcessor extends AbstractProcessor {
                     continue;
                 }
 
+                // set documentation and metadata on api
                 RestDocumentation.RestApi api = null;
                 DocumentationRestApi apidoc = cls.getAnnotation(DocumentationRestApi.class);
                 if (null != apidoc) {
@@ -167,10 +168,12 @@ public class AnnotationProcessor extends AbstractProcessor {
                 api.setApiBaseUrl(basePath);
                 api.setApiDocumentation(processingEnv.getElementUtils().getDocComment(cls));
 
+                // set documentation text on method
                 RestDocumentation.RestApi.Resource resource = api.getResourceDocumentation(fullPath); 
                 RestDocumentation.RestApi.Resource.Method method = resource.newMethodDocumentation(meth);
                 method.setCommentText(processingEnv.getElementUtils().getDocComment(executableElement));
 
+                // set scope on method (scopes is non-scalar, methods can be part of multiple scopes)
                 HashSet<String> scopes = new HashSet<String>();
                 DocumentationScope clsScopes = cls.getAnnotation(DocumentationScope.class);
                 if (null != clsScopes) {
@@ -182,7 +185,24 @@ public class AnnotationProcessor extends AbstractProcessor {
                 }
                 method.setScopes(scopes);
 
+                // set the deprecated trait if annotation is present at either class or method level
+                HashSet<RestDocumentation.Trait> traits = new HashSet<RestDocumentation.Trait>();
+                if (null != cls.getAnnotation(DocumentationDeprecated.class) ||
+                        null != executableElement.getAnnotation(DocumentationDeprecated.class)) {
+                    traits.add(RestDocumentation.Trait.deprecated);
+                }
+
+                // set the deprecated trait if annotation is present at either class or method level
+                if (null != cls.getAnnotation(DocumentationExperimental.class) ||
+                        null != executableElement.getAnnotation(DocumentationExperimental.class)) {
+                    traits.add(RestDocumentation.Trait.experimental);
+                }
+                method.setTraits(traits);
+
+                // set path and query parameter information on method
                 buildParameterData(executableElement, method, implementationSupport);
+                
+                // set response entity data information on method
                 buildResponseFormat(executableElement.getReturnType(), method);
             }
         }
