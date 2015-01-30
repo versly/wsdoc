@@ -1,13 +1,18 @@
 <#-- @ftlvariable name="api" type="org.versly.rest.wsdoc.impl.RestDocumentation.RestApi" -->
 #%RAML 0.8
 ---
+<#if api.apiTitle??>
 title: ${api.apiTitle}
+</#if>
+<#if api.apiVersion??>
 version: ${api.apiVersion}
+</#if>
+<#if api.apiBaseUrl??>
 baseUri: ${api.apiBaseUrl}
-
+</#if>
+<#if api.apiDocumentation??>
 documentation:
     - title: Overview
-<#if api.apiDocumentation??>
       content: |
 ${api.indentedApiDocumentationText(10)}
 </#if>

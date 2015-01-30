@@ -93,11 +93,11 @@ public class RestDocAssembler {
         Map<String,RestDocumentation.RestApi> aggregatedApis = new LinkedHashMap<String,RestDocumentation.RestApi>();
         for (RestDocumentation doc : docs) {
             for (RestDocumentation.RestApi api : doc.getApis()) {
-                if (!aggregatedApis.containsKey(api.getApiBaseUrl())) {
-                    aggregatedApis.put(api.getApiBaseUrl(), api);
+                if (!aggregatedApis.containsKey(api.getIdentifier())) {
+                    aggregatedApis.put(api.getIdentifier(), api);
                 }
                 else {
-                    aggregatedApis.get(api.getApiBaseUrl()).merge(api);
+                    aggregatedApis.get(api.getIdentifier()).merge(api);
                 }
             }
         }

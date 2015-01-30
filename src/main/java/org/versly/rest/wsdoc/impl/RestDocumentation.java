@@ -107,7 +107,9 @@ public class RestDocumentation implements Serializable {
         }
 
         public void setApiBaseUrl(String apiBaseUrl) {
-            _apiBaseUrl = apiBaseUrl;
+            if (null != apiBaseUrl && !apiBaseUrl.trim().isEmpty()) {
+                _apiBaseUrl = apiBaseUrl;
+            }
         }
 
         public String getApiTitle() {
@@ -115,7 +117,9 @@ public class RestDocumentation implements Serializable {
         }
 
         public void setApiTitle(String apiTitle) {
-            _apiTitle = apiTitle;
+            if (null != apiTitle && !apiTitle.trim().isEmpty()) {
+                _apiTitle = apiTitle;
+            }
         }
 
         public String getApiVersion() {
@@ -123,11 +127,20 @@ public class RestDocumentation implements Serializable {
         }
 
         public void setApiVersion(String apiVersion) {
-            _apiVersion = apiVersion;
+            if (null != apiVersion && !apiVersion.trim().isEmpty()) {
+                _apiVersion = apiVersion;
+            }
         }
 
         public String getApiDocumentation() {
+            
             return _apiDocumentation;
+        }
+
+        public void setApiDocumentation(String apiDocumentation) {
+            if (null != apiDocumentation && !apiDocumentation.trim().isEmpty()) {
+                _apiDocumentation = apiDocumentation;
+            }
         }
 
         public String getIndentedApiDocumentationText(int indent) {
@@ -138,15 +151,27 @@ public class RestDocumentation implements Serializable {
             return "";
         }
 
-        public void setApiDocumentation(String apiDocumentation) {
-            _apiDocumentation = apiDocumentation;
-        }
-
         public Collection<Resource> getResources() {
             return _resources.values();
         }
 
         public void merge(RestApi api) {
+            System.out.println("MERGING");
+            System.out.println("left title: " + _apiTitle);
+            System.out.println("right title: " + api.getApiTitle());
+            
+            if (null == _apiTitle || _apiTitle.trim().isEmpty()) {
+                _apiTitle = api.getApiTitle();
+            }
+            if (null == _apiVersion || _apiVersion.trim().isEmpty()) {
+                _apiVersion = api.getApiVersion();
+            }
+            if (null == _apiBaseUrl || _apiBaseUrl.trim().isEmpty()) {
+                _apiBaseUrl = api.getApiBaseUrl();
+            }
+            if (null == _apiDocumentation || _apiDocumentation.trim().isEmpty()) {
+                _apiDocumentation = api.getApiDocumentation();
+            }
             _resources.putAll(api._resources);
         }
         

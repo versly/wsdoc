@@ -17,6 +17,9 @@
 package org.versly.rest.wsdoc;
 
 import freemarker.template.TemplateException;
+import org.raml.model.DocumentationItem;
+import org.raml.model.Raml;
+import org.raml.parser.visitor.RamlDocumentBuilder;
 import org.testng.AssertJUnit;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -24,6 +27,9 @@ import org.testng.annotations.Test;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 public class SpringMVCRestAnnotationProcessorTest extends AbstractRestAnnotationProcessorTest {
 

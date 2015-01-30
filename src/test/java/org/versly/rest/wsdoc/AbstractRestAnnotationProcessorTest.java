@@ -342,6 +342,7 @@ public abstract class AbstractRestAnnotationProcessorTest {
     @Test
     public void apiLevelDocs() {
         processResource("ApiLevelDocs.java", "raml", "all");
+        AssertJUnit.assertEquals("ApiLevelDocs should have produced exactly 1 results document", 1, output.size());
         Map.Entry<String,String> entry = output.entrySet().iterator().next();
         AssertJUnit.assertTrue("expected file named ApiLevelDocs-UltimateApi.raml",
                 entry.getKey().endsWith("ApiLevelDocs-UltimateApi.raml"));
@@ -356,6 +357,45 @@ public abstract class AbstractRestAnnotationProcessorTest {
         AssertJUnit.assertEquals("RAML documentation item has wrong title", "Overview", documentation.get(0).getTitle());
         AssertJUnit.assertEquals("RAML documentation item has wrong content", "Some documentation of the API itself.",
                 documentation.get(0).getContent().trim());
+    }
+
+    @Test
+    public void multiApiLevelDocs() {
+        processResource("MultiApiLevelDocs.java", "raml", "all");
+        AssertJUnit.assertEquals("ApuLevelDocs should have produced exactly 2 results document", 2, output.size());
+        Iterator<Map.Entry<String, String>> iter = output.entrySet().iterator();
+
+        Map.Entry<String,String> entry = iter.next();
+        AssertJUnit.assertTrue("expected file named MultiApiLevelDocs-RestApi1.raml",
+                entry.getKey().endsWith("MultiApiLevelDocs-RestApi1.raml"));
+        Raml raml = new RamlDocumentBuilder().build(entry.getValue(), "http://example.com");
+        AssertJUnit.assertNotNull("RAML for MultiApiLevelDocs-RestApi1.raml not parseable", raml);
+        AssertJUnit.assertEquals("RAML title is incorrect", "The RestApi1 API", raml.getTitle());
+        AssertJUnit.assertEquals("RAML version is incorrect", "v1", raml.getVersion());
+        AssertJUnit.assertEquals("RAML baseUri is incorrect", "/restapi1/api/v1", raml.getBaseUri());
+        List<DocumentationItem> documentation = raml.getDocumentation();
+        AssertJUnit.assertNotNull("RAML has no documentation items", documentation);
+        AssertJUnit.assertEquals("RAML has too many documentation items", 1, documentation.size());
+        AssertJUnit.assertEquals("RAML documentation item has wrong title", "Overview", documentation.get(0).getTitle());
+        AssertJUnit.assertEquals("RAML documentation item has wrong content", "This is the header documentation text for RestApi1.",
+                documentation.get(0).getContent().trim());
+        AssertJUnit.assertEquals("RAML has wrong number of resources", 1, raml.getResources().size());
+
+        entry = iter.next();
+        AssertJUnit.assertTrue("expected file named MultiApiLevelDocs-RestApi2.raml",
+                entry.getKey().endsWith("MultiApiLevelDocs-RestApi2.raml"));
+        raml = new RamlDocumentBuilder().build(entry.getValue(), "http://example.com");
+        AssertJUnit.assertNotNull("RAML for MultiApiLevelDocs-RestApi2.raml not parseable", raml);
+        AssertJUnit.assertEquals("RAML title is incorrect", "The RestApi2 API", raml.getTitle());
+        AssertJUnit.assertEquals("RAML version is incorrect", "v1", raml.getVersion());
+        AssertJUnit.assertEquals("RAML baseUri is incorrect", "/restapi2/api/v1", raml.getBaseUri());
+        documentation = raml.getDocumentation();
+        AssertJUnit.assertNotNull("RAML has no documentation items", documentation);
+        AssertJUnit.assertEquals("RAML has too many documentation items", 1, documentation.size());
+        AssertJUnit.assertEquals("RAML documentation item has wrong title", "Overview", documentation.get(0).getTitle());
+        AssertJUnit.assertTrue("RAML documentation item has wrong content",
+                documentation.get(0).getContent().trim().startsWith("This is the header documentation text for RestApi2."));
+        AssertJUnit.assertEquals("RAML has wrong number of resources", 2, raml.getResources().size());
     }
 
     protected abstract String getPackageToTest();
