@@ -147,7 +147,66 @@ Often, a single REST API is implemented across a number of web archives. As a re
   provided with a value of "public", only m1 will be documented.  Likewise, if a value of "experimental" is provided
   for --scope, then only m3 will be documented.  If a value of "private" (or "all") is provided than m1, m2, and m3 will 
   all be documented.
-  
+
+* Generating API Level Documentation
+
+Developers may optionally use the `@DocumentationRestApi` annotation, at the class level, to identify a class containing
+rest endpoints as representing all or part of a single REST API.  If the `@DocumentationRestApi` annotation is present, 
+all classes annotated with the same `id` value will be regarded by wsdoc as part of the same API and will be documented
+together.  For a given `id` value, there should be one such annotated class for which the `@DocumentationRestApi`
+annotation also includes a human-friendly `title` and `version`.  The javadocs of this class will also be included
+in the generated documentation as the high-level overview describing the API.  
+
+For example:
+
+    /**
+     * This is the header documentation text for RestApi2.  This API actually spans
+     * multiple controller classes, RestApi2_A and RestApi2_B.  This javadoc text
+     * will appear as an "overview" in the generated documentation.
+     */
+    @DocumentationRestApi(id = "RestApi2", title = "The RestApi2 API", version = "v1")
+    @Path("/restapi2/api/v1")
+    public class RestApi2_A {
+
+        @GET
+        @Path("/gadgets")
+        public void getGadgets() {
+        }
+    }
+
+    @DocumentationRestApi(id = "RestApi2")
+    @Path("/restapi2/api/v1")
+    public class RestApi2_B {
+
+        @GET
+        @Path("/whirlygigs")
+        public void getWhirlygigs() {
+        }
+    }
+
+The above defines a single API that spans two controller classes.  The javadocs of the RestApi2_A class will be used as 
+the class level documentation for the API, and the resources of that API will include the union of those defined in both
+RestApi2_A and RestApi2_B.  All REST endpoints defined in classes for which no `@DocumentationRestApi` annotation is 
+present will be included together in a separate anonymous default API. 
+
+If two or more APIs are present during either the annotation processing phase or the document assembly phase,
+each API will result in a separate generated output document.  Endpoints that land in the anonymous default API
+will be included together in a single output file with the exact name as given in the `--out` parameter of the
+document assembly command.  Each other API explicitly defined by the `@DocumentationRestApi` annotation will result in 
+an output file named after the `--out` parameter but with the addition of a suffix indicating the `id` of the API that 
+file represents. For example, a documentation assembly phase initiated with the command:
+
+    java org.versly.rest.wsdoc.RestDocAssembler --format raml --out snow-report.raml *.war
+
+May result in several output files with names such as:
+
+    snow-report.raml
+    snow-report-RestApi2.raml
+    snow-report-SomeOtherApi.raml
+
+where the first contains endpoints not defined in `@DocumentationRestApi` annotated classes, and the second contains
+endpoints defined in classes annotated with `@DocumentationRestApi(id = "RestApi2")`.
+
 <a id="maven"/>
 #### wsdoc in a Maven build environment
 
