@@ -388,12 +388,17 @@ public abstract class AbstractRestAnnotationProcessorTest {
 
     @Test
     public void stabilitySettings() {
-        processResource("Stability.java", "raml", "all");
+        processResource("TraitsAnnotations.java", "raml", "all");
         AssertJUnit.assertEquals("Exactly one output file expected", 1, output.size());
         Iterator<Map.Entry<String, String>> iter = output.entrySet().iterator();
         Map.Entry<String, String> entry = iter.next();
-        AssertJUnit.assertTrue("expected file named Stability.raml",
-                entry.getKey().endsWith("Stability.raml"));
+        AssertJUnit.assertTrue("expected file named TraitsAnnotations.raml",
+                entry.getKey().endsWith("TraitsAnnotations.raml"));
+        
+        System.out.println("--------------------------------------------------------------------------------");
+        System.out.println(entry.getValue());
+        System.out.println("--------------------------------------------------------------------------------");
+        
         Raml raml = new RamlDocumentBuilder().build(entry.getValue(), "http://example.com");
         AssertJUnit.assertNotNull("RAML for Stability.raml not parseable", raml);
 

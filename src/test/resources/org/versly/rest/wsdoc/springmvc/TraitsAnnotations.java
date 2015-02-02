@@ -1,13 +1,13 @@
 /**
  * This endpoint has private publication scope.
  */
+package org.versly.rest.wsdoc.springmvc;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.versly.rest.wsdoc.DocumentationDeprecated;
-import org.versly.rest.wsdoc.DocumentationExperimental;
+import org.versly.rest.wsdoc.DocumentationTraits;
 
-public class Stability {
+public class TraitsAnnotations {
 
     /**
      * A controller with all stable methods. 
@@ -22,7 +22,7 @@ public class Stability {
     /**
      * A controller with all deprecated (implicit) methods.
      */
-    @DocumentationDeprecated
+    @DocumentationTraits(DocumentationTraits.DEPRECATED)
     public static class DeprecatedController {
 
         @RequestMapping(value = "/deprecated2", method = RequestMethod.GET)
@@ -39,18 +39,17 @@ public class Stability {
         public void stable() {
         }
 
-        @DocumentationDeprecated
+        @DocumentationTraits(DocumentationTraits.DEPRECATED)
         @RequestMapping(value = "/deprecated3", method = RequestMethod.GET)
         public void deprecated() {
         }
 
-        @DocumentationExperimental
+        @DocumentationTraits(DocumentationTraits.EXPERIMENTAL)
         @RequestMapping(value = "/experimental3", method = RequestMethod.GET)
         public void experimental() {
         }
 
-        @DocumentationDeprecated
-        @DocumentationExperimental
+        @DocumentationTraits({ DocumentationTraits.DEPRECATED, DocumentationTraits.EXPERIMENTAL })
         @RequestMapping(value = "/experimentaldeprecated3", method = RequestMethod.GET)
         public void experimentaldeprecated() {
         }

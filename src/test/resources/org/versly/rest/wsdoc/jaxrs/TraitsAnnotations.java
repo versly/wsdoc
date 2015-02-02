@@ -1,14 +1,12 @@
-/**
- * This endpoint has private publication scope.
- */
+package org.versly.rest.wsdoc.jaxrs;
 
-import org.versly.rest.wsdoc.DocumentationDeprecated;
-import org.versly.rest.wsdoc.DocumentationExperimental;
+import org.versly.rest.wsdoc.DocumentationTraits;
 
+import javax.swing.text.Document;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 
-public class Stability {
+public class TraitsAnnotations {
 
     /**
      * A controller with all stable methods. 
@@ -24,7 +22,7 @@ public class Stability {
     /**
      * A controller with all deprecated (implicit) methods.
      */
-    @DocumentationDeprecated
+    @DocumentationTraits(DocumentationTraits.DEPRECATED)
     public static class DeprecatedController {
 
         @GET
@@ -43,20 +41,19 @@ public class Stability {
         public void stable() {
         }
 
-        @DocumentationDeprecated
+        @DocumentationTraits(DocumentationTraits.DEPRECATED)
         @GET
         @Path("/deprecated3")
         public void deprecated() {
         }
 
-        @DocumentationExperimental
+        @DocumentationTraits(DocumentationTraits.EXPERIMENTAL)
         @GET
         @Path("/experimental3")
         public void experimental() {
         }
 
-        @DocumentationDeprecated
-        @DocumentationExperimental
+        @DocumentationTraits({ DocumentationTraits.EXPERIMENTAL, DocumentationTraits.DEPRECATED })
         @GET
         @Path("/experimentaldeprecated3")
         public void experimentaldeprecated() {

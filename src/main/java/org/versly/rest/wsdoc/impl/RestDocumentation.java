@@ -95,7 +95,8 @@ public class RestDocumentation implements Serializable {
         private String _apiTitle;
         private String _apiVersion;
         private String _apiDocumentation;
-        
+        private HashSet<String> _traits = new HashSet<String>();
+
         public RestApi(String identifier) {
             _identifier = identifier;
         }
@@ -153,15 +154,30 @@ public class RestDocumentation implements Serializable {
             return "";
         }
 
+        public HashSet<String> getTraits() {
+            return _traits;
+        }
+
+        public void setTraits(HashSet<String> traits) {
+            this._traits = traits;
+        }
+
+        public String getIndentedApiTraits(int indent) {
+            StringBuilder retval = new StringBuilder();
+            for (String trait : _traits) {
+                retval.append(StringUtils.leftPad("", indent));
+                retval.append("- ");
+                retval.append(trait);
+                retval.append(":\n");
+            }
+            return retval.toString();
+        }
+    
         public Collection<Resource> getResources() {
             return _resources.values();
         }
 
         public void merge(RestApi api) {
-            System.out.println("MERGING");
-            System.out.println("left title: " + _apiTitle);
-            System.out.println("right title: " + api.getApiTitle());
-            
             if (null == _apiTitle || _apiTitle.trim().isEmpty()) {
                 _apiTitle = api.getApiTitle();
             }
@@ -263,7 +279,7 @@ public class RestDocumentation implements Serializable {
 
                 private String _meth;
                 private HashSet<String> _scopes;
-                private HashSet<Trait> _traits;
+                private HashSet<String> _traits;
                 private JsonType _requestBody;
                 private UrlFields _urlSubstitutions = new UrlFields();
                 private UrlFields _urlParameters = new UrlFields();
@@ -283,20 +299,20 @@ public class RestDocumentation implements Serializable {
                     this._scopes = scopes;
                 }
 
-                public HashSet<Trait> getTraits() {
+                public HashSet<String> getTraits() {
                     return _traits;
                 }
 
                 public String getTraitsAsString() {
                     StringBuilder sb = new StringBuilder("[ ");
-                    for (Trait trait : _traits) {
-                        sb.append(trait.name()).append(",");
+                    for (String trait : _traits) {
+                        sb.append(trait).append(",");
                     }
                     sb.setCharAt(sb.length() - 1, ']');
                     return sb.toString();
                 }
 
-                public void setTraits(HashSet<Trait> traits) {
+                public void setTraits(HashSet<String> traits) {
                     this._traits = traits;
                 }
 

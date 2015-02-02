@@ -20,12 +20,7 @@ ${api.indentedApiDocumentationText(10)}
 </#if>
 
 traits:
-    - stable:
-        description: This method is stable.
-    - deprecated:
-        description: This method is deprecated.
-    - experimental:
-        description: This method is experimental.
+${api.indentedApiTraits(4)}
 
 <#list api.resources as resource>
 <#if !resource.parent??>

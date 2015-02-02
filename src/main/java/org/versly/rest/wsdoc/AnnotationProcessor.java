@@ -185,20 +185,21 @@ public class AnnotationProcessor extends AbstractProcessor {
                 }
                 method.setScopes(scopes);
 
-                // set the deprecated trait if annotation is present at either class or method level
-                HashSet<RestDocumentation.Trait> traits = new HashSet<RestDocumentation.Trait>();
-                if (null != cls.getAnnotation(DocumentationDeprecated.class) ||
-                        null != executableElement.getAnnotation(DocumentationDeprecated.class)) {
-                    traits.add(RestDocumentation.Trait.deprecated);
+                // set traits on method (traits is non-scalar, methods may have multiple traits)
+                HashSet<String> traits = new HashSet<String>();
+                DocumentationTraits clsTraits = cls.getAnnotation(DocumentationTraits.class);
+                if (null != clsTraits) {
+                    traits.addAll(Arrays.asList(clsTraits.value()));
                 }
-
-                // set the deprecated trait if annotation is present at either class or method level
-                if (null != cls.getAnnotation(DocumentationExperimental.class) ||
-                        null != executableElement.getAnnotation(DocumentationExperimental.class)) {
-                    traits.add(RestDocumentation.Trait.experimental);
+                DocumentationTraits methodTraits = executableElement.getAnnotation(DocumentationTraits.class);
+                if (null != methodTraits) {
+                    traits.addAll(Arrays.asList(methodTraits.value()));
                 }
                 method.setTraits(traits);
-
+                
+                // add method's traits as included with overall API traits (used in RAML for uniform documentation)
+                api.getTraits().addAll(method.getTraits());
+                
                 // set path and query parameter information on method
                 buildParameterData(executableElement, method, implementationSupport);
                 
