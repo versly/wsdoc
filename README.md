@@ -184,9 +184,9 @@ For example:
         }
     }
 
-The above defines a single API that spans two controller classes.  The javadocs of the RestApi2_A class will be used as 
+The above defines a single API that spans two controller classes.  The javadocs of the `RestApi2_A` class will be used as 
 the class level documentation for the API, and the resources of that API will include the union of those defined in both
-RestApi2_A and RestApi2_B.  All REST endpoints defined in classes for which no `@DocumentationRestApi` annotation is 
+`RestApi2_A` and `RestApi2_B`.  All REST endpoints defined in classes for which no `@DocumentationRestApi` annotation is 
 present will be included together in a separate anonymous default API. 
 
 If two or more APIs are present during either the annotation processing phase or the document assembly phase,
@@ -206,6 +206,43 @@ May result in several output files with names such as:
 
 where the first contains endpoints not defined in `@DocumentationRestApi` annotated classes, and the second contains
 endpoints defined in classes annotated with `@DocumentationRestApi(id = "RestApi2")`.
+
+
+* Method and API Level Traits
+
+A flexible `@DocumentationTraits` annotation can be used to tag APIs and
+methods with markers that identify them as having certain characteristics.  For
+example, the `@DocumentationTraits` annotation can be used to note that a given
+method is deprecated, experimental, or some other developer defined tag.
+
+    @DocumentationTraits(DocumentationTraits.EXPERIMENTAL)
+    public static class RestController {
+
+        @GET
+        @Path("/method1")
+        public void method1() {
+        }
+
+        @GET
+        @DocumentationTraits(DocumentationTraits.DEPRECATED)
+        @Path("/method2")
+        public void method2() {
+        }
+
+        @GET
+        @DocumentationTraits("service-scope")
+        @Path("/method3")
+        public void method2() {
+        }
+    }
+
+In the example above, all methods inherit the `EXPERIMENTAL` trait from the
+controller class. The `method2` is additionally associated with the `DEPRECATED`
+trait, and `method3` is similarly tagged with a developer defined
+`service-scope` which might represent the level of authorization that is
+required to use that method.  During RAML documentation generation, these tags
+are manifest as RAML traits in the composed RAML documentation, where they can
+be subsequently augmented with text that describes the semantics of each trait.
 
 <a id="maven"/>
 #### wsdoc in a Maven build environment
