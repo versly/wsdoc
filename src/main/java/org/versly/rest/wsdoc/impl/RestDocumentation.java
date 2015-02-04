@@ -24,13 +24,6 @@ import java.util.regex.Pattern;
 
 public class RestDocumentation implements Serializable {
     public static final String DEFAULT_API = "default";
-    
-    public enum Trait {
-        stable,
-        deprecated,
-        experimental
-    };
-    
     private Map<String, RestApi> _apis = new LinkedHashMap();
 
     public RestApi getRestApi(String apiBaseUrl) {
@@ -196,6 +189,7 @@ public class RestDocumentation implements Serializable {
                 _apiDocumentation = api.getApiDocumentation();
             }
             _resources.putAll(api._resources);
+            _traits.addAll(api._traits);
         }
         
         public Resource getResourceDocumentation(String path) {
