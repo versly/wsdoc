@@ -365,7 +365,10 @@ public class AnnotationProcessor extends AbstractProcessor {
         } else if (typeMirror.getKind() == TypeKind.ARRAY) {
             TypeMirror componentType = ((ArrayType) typeMirror).getComponentType();
             type = jsonTypeFromTypeMirror(componentType, typeRecursionGuard);
-        } else {
+        } else if (typeMirror.getKind() == TypeKind.ERROR) {
+            type = new JsonPrimitive("(unresolvable type)");
+        } 
+        else {
             throw new UnsupportedOperationException(typeMirror.toString());
         }
 
