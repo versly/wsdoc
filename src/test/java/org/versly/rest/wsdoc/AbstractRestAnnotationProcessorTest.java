@@ -395,10 +395,6 @@ public abstract class AbstractRestAnnotationProcessorTest {
         AssertJUnit.assertTrue("expected file named TraitsAnnotations.raml",
                 entry.getKey().endsWith("TraitsAnnotations.raml"));
         
-        System.out.println("--------------------------------------------------------------------------------");
-        System.out.println(entry.getValue());
-        System.out.println("--------------------------------------------------------------------------------");
-        
         Raml raml = new RamlDocumentBuilder().build(entry.getValue(), "http://example.com");
         AssertJUnit.assertNotNull("RAML for Stability.raml not parseable", raml);
 

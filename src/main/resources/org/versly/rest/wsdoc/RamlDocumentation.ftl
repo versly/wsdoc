@@ -19,8 +19,10 @@ documentation:
 ${api.indentedApiDocumentationText(10)}
 </#if>
 
+<#if api.getTraits()?size gt 0>
 traits:
 ${api.indentedApiTraits(4)}
+</#if>
 
 <#list api.resources as resource>
 <#if !resource.parent??>
