@@ -162,6 +162,8 @@ public class RestDocumentation implements Serializable {
                 retval.append("- ");
                 retval.append(trait);
                 retval.append(":\n");
+                retval.append(StringUtils.leftPad("", 2*indent));
+                retval.append("description: TBD\n");
             }
             return retval.toString();
         }
@@ -204,6 +206,7 @@ public class RestDocumentation implements Serializable {
             filtered.setApiTitle(_apiTitle);
             filtered.setApiVersion(_apiVersion);
             filtered.setApiDocumentation(_apiDocumentation);
+            filtered.setTraits(_traits);
             OUTER:
             for (Map.Entry<String, Resource> entry : _resources.entrySet()) {
                 for (Pattern excludePattern : excludePatterns)

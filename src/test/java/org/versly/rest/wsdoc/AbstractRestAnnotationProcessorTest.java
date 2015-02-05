@@ -398,6 +398,12 @@ public abstract class AbstractRestAnnotationProcessorTest {
         Raml raml = new RamlDocumentBuilder().build(entry.getValue(), "http://example.com");
         AssertJUnit.assertNotNull("RAML for Stability.raml not parseable", raml);
 
+        List<Map<String,Template>> traits = raml.getTraits();
+        AssertJUnit.assertNotNull("RAML expected to define traits", traits);
+        AssertJUnit.assertEquals("RAML expected to define 2 traits", 2, traits.size());
+        AssertJUnit.assertTrue("RAML expected to contain experimental trait", traits.get(0).containsKey("experimental"));
+        AssertJUnit.assertTrue("RAML expected to contain deprecated trait", traits.get(1).containsKey("deprecated"));
+
         Resource res = raml.getResource("/stable1");
         AssertJUnit.assertNotNull("resource /stable1 not found", res);
         Action act = res.getAction(ActionType.GET);

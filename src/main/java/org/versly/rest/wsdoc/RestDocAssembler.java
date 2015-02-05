@@ -90,6 +90,7 @@ public class RestDocAssembler {
         throws IOException, ClassNotFoundException, TemplateException {
         List<String> filesWritten = new ArrayList<String>();
         
+        // combine APIs from the REST docs into one map, merging those with matching identifiers
         Map<String,RestDocumentation.RestApi> aggregatedApis = new LinkedHashMap<String,RestDocumentation.RestApi>();
         for (RestDocumentation doc : docs) {
             for (RestDocumentation.RestApi api : doc.getApis()) {
@@ -101,7 +102,7 @@ public class RestDocAssembler {
                 }
             }
         }
-        
+
         // filter doc objects by client provided exclude patterns
         Collection<RestDocumentation.RestApi> filteredApis = null;
         if (excludePatterns != null) {
