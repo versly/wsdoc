@@ -64,6 +64,10 @@ public class RestDocumentation implements Serializable {
      */
     public void postProcess() {
         for (RestApi api : _apis.values()) {
+            String mount = api.getMount();
+            if (null != mount && mount.length() > 0) {
+                api.getResourceDocumentation(api.getMount());
+            }
             for (RestApi.Resource visitor : api.getResources()) {
                 for (RestApi.Resource visitee : api.getResources()) {
                     if (visitee != visitor && visitee.path.startsWith(visitor.path + "/") &&
@@ -369,8 +373,11 @@ public class RestDocumentation implements Serializable {
                     Resource parent = _parent;
                     Map<String, UrlFields.UrlField> methodFields = new HashMap<String, UrlFields.UrlField>(_urlSubstitutions.getFields());
                     while (parent != null) {
-                        for (String key : parent.getRequestMethodDocs().iterator().next()._urlSubstitutions.getFields().keySet()) {
-                            methodFields.remove(key);
+                        Iterator<Method> iter = parent.getRequestMethodDocs().iterator();
+                        while (iter.hasNext()) {
+                            for (String key : iter.next()._urlSubstitutions.getFields().keySet()) {
+                                methodFields.remove(key);
+                            }
                         }
                         parent = parent._parent;
                     }

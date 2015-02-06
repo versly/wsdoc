@@ -383,7 +383,8 @@ public abstract class AbstractRestAnnotationProcessorTest {
         AssertJUnit.assertEquals("RAML documentation item has wrong title", "Overview", documentation.get(0).getTitle());
         AssertJUnit.assertTrue("RAML documentation item has wrong content",
                 documentation.get(0).getContent().trim().startsWith("This is the header documentation text for RestApi2."));
-        AssertJUnit.assertEquals("RAML has wrong number of resources", 2, raml.getResources().size());
+        AssertJUnit.assertEquals("RAML has wrong number of resources", 1, raml.getResources().size());
+        AssertJUnit.assertEquals("RAML has wrong number of resources", 2, raml.getResources().values().iterator().next().getResources().size());
     }
 
     @Test
