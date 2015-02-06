@@ -9,8 +9,8 @@ title:
 <#if api.apiVersion??>
 version: ${api.apiVersion}
 </#if>
-<#if api.apiBaseUrl??>
-baseUri: ${api.apiBaseUrl}
+<#if api.mount??>
+baseUri: ${api.mount}
 </#if>
 <#if api.apiDocumentation??>
 documentation:

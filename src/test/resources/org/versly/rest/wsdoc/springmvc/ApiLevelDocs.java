@@ -5,9 +5,8 @@ import org.versly.rest.wsdoc.DocumentationRestApi;
 /**
  * Some documentation of the API itself.
  */
-@DocumentationRestApi(id = "UltimateApi", title = "The Ultimate REST API", version = "v1")
+@DocumentationRestApi(id = "UltimateApi", title = "The Ultimate REST API", version = "v1", mount = "/ultimate/api/v1")
 @DocumentationScope("public")
-@RequestMapping("/ultimate/api/v1")
 public class ApiLevelDocs {
 
     /**

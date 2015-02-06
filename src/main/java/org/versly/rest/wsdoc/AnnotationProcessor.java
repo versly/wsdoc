@@ -159,13 +159,15 @@ public class AnnotationProcessor extends AbstractProcessor {
                     api = _docs.getRestApi(apidoc.id());
                     api.setApiTitle(apidoc.title());
                     api.setApiVersion(apidoc.version());
+                    api.setMount(apidoc.mount());
                 }
                 else {
                     api = _docs.getRestApi(RestDocumentation.RestApi.DEFAULT_IDENTIFIER);
                     api.setApiTitle("");
                     api.setApiVersion("");
+                    api.setMount("");
                 }
-                api.setApiBaseUrl(basePath);
+
                 api.setApiDocumentation(processingEnv.getElementUtils().getDocComment(cls));
 
                 // set documentation text on method
@@ -404,8 +406,19 @@ public class AnnotationProcessor extends AbstractProcessor {
     }
 
     private String[] getClassLevelUrlPaths(TypeElement cls, RestImplementationSupport implementationSupport) {
-        RestApiMountPoint mountPoint = cls.getAnnotation(RestApiMountPoint.class);
-        final String basePath = mountPoint == null ? "/" : mountPoint.value();
+
+        String basePath = null;
+        DocumentationRestApi api = cls.getAnnotation(DocumentationRestApi.class);
+        RestApiMountPoint mp = cls.getAnnotation(RestApiMountPoint.class);
+        if (null != api) {
+            basePath = api.mount();
+        }
+        else if (null != mp) {
+            basePath = mp.value();
+        }
+        else {
+            basePath = "/";
+        }
 
         String[] paths = implementationSupport.getRequestPaths(cls);
         if (paths.length == 0) {

@@ -9,9 +9,8 @@ public class MultiApiLevelDocs {
     /**
      * This is the header documentation text for RestApi1.
      */
-    @DocumentationRestApi(id = "RestApi1", title = "The RestApi1 API", version = "v1")
+    @DocumentationRestApi(id = "RestApi1", title = "The RestApi1 API", version = "v1", mount = "/restapi1/api/v1")
     @DocumentationScope("public")
-    @Path("/restapi1/api/v1")
     public class RestApi1 {
 
         /**
@@ -33,9 +32,8 @@ public class MultiApiLevelDocs {
      * indicates it has the same identifier as the former and it's resources will
      * be merged in.
      */
-    @DocumentationRestApi(id = "RestApi2", title = "The RestApi2 API", version = "v1")
+    @DocumentationRestApi(id = "RestApi2", title = "The RestApi2 API", version = "v1", mount = "/restapi2/api/v1")
     @DocumentationScope("public")
-    @Path("/restapi2/api/v1")
     public class RestApi2_A {
 
         /**
@@ -50,9 +48,9 @@ public class MultiApiLevelDocs {
     }
 
 
-    @DocumentationRestApi(id = "RestApi2")
+    @DocumentationRestApi(id = "RestApi2", mount = "/restapi2/api/v1")
     @DocumentationScope("public")
-    @Path("/restapi2/api/v1")
+
     public class RestApi2_B {
 
         /**

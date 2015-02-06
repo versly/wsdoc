@@ -84,7 +84,7 @@ public class RestDocumentation implements Serializable {
         
         private Map<String, Resource> _resources = new LinkedHashMap();
         private String _identifier;
-        private String _apiBaseUrl;
+        private String _apiMount;
         private String _apiTitle;
         private String _apiVersion;
         private String _apiDocumentation;
@@ -98,13 +98,13 @@ public class RestDocumentation implements Serializable {
             return _identifier;
         }
 
-        public String getApiBaseUrl() {
-            return _apiBaseUrl;
+        public String getMount() {
+            return _apiMount;
         }
 
-        public void setApiBaseUrl(String apiBaseUrl) {
+        public void setMount(String apiBaseUrl) {
             if (null != apiBaseUrl && !apiBaseUrl.trim().isEmpty()) {
-                _apiBaseUrl = apiBaseUrl;
+                _apiMount = apiBaseUrl;
             }
         }
 
@@ -179,13 +179,8 @@ public class RestDocumentation implements Serializable {
             if (null == _apiVersion || _apiVersion.trim().isEmpty()) {
                 _apiVersion = api.getApiVersion();
             }
-            if (null == _apiBaseUrl || _apiBaseUrl.trim().isEmpty()) {
-                _apiBaseUrl = api.getApiBaseUrl();
-            }
-            // special logic for baseUrl: if both are non-null and don't equal, just clear it
-            else if (null != _apiBaseUrl && null != api.getApiBaseUrl() &&
-                    !_apiBaseUrl.trim().equals(api.getApiBaseUrl().trim())) {
-                _apiBaseUrl = null;
+            if (null == _apiMount || _apiMount.trim().isEmpty()) {
+                _apiMount = api.getMount();
             }
             if (null == _apiDocumentation || _apiDocumentation.trim().isEmpty()) {
                 _apiDocumentation = api.getApiDocumentation();
@@ -202,7 +197,7 @@ public class RestDocumentation implements Serializable {
 
         public RestApi filter(Iterable<Pattern> excludePatterns) {
             RestApi filtered = new RestApi(_identifier);
-            filtered.setApiBaseUrl(_apiBaseUrl);
+            filtered.setMount(_apiMount);
             filtered.setApiTitle(_apiTitle);
             filtered.setApiVersion(_apiVersion);
             filtered.setApiDocumentation(_apiDocumentation);
