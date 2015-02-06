@@ -238,7 +238,7 @@ public abstract class AbstractRestAnnotationProcessorTest {
         UriParameter id = resource.getUriParameters().get("id");
         AssertJUnit.assertNotNull("Resource /widgets/{id} has no id URI parameter", id);
         AssertJUnit.assertEquals("Resource /widgets/{id} id URI parameter description is wrong",
-                "The widget identifier.", id.getDescription().trim());
+                "The widget identifier documented in POST.", id.getDescription().trim());
         resource = resource.getResource("/gadgets");
         AssertJUnit.assertNotNull("Resource /widgets/{id}/gadgets not found", resource);
         id = resource.getUriParameters().get("id");

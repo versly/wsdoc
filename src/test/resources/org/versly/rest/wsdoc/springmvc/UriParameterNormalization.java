@@ -7,10 +7,18 @@ public class UriParameterNormalization {
 
         /**
          * Some description of the widgets.
-         * @param id The widget identifier.
+         * @param id The widget identifier documented in GET.
          */
         @RequestMapping(value = "/widgets/{id}", method = RequestMethod.GET)
         public void getWidget(@PathVariable("id") String id) {
+        }
+
+        /**
+         * Some description of the widgets.
+         * @param id The widget identifier documented in POST.
+         */
+        @RequestMapping(value = "/widgets/{id}", method = RequestMethod.POST)
+        public void createWidget(@PathVariable("id") String id) {
         }
 
         /**
