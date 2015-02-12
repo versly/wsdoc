@@ -87,7 +87,162 @@ Often, a single REST API is implemented across a number of web archives. As a re
             ...
         }
 
-  All endpoints inside the annotated class will be prefixed with the text provided to the annotation.
+  All endpoints inside the annotated class will be prefixed with the text provided to the annotation.  Note, this will
+  be in addition to the prefixing of any class level request paths contributed by other annotations.  For example:
+  
+       @RestApiMountPoint("/mount/api/v1")
+       @RequestMapping("/myservice")
+       public class RestDocEndpoint {
+           ...
+       }
+       
+  will result in the prefixing of endpoints with "/mount/api/v1/myservice".
+ 
+* Set Output Format
+
+  Output can be generated in either HTML or RAML format.  The default format is HTML, however either may be specified
+  using the command-line option --format.  For example:
+
+        java org.versly.rest.wsdoc.RestDocAssembler --format raml --out snow-report.raml *.war
+
+  or 
+
+        java org.versly.rest.wsdoc.RestDocAssembler --format html --out snow-report.html *.war
+
+* Controlling Publication Scope
+  
+  Publication scoping may be asserted using the @DocumentationScope annotation.  This annotation supports user defined
+  scopes but also defines convenient constants for common scopes, such as DocumentationScope.PUBLIC and
+  DocumentationScope.PRIVATE. When executing the doc assembler phase of doc generation, the --scope command line option 
+  can be used to indicate a particular scope on which to filter the production of API documentation, or "all" 
+  to indicate all endpoints are to be documented regardless of scope.
+  
+  If both an endpoint and it's containing class are explicitly annotated with a @DocumentationScope the scopes of that
+  endpoint are regarded as the union of the values provided in both annotations (note an endpoint may belong to multiple
+  scopes). 
+
+     @DocumentationScope(DocumentationScope.PRIVATE)
+     public static class ExperimentalController {
+
+         @DocumentationScope(DocumentationScope.PUBLIC)
+         @RequestMapping(value = "/m1", method = RequestMethod.GET)
+         public void m1() {
+            ...
+         } 
+
+         @RequestMapping(value = "/m2", method = RequestMethod.GET)
+         public void m2() {
+            ...
+         } 
+
+         @DocumentationScope("experimental")
+         @RequestMapping(value = "/m3", method = RequestMethod.GET)
+         public void m3() {
+            ...
+         }
+    }
+        
+  In the above example, m1 will have both public and private scopes, m2 will have only private scope, and m3 will
+  have private and experimental scope.  If, during the doc assembler phase, the --scope command line argument is
+  provided with a value of "public", only m1 will be documented.  Likewise, if a value of "experimental" is provided
+  for --scope, then only m3 will be documented.  If a value of "private" (or "all") is provided than m1, m2, and m3 will 
+  all be documented.
+
+* Generating API Level Documentation
+
+Developers may optionally use the `@DocumentationRestApi` annotation, at the class level, to identify a class containing
+rest endpoints as representing all or part of a single REST API.  If the `@DocumentationRestApi` annotation is present, 
+all classes annotated with the same `id` value will be regarded by wsdoc as part of the same API and will be documented
+together.  For a given `id` value, there should be one such annotated class for which the `@DocumentationRestApi`
+annotation also includes a human-friendly `title` and `version`.  The javadocs of this class will also be included
+in the generated documentation as the high-level overview describing the API.  
+
+For example:
+
+    /**
+     * This is the header documentation text for RestApi2.  This API actually spans
+     * multiple controller classes, RestApi2_A and RestApi2_B.  This javadoc text
+     * will appear as an "overview" in the generated documentation.
+     */
+    @DocumentationRestApi(id = "RestApi2", title = "The RestApi2 API", version = "v1")
+    @Path("/restapi2/api/v1")
+    public class RestApi2_A {
+
+        @GET
+        @Path("/gadgets")
+        public void getGadgets() {
+        }
+    }
+
+    @DocumentationRestApi(id = "RestApi2")
+    @Path("/restapi2/api/v1")
+    public class RestApi2_B {
+
+        @GET
+        @Path("/whirlygigs")
+        public void getWhirlygigs() {
+        }
+    }
+
+The above defines a single API that spans two controller classes.  The javadocs of the `RestApi2_A` class will be used as 
+the class level documentation for the API, and the resources of that API will include the union of those defined in both
+`RestApi2_A` and `RestApi2_B`.  All REST endpoints defined in classes for which no `@DocumentationRestApi` annotation is 
+present will be included together in a separate anonymous default API. 
+
+If two or more APIs are present during either the annotation processing phase or the document assembly phase,
+each API will result in a separate generated output document.  Endpoints that land in the anonymous default API
+will be included together in a single output file with the exact name as given in the `--out` parameter of the
+document assembly command.  Each other API explicitly defined by the `@DocumentationRestApi` annotation will result in 
+an output file named after the `--out` parameter but with the addition of a suffix indicating the `id` of the API that 
+file represents. For example, a documentation assembly phase initiated with the command:
+
+    java org.versly.rest.wsdoc.RestDocAssembler --format raml --out snow-report.raml *.war
+
+May result in several output files with names such as:
+
+    snow-report.raml
+    snow-report-RestApi2.raml
+    snow-report-SomeOtherApi.raml
+
+where the first contains endpoints not defined in `@DocumentationRestApi` annotated classes, and the second contains
+endpoints defined in classes annotated with `@DocumentationRestApi(id = "RestApi2")`.
+
+
+* Method and API Level Traits
+
+A flexible `@DocumentationTraits` annotation can be used to tag APIs and
+methods with markers that identify them as having certain characteristics.  For
+example, the `@DocumentationTraits` annotation can be used to note that a given
+method is deprecated, experimental, or some other developer defined tag.
+
+    @DocumentationTraits(DocumentationTraits.EXPERIMENTAL)
+    public static class RestController {
+
+        @GET
+        @Path("/method1")
+        public void method1() {
+        }
+
+        @GET
+        @DocumentationTraits(DocumentationTraits.DEPRECATED)
+        @Path("/method2")
+        public void method2() {
+        }
+
+        @GET
+        @DocumentationTraits("service-scope")
+        @Path("/method3")
+        public void method2() {
+        }
+    }
+
+In the example above, all methods inherit the `EXPERIMENTAL` trait from the
+controller class. The `method2` is additionally associated with the `DEPRECATED`
+trait, and `method3` is similarly tagged with a developer defined
+`service-scope` which might represent the level of authorization that is
+required to use that method.  During RAML documentation generation, these tags
+are manifest as RAML traits in the composed RAML documentation, where they can
+be subsequently augmented with text that describes the semantics of each trait.
 
 <a id="maven"/>
 #### wsdoc in a Maven build environment

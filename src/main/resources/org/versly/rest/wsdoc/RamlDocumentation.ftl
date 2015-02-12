@@ -1,17 +1,33 @@
-<#-- @ftlvariable name="docs" type="java.util.List<org.versly.rest.wsdoc.impl.RestDocumentation>" -->
+<#-- @ftlvariable name="api" type="org.versly.rest.wsdoc.impl.RestDocumentation.RestApi" -->
 #%RAML 0.8
 ---
-title: REST
-protocols: [ HTTPS ]
-mediaType: application/json
-<#-- Consider adding something like baseUri: http://{baseUri} -->
+<#if api.apiTitle??>
+title: ${api.apiTitle}
+<#else>
+title:
+</#if>
+<#if api.apiVersion??>
+version: ${api.apiVersion}
+</#if>
+<#if api.mount??>
+baseUri: ${api.mount}
+</#if>
+<#if api.apiDocumentation??>
+documentation:
+    - title: Overview
+      content: |
+${api.indentedApiDocumentationText(10)}
+</#if>
 
-<#list docs as doc>
-<#list doc.resources as resource>
+<#if api.getTraits()?size gt 0>
+traits:
+${api.indentedApiTraits(4)}
+</#if>
+
+<#list api.resources as resource>
 <#if !resource.parent??>
 <@write_resource resource=resource depth=0/>
 </#if>
-</#list>
 </#list>
 
 
@@ -50,6 +66,8 @@ mediaType: application/json
 <#if methodDoc.commentText??>
 <@write_description methodDoc=methodDoc depth=depth+4/>
 </#if>
+  
+<@write_traits methodDoc=methodDoc depth=depth+4/>
 
 <@write_parameters methodDoc=methodDoc depth=depth+4/>
 
@@ -60,13 +78,19 @@ mediaType: application/json
 <@write_response methodDoc=methodDoc depth=depth+4/>
 </#macro>
 
-
 <#--
   -- write out method description
   -->
 <#macro write_description methodDoc depth>
 <#list 1..depth as i> </#list>description: |
 ${methodDoc.indentedCommentText(depth+4)}
+</#macro>
+
+<#--
+  -- write out method traits
+  -->
+<#macro write_traits methodDoc depth>
+<#list 1..depth as i> </#list>is: ${methodDoc.traitsAsString}
 </#macro>
 
 <#--

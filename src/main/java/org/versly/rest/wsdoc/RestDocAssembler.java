@@ -65,7 +65,7 @@ public class RestDocAssembler {
             for (String pattern : arguments.excludes)
                 excludePatterns.add(Pattern.compile(pattern));
             new RestDocAssembler(arguments.outputFileName, arguments.outputFormat)
-                    .writeDocumentation(docs, excludePatterns);
+                    .writeDocumentation(docs, excludePatterns, arguments.scope);
         }
     }
 
@@ -86,31 +86,79 @@ public class RestDocAssembler {
         this(outputFileName, "html");
     }
 
-    void writeDocumentation(List<RestDocumentation> docs, Iterable<Pattern> excludePatterns)
+    List<String> writeDocumentation(List<RestDocumentation> docs, Iterable<Pattern> excludePatterns, String scope)
         throws IOException, ClassNotFoundException, TemplateException {
-
-        List<RestDocumentation> filteredDocs;
-        if (excludePatterns != null) {
-            filteredDocs = new ArrayList<RestDocumentation>();
-            for (RestDocumentation doc : docs)
-                filteredDocs.add(doc.filter(excludePatterns));
-        } else {
-            filteredDocs = docs;
+        List<String> filesWritten = new ArrayList<String>();
+        
+        // combine APIs from the REST docs into one map, merging those with matching identifiers
+        Map<String,RestDocumentation.RestApi> aggregatedApis = new LinkedHashMap<String,RestDocumentation.RestApi>();
+        for (RestDocumentation doc : docs) {
+            for (RestDocumentation.RestApi api : doc.getApis()) {
+                if (!aggregatedApis.containsKey(api.getIdentifier())) {
+                    aggregatedApis.put(api.getIdentifier(), api);
+                }
+                else {
+                    aggregatedApis.get(api.getIdentifier()).merge(api);
+                }
+            }
         }
 
+        // filter doc objects by client provided exclude patterns
+        Collection<RestDocumentation.RestApi> filteredApis = null;
+        if (excludePatterns != null) {
+            filteredApis = new LinkedList<RestDocumentation.RestApi>();
+            for (RestDocumentation.RestApi api : aggregatedApis.values())
+                filteredApis.add(api.filter(excludePatterns));
+        } else {
+            filteredApis = aggregatedApis.values();
+        }
+        
+        // use command-line --scope value to set the scope on which to filter the generated documentation
+        if (!scope.equals("all")) {
+            HashSet<String> requestedScopes = new HashSet<String>(Arrays.asList(new String[]{scope}));
+
+            // ugly old-style iterating because we need to be able to remove elements as we go
+            Iterator<RestDocumentation.RestApi> apiIter = filteredApis.iterator();
+            while (apiIter.hasNext()) {
+                RestDocumentation.RestApi api = apiIter.next();
+                Iterator<RestDocumentation.RestApi.Resource> resIter = api.getResources().iterator();
+                while (resIter.hasNext()) {
+                    RestDocumentation.RestApi.Resource resource = resIter.next();
+                    Iterator<RestDocumentation.RestApi.Resource.Method> methIter = resource.getRequestMethodDocs().iterator();
+                    while (methIter.hasNext()) {
+                        HashSet<String> scopes = methIter.next().getScopes();
+                        scopes.retainAll(requestedScopes);
+                        if (scopes.isEmpty()) {
+                            methIter.remove();
+                        }
+                    }
+                    if (resource.getRequestMethodDocs().isEmpty()) {
+                        resIter.remove();
+                    }
+                }
+                if (api.getResources().isEmpty()) {
+                    apiIter.remove();
+                }
+            }
+        }
+        
         Configuration conf = new Configuration();
         conf.setClassForTemplateLoading(RestDocAssembler.class, "");
         conf.setObjectWrapper(new DefaultObjectWrapper());
         Writer out = null;
         try {
-            Template template = conf.getTemplate(_outputTemplate);
-            Map<String, List<RestDocumentation>> root = new HashMap<String, List<RestDocumentation>>();
-            root.put("docs", filteredDocs);
-            File file = getOutputFile();
-            out = new FileWriter(file);
-            template.process(root, out);
-            out.flush();
-            System.err.printf("Wrote REST docs to %s\n", file.getAbsolutePath());
+            for (RestDocumentation.RestApi api : filteredApis) {
+                Template template = conf.getTemplate(_outputTemplate);
+                Map<String, RestDocumentation.RestApi> root = new HashMap<String, RestDocumentation.RestApi>();
+                root.put("api", api);
+                String fileName = getOutputFileName(api);
+                filesWritten.add(fileName);
+                File file = new File(fileName);
+                out = new FileWriter(file);
+                template.process(root, out);
+                out.flush();
+                System.err.printf("Wrote REST docs to %s\n", file.getAbsolutePath());
+            }
         } finally {
             if (out != null) {
                 try {
@@ -120,10 +168,21 @@ public class RestDocAssembler {
                 }
             }
         }
+        return filesWritten;
     }
 
-    File getOutputFile() {
-        return new File(_outputFileName);
+    String getOutputFileName(RestDocumentation.RestApi api) {
+        String outputFileName = _outputFileName;
+        if (!api.getIdentifier().equals(RestDocumentation.RestApi.DEFAULT_IDENTIFIER)) {
+            StringBuilder constructedName = new StringBuilder(_outputFileName);
+            int identifierIndex = constructedName.lastIndexOf(".");
+            if (identifierIndex < 0) {
+                identifierIndex = constructedName.length();
+            }
+            constructedName.insert(identifierIndex, "-" + api.getIdentifier());
+            outputFileName = constructedName.toString();
+        }
+        return outputFileName;
     }
 
     static class Arguments {
@@ -138,5 +197,8 @@ public class RestDocAssembler {
 
         @Parameter(names = { "-f", "--format" }, description = "Format for output: html or raml")
         String outputFormat = "html";
+        
+        @Parameter(names = { "-s", "--scope" }, description = "Publication scope for output (e.g. public, private, etc) or \"all\"")
+        String scope = "all";
     }
 }

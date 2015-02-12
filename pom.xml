@@ -27,12 +27,19 @@
     <version>1.0-SNAPSHOT</version>
     <url>http://github.com/versly/wsdoc</url>
 
+    <repositories>
+        <repository>
+            <id>mulesoft-repo</id>
+            <url>https://repository-master.mulesoft.org/nexus/content/repositories/public</url>
+        </repository>
+    </repositories>
+
     <dependencies>
         <!-- Spring MVC -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
-            <version>3.0.4.RELEASE</version>
+            <version>3.2.13.RELEASE</version>
         </dependency>
 
         <!-- JAX-RS -->
@@ -108,6 +115,19 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>3.3.2</version>
+        </dependency>
+
+        <!-- raml-java-parser dependencies for unit testing RAML documentation generation -->
+        <dependency>
+            <groupId>org.raml</groupId>
+            <artifactId>raml-parser</artifactId>
+            <version>0.9-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>1.13</version>
         </dependency>
     </dependencies>
 

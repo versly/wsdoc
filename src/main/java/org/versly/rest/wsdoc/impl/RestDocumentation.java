@@ -18,39 +18,30 @@ package org.versly.rest.wsdoc.impl;
 
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 import java.util.regex.Pattern;
 
 public class RestDocumentation implements Serializable {
+    public static final String DEFAULT_API = "default";
+    private Map<String, RestApi> _apis = new LinkedHashMap();
 
-    private Map<String, Resource> _resources = new LinkedHashMap();
-
-    public Collection<Resource> getResources() {
-        return _resources.values();
+    public RestApi getRestApi(String apiBaseUrl) {
+        if (!_apis.containsKey(apiBaseUrl))
+            _apis.put(apiBaseUrl, new RestApi(apiBaseUrl));
+        return _apis.get(apiBaseUrl);
     }
 
-    public Resource getResourceDocumentation(String path) {
-        if (!_resources.containsKey(path))
-            _resources.put(path, new Resource(path));
-        return _resources.get(path);
+    public Collection<RestApi> getApis() {
+        return _apis.values();
     }
-
+    
     /**
      * Read and return a serialized {@link RestDocumentation} instance from <code>in</code>,
      * as serialized by {@link #toStream}.
      */
     public static RestDocumentation fromStream(InputStream in)
-        throws IOException, ClassNotFoundException {
+            throws IOException, ClassNotFoundException {
         ObjectInputStream ois = null;
         try {
             ois = new ObjectInputStream(in);
@@ -67,259 +58,420 @@ public class RestDocumentation implements Serializable {
         oos.flush();
     }
 
-    public RestDocumentation filter(Iterable<Pattern> excludePatterns) {
-        RestDocumentation filtered = new RestDocumentation();
-        OUTER: for (Map.Entry<String, Resource> entry : _resources.entrySet()) {
-            for (Pattern excludePattern : excludePatterns)
-                if (excludePattern.matcher(entry.getKey()).matches())
-                    continue OUTER;
-
-            filtered._resources.put(entry.getKey(), entry.getValue());
-        }
-        return filtered;
-    }
-
     /**
      * This inspects the method paths and establishes parent/child relationships.  This helps in particular
      * with generating RAML documentation, as RAML represents endpoints hierarchically.
      */
-    public void postProcess()
-    {
-        for (Resource visitor: _resources.values())
-        {
-            for (Resource visitee: _resources.values())
-            {
-                if (visitee != visitor && visitee.path.startsWith(visitor.path + "/") &&
-                        (visitee._parent == null || visitee._parent.path.length() < visitor.path.length()))
-                {
-                    if (visitee._parent != null) {
-                        visitee._parent._children.remove(visitee);
+    public void postProcess() {
+        for (RestApi api : _apis.values()) {
+            String mount = api.getMount();
+            if (null != mount && mount.length() > 0) {
+                api.getResourceDocumentation(api.getMount());
+            }
+            for (RestApi.Resource visitor : api.getResources()) {
+                for (RestApi.Resource visitee : api.getResources()) {
+                    if (visitee != visitor && visitee.path.startsWith(visitor.path + "/") &&
+                            (visitee._parent == null || visitee._parent.path.length() < visitor.path.length())) {
+                        if (visitee._parent != null) {
+                            visitee._parent._children.remove(visitee);
+                        }
+                        visitee._parent = visitor;
+                        visitor._children.add(visitee);
                     }
-                    visitee._parent = visitor;
-                    visitor._children.add(visitee);
                 }
             }
         }
     }
+    
+    public class RestApi implements Serializable {
+        public static final String DEFAULT_IDENTIFIER = "(default)";
+        
+        private Map<String, Resource> _resources = new LinkedHashMap();
+        private String _identifier;
+        private String _apiMount;
+        private String _apiTitle;
+        private String _apiVersion;
+        private String _apiDocumentation;
+        private HashSet<String> _traits = new HashSet<String>();
 
-    public class Resource implements Serializable {
-
-        private String path;
-        private Collection<Method> _methods = new LinkedList<Method>();
-        private Resource _parent;
-        private Collection<Resource> _children = new LinkedList<Resource>();
-
-        public Resource(String path) {
-            this.path = path;
+        public RestApi(String identifier) {
+            _identifier = identifier;
         }
 
-        public String getPath() {
-            return path;
+        public String getIdentifier() {
+            return _identifier;
         }
 
-        public Collection<Method> getRequestMethodDocs() {
-            return _methods;
+        public String getMount() {
+            return _apiMount;
         }
 
-        public Resource getParent() { return _parent; };
-
-        public String getPathLeaf() {
-            return (_parent != null) ? path.substring(_parent.path.length()) : path;
+        public void setMount(String apiBaseUrl) {
+            if (null != apiBaseUrl && !apiBaseUrl.trim().isEmpty()) {
+                _apiMount = apiBaseUrl;
+            }
         }
 
-        public Collection<Resource> getChildren() { return _children; }
-
-        /**
-         * Creates and returns a new {@link Method} instance, and adds it to
-         * the current resource location. If this is invoked multiple times
-         * with the same argument, multiple distinct {@link Method} objects
-         * will be returned.
-         */
-        public Method newMethodDocumentation(String meth) {
-            Method method = new Method(meth);
-            _methods.add(method);
-            return method;
+        public String getApiTitle() {
+            return _apiTitle;
         }
 
-        public UrlFields getResourceUrlSubstitutions() {
-            UrlFields aggregateUrlFields = new UrlFields();
-            for (Method method: _methods) {
-                UrlFields fields = method.getMethodSpecificUrlSubstitutions();
-                aggregateUrlFields.getFields().putAll(fields.getFields());
+        public void setApiTitle(String apiTitle) {
+            if (null != apiTitle && !apiTitle.trim().isEmpty()) {
+                _apiTitle = apiTitle;
             }
-            return aggregateUrlFields;
         }
 
-        public class Method implements Serializable {
+        public String getApiVersion() {
+            return _apiVersion;
+        }
 
-            private String meth;
-            private JsonType _requestBody;
-            private UrlFields _urlSubstitutions = new UrlFields();
-            private UrlFields _urlParameters = new UrlFields();
-            private JsonType _responseBody;
-            private String _commentText;
-            private boolean _isMultipartRequest;
-            private String _requestSchema;
-            private String _responseSchema;
-            private String _responseExample;
-            private String _requestExample;
+        public void setApiVersion(String apiVersion) {
+            if (null != apiVersion && !apiVersion.trim().isEmpty()) {
+                _apiVersion = apiVersion;
+            }
+        }
 
-            public String getResponseSchema() {
-                return _responseSchema;
+        public String getApiDocumentation() {
+            
+            return _apiDocumentation;
+        }
+
+        public void setApiDocumentation(String apiDocumentation) {
+            if (null != apiDocumentation && !apiDocumentation.trim().isEmpty()) {
+                _apiDocumentation = apiDocumentation;
+            }
+        }
+
+        public String getIndentedApiDocumentationText(int indent) {
+            if (_apiDocumentation != null) {
+                String whitespace = StringUtils.leftPad("", indent);
+                return whitespace + _apiDocumentation.replaceAll("\n", "\n" + whitespace);
+            }
+            return "";
+        }
+
+        public HashSet<String> getTraits() {
+            return _traits;
+        }
+
+        public void setTraits(HashSet<String> traits) {
+            this._traits = traits;
+        }
+
+        public String getIndentedApiTraits(int indent) {
+            StringBuilder retval = new StringBuilder();
+            for (String trait : _traits) {
+                retval.append(StringUtils.leftPad("", indent));
+                retval.append("- ");
+                retval.append(trait);
+                retval.append(":\n");
+                retval.append(StringUtils.leftPad("", 2*indent));
+                retval.append("description: TBD\n");
+            }
+            return retval.toString();
+        }
+    
+        public Collection<Resource> getResources() {
+            return _resources.values();
+        }
+
+        public void merge(RestApi api) {
+            if (null == _apiTitle || _apiTitle.trim().isEmpty()) {
+                _apiTitle = api.getApiTitle();
+            }
+            if (null == _apiVersion || _apiVersion.trim().isEmpty()) {
+                _apiVersion = api.getApiVersion();
+            }
+            if (null == _apiMount || _apiMount.trim().isEmpty()) {
+                _apiMount = api.getMount();
+            }
+            if (null == _apiDocumentation || _apiDocumentation.trim().isEmpty()) {
+                _apiDocumentation = api.getApiDocumentation();
+            }
+            _resources.putAll(api._resources);
+            _traits.addAll(api._traits);
+        }
+        
+        public Resource getResourceDocumentation(String path) {
+            if (!_resources.containsKey(path))
+                _resources.put(path, new Resource(path));
+            return _resources.get(path);
+        }
+
+        public RestApi filter(Iterable<Pattern> excludePatterns) {
+            RestApi filtered = new RestApi(_identifier);
+            filtered.setMount(_apiMount);
+            filtered.setApiTitle(_apiTitle);
+            filtered.setApiVersion(_apiVersion);
+            filtered.setApiDocumentation(_apiDocumentation);
+            filtered.setTraits(_traits);
+            OUTER:
+            for (Map.Entry<String, Resource> entry : _resources.entrySet()) {
+                for (Pattern excludePattern : excludePatterns)
+                    if (excludePattern.matcher(entry.getKey()).matches())
+                        continue OUTER;
+
+                filtered._resources.put(entry.getKey(), entry.getValue());
+            }
+            return filtered;
+        }
+        
+        public class Resource implements Serializable {
+
+            private String path;
+            private Collection<Method> _methods = new LinkedList<Method>();
+            private Resource _parent;
+            private Collection<Resource> _children = new LinkedList<Resource>();
+
+            public Resource(String path) {
+                this.path = path;
             }
 
-            public void setResponseSchema(String _responseSchema) {
-                this._responseSchema = _responseSchema;
+            public String getPath() {
+                return path;
             }
 
-            public String getRequestSchema() {
-                return _requestSchema;
+            public Collection<Method> getRequestMethodDocs() {
+                return _methods;
             }
 
-            public void setRequestSchema(String _requestSchema) {
-                this._requestSchema = _requestSchema;
+            public Resource getParent() {
+                return _parent;
             }
 
-            public void setResponseExample(String wsDocResponseSchema) {
-                this._responseExample = wsDocResponseSchema;
+            ;
+
+            public String getPathLeaf() {
+                return (_parent != null) ? path.substring(_parent.path.length()) : path;
             }
 
-            public String getResponseExample() {
-                return _responseExample;
-            }
-
-            public void setRequestExample(String wsDocRequestSchema) {
-                this._requestExample = wsDocRequestSchema;
-            }
-
-            public String getRequestExample() {
-                return _requestExample;
-            }
-
-            public Method(String meth) {
-                this.meth = meth;
-            }
-
-            public String getRequestMethod() {
-                return meth;
-            }
-
-            public JsonType getRequestBody() {
-                return _requestBody;
-            }
-
-            public void setRequestBody(JsonType body) {
-                _requestBody = body;
-            }
-
-            public UrlFields getUrlSubstitutions() {
-                return _urlSubstitutions;
+            public Collection<Resource> getChildren() {
+                return _children;
             }
 
             /**
-             * Get the URI parameters specific to this method (useful in RAML where the parent hierarchy will already include it's own)
-             *
-             * @return
+             * Creates and returns a new {@link Method} instance, and adds it to
+             * the current resource location. If this is invoked multiple times
+             * with the same argument, multiple distinct {@link Method} objects
+             * will be returned.
              */
-            public UrlFields getMethodSpecificUrlSubstitutions() {
-                Resource parent = _parent;
-                Map<String, UrlFields.UrlField> methodFields = new HashMap<String, UrlFields.UrlField>(_urlSubstitutions.getFields());
-                while (parent != null) {
-                    for (String key : parent.getRequestMethodDocs().iterator().next()._urlSubstitutions.getFields().keySet()) {
-                        methodFields.remove(key);
+            public Method newMethodDocumentation(String meth) {
+                Method method = new Method(meth);
+                _methods.add(method);
+                return method;
+            }
+
+            public UrlFields getResourceUrlSubstitutions() {
+                UrlFields aggregateUrlFields = new UrlFields();
+                for (Method method : _methods) {
+                    UrlFields fields = method.getMethodSpecificUrlSubstitutions();
+                    aggregateUrlFields.getFields().putAll(fields.getFields());
+                }
+                return aggregateUrlFields;
+            }
+
+            public class Method implements Serializable {
+
+                private String _meth;
+                private HashSet<String> _scopes;
+                private HashSet<String> _traits;
+                private JsonType _requestBody;
+                private UrlFields _urlSubstitutions = new UrlFields();
+                private UrlFields _urlParameters = new UrlFields();
+                private JsonType _responseBody;
+                private String _commentText;
+                private boolean _isMultipartRequest;
+                private String _requestSchema;
+                private String _responseSchema;
+                private String _responseExample;
+                private String _requestExample;
+
+                public HashSet<String> getScopes() {
+                    return _scopes;
+                }
+
+                public void setScopes(HashSet<String> scopes) {
+                    this._scopes = scopes;
+                }
+
+                public HashSet<String> getTraits() {
+                    return _traits;
+                }
+
+                public String getTraitsAsString() {
+                    StringBuilder sb = new StringBuilder("[ ");
+                    for (String trait : _traits) {
+                        sb.append(trait).append(",");
                     }
-                    parent = parent._parent;
-                }
-                UrlFields urlFields = new UrlFields();
-                urlFields.getFields().putAll(methodFields);
-                return urlFields;
-            }
-
-            public UrlFields getUrlParameters() {
-                return _urlParameters;
-            }
-
-            public JsonType getResponseBody() {
-                return _responseBody;
-            }
-
-            public void setResponseBody(JsonType body) {
-                _responseBody = body;
-            }
-
-            public String getCommentText() {
-                return _commentText;
-            }
-
-            public String getIndentedCommentText(int indent) {
-                if (_commentText != null) {
-                    String whitespace = StringUtils.leftPad("", indent);
-                    return whitespace + _commentText.split("\n @")[0].replaceAll("\n", "\n" + whitespace);
-                }
-                return null;
-            }
-
-            public void setCommentText(String text) {
-                _commentText = text;
-            }
-
-            public boolean isMultipartRequest() {
-                return _isMultipartRequest;
-            }
-
-            public void setMultipartRequest(boolean multipart) {
-                _isMultipartRequest = multipart;
-            }
-
-            /**
-             * An HTML-safe, textual key that uniquely identifies this endpoint.
-             */
-            public String getKey() {
-                String key = path + "_" + meth;
-                for (String param : _urlParameters.getFields().keySet()) {
-                    key += "_" + param;
-                }
-                return key;
-            }
-        }
-
-        public class UrlFields implements Serializable {
-
-            private Map<String, UrlField> _jsonFields = new LinkedHashMap();
-
-            public class UrlField implements Serializable {
-
-                private JsonType fieldType;
-                private String fieldDescription;
-
-                public UrlField(JsonType type, String desc) {
-                    fieldType = type;
-                    fieldDescription = desc;
+                    sb.setCharAt(sb.length() - 1, ']');
+                    return sb.toString();
                 }
 
-                public JsonType getFieldType() {
-                    return fieldType;
+                public void setTraits(HashSet<String> traits) {
+                    this._traits = traits;
                 }
 
-                public void setFieldType(JsonType fieldType) {
-                    this.fieldType = fieldType;
+                public String getResponseSchema() {
+                    return _responseSchema;
                 }
 
-                public String getFieldDescription() {
-                    return fieldDescription;
+                public void setResponseSchema(String _responseSchema) {
+                    this._responseSchema = _responseSchema;
                 }
 
-                public void setFieldDescription(String fieldDescription) {
-                    this.fieldDescription = fieldDescription;
+                public String getRequestSchema() {
+                    return _requestSchema;
+                }
+
+                public void setRequestSchema(String _requestSchema) {
+                    this._requestSchema = _requestSchema;
+                }
+
+                public void setResponseExample(String wsDocResponseSchema) {
+                    this._responseExample = wsDocResponseSchema;
+                }
+
+                public String getResponseExample() {
+                    return _responseExample;
+                }
+
+                public void setRequestExample(String wsDocRequestSchema) {
+                    this._requestExample = wsDocRequestSchema;
+                }
+
+                public String getRequestExample() {
+                    return _requestExample;
+                }
+
+                public Method(String meth) {
+                    this._meth = meth;
+                }
+
+                public String getRequestMethod() {
+                    return _meth;
+                }
+
+                public JsonType getRequestBody() {
+                    return _requestBody;
+                }
+
+                public void setRequestBody(JsonType body) {
+                    _requestBody = body;
+                }
+
+                public UrlFields getUrlSubstitutions() {
+                    return _urlSubstitutions;
+                }
+
+                /**
+                 * Get the URI parameters specific to this method (useful in RAML where the parent hierarchy will already include it's own)
+                 *
+                 * @return
+                 */
+                public UrlFields getMethodSpecificUrlSubstitutions() {
+                    Resource parent = _parent;
+                    Map<String, UrlFields.UrlField> methodFields = new HashMap<String, UrlFields.UrlField>(_urlSubstitutions.getFields());
+                    while (parent != null) {
+                        Iterator<Method> iter = parent.getRequestMethodDocs().iterator();
+                        while (iter.hasNext()) {
+                            for (String key : iter.next()._urlSubstitutions.getFields().keySet()) {
+                                methodFields.remove(key);
+                            }
+                        }
+                        parent = parent._parent;
+                    }
+                    UrlFields urlFields = new UrlFields();
+                    urlFields.getFields().putAll(methodFields);
+                    return urlFields;
+                }
+
+                public UrlFields getUrlParameters() {
+                    return _urlParameters;
+                }
+
+                public JsonType getResponseBody() {
+                    return _responseBody;
+                }
+
+                public void setResponseBody(JsonType body) {
+                    _responseBody = body;
+                }
+
+                public String getCommentText() {
+                    return _commentText;
+                }
+
+                public String getIndentedCommentText(int indent) {
+                    if (_commentText != null) {
+                        String whitespace = StringUtils.leftPad("", indent);
+                        return whitespace + _commentText.split("\n @")[0].replaceAll("\n", "\n" + whitespace);
+                    }
+                    return null;
+                }
+
+                public void setCommentText(String text) {
+                    _commentText = text;
+                }
+
+                public boolean isMultipartRequest() {
+                    return _isMultipartRequest;
+                }
+
+                public void setMultipartRequest(boolean multipart) {
+                    _isMultipartRequest = multipart;
+                }
+
+                /**
+                 * An HTML-safe, textual key that uniquely identifies this endpoint.
+                 */
+                public String getKey() {
+                    String key = path + "_" + _meth;
+                    for (String param : _urlParameters.getFields().keySet()) {
+                        key += "_" + param;
+                    }
+                    return key;
                 }
             }
 
-            public Map<String, UrlField> getFields() {
-                return _jsonFields;
-            }
+            public class UrlFields implements Serializable {
 
-            public void addField(String name, JsonType jsonType, String description) {
-                _jsonFields.put(name, new UrlField(jsonType, description));
+                private Map<String, UrlField> _jsonFields = new LinkedHashMap();
+
+                public class UrlField implements Serializable {
+
+                    private JsonType fieldType;
+                    private String fieldDescription;
+
+                    public UrlField(JsonType type, String desc) {
+                        fieldType = type;
+                        fieldDescription = desc;
+                    }
+
+                    public JsonType getFieldType() {
+                        return fieldType;
+                    }
+
+                    public void setFieldType(JsonType fieldType) {
+                        this.fieldType = fieldType;
+                    }
+
+                    public String getFieldDescription() {
+                        return fieldDescription;
+                    }
+
+                    public void setFieldDescription(String fieldDescription) {
+                        this.fieldDescription = fieldDescription;
+                    }
+                }
+
+                public Map<String, UrlField> getFields() {
+                    return _jsonFields;
+                }
+
+                public void addField(String name, JsonType jsonType, String description) {
+                    _jsonFields.put(name, new UrlField(jsonType, description));
+                }
             }
         }
     }

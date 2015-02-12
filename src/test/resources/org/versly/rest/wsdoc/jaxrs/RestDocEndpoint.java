@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestApiMountPoint("/mount")
+@Path("/api/v1")
 public class RestDocEndpoint {
 
     /**
@@ -141,5 +142,62 @@ public class RestDocEndpoint {
     @Path("things/{id}")
     public void deleteThing(@Context HttpServletRequest req,
                             @PathParam("id") String id) {
+    }
+
+    // this following widges/{id1}/gizmos endpoints are for verifying issue #29
+
+    /**
+     * This endpoint creates things.
+     * @param id1 The widget identifier.
+     */
+    @POST
+    @Path("widgets/{id1}/gizmos")
+    public void createThing(@PathParam("id1") String id1) {
+    }
+
+    /**
+     * This endpoint gets things.
+     * @param id1 The widget identifier.
+     * @param id2 The gizmo identifier.
+     */
+    @GET
+    @Path("widgets/{id1}/gizmos/{id2}")
+    public void getThing(@PathParam("id1") String id1, @PathParam("id2") String id2) {
+    }
+
+    /**
+     * This endpoint Deletes things.
+     * @param id1 The widget identifier.
+     * @param id2 The gizmo identifier.
+     */
+    @DELETE
+    @Path("widgets/{id1}/gizmos/{id2}")
+    public void deleteThing(@PathParam("id1") String id1, @PathParam("id2") String id2) {
+    }
+
+    enum Colors {
+        RED,
+        GREEN,
+        BLUE
+    };
+
+    /**
+     * This endpoint tests query parameters that are enums.
+     *
+     * @param color Whirlygig color of interest.
+     */
+    @GET
+    @Path("/whirlygigs")
+    public void getWhirlygig(@QueryParam("color") Colors color) {
+    }
+
+    /**
+     * This endpoint tests uri path parameters that are enums.
+     *
+     * @param color The color of interest.
+     */
+    @GET
+    @Path("/colors/{color}")
+    public void getColor(@PathParam("color") Colors color) {
     }
 }

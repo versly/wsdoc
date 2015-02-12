@@ -25,6 +25,7 @@ import org.versly.rest.wsdoc.RestApiMountPoint;
 import org.versly.rest.wsdoc.model.ParameterizedTypeReferrer;
 
 @RestApiMountPoint("/mount")
+@RequestMapping("/api/v1")
 public class RestDocEndpoint {
 
     /**
@@ -177,5 +178,29 @@ public class RestDocEndpoint {
      */
     @RequestMapping(value = "widgets/{id1}/gizmos/{id2}", method = RequestMethod.DELETE)
     public void deleteThing(@PathVariable("id1") String id1, @PathVariable("id2") String id2) {
+    }
+
+    enum Colors {
+        RED,
+        GREEN,
+        BLUE
+    };
+
+    /**
+     * This endpoint tests query parameters that are enums.
+     *
+     * @param color Whirlygig color of interest.
+     */
+    @RequestMapping(value = "/whirlygigs", method = RequestMethod.GET)
+    public void getWhirlygig(@RequestParam("color") Colors color) {
+    }
+    
+    /**
+     * This endpoint tests uri path parameters that are enums.
+     *
+     * @param color The color of interest.
+     */
+    @RequestMapping(value = "/colors/{color}", method = RequestMethod.GET)
+    public void getColor(@PathVariable("color") Colors color) {
     }
 }
