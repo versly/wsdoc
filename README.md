@@ -24,6 +24,8 @@ Once you've done this, the wsdoc jar will be available in your local Maven repos
 <a id="running"/>
 #### Running wsdoc
 
+With version 1.1-SNAPSHOT, wsdoc now requires a Java 8 runtime at annotations processing time.  This does not impose any requirements, however, on the source version or target runtime of the processed Java code.
+
 Often, a single REST API is implemented across a number of web archives. As a result, wsdoc is designed to run in two passes: a data-gathering pass (implemented via Java annotation processor) and an output-assembly pass (implemented as a standalone Java program):
 
 1\. Generate the wsdoc interim data. This will create a file called org.versly.rest.wsdoc.web-service-api.ser in your build output directory. This file should be included as a resource in your web archive (at WEB-INF/classes/org.versly.rest.wsdoc.web-service-api.ser)
