@@ -38,6 +38,8 @@ Often, a single REST API is implemented across a number of web archives. As a re
 
 4\. Enjoy the output at web-service-api.html
 
+Note, with release 1.1-SNAPSHOT, wsdoc requires a Java 8 runtime at annotations processing time.  This will not impose any requirements, however, on the source version or target runtime of the processed Java code.
+
 <a id="samples"/>
 #### Sample Input and Output
 
