@@ -113,6 +113,31 @@ public class RestDocAssembler {
             filteredApis = aggregatedApis.values();
         }
         
+        // derive the common base URI for all resources of each API and make that the API mount
+        for (RestDocumentation.RestApi api : aggregatedApis.values()) {
+            String basePath = null;
+            for (RestDocumentation.RestApi.Resource resource : api.getResources()) {
+                String resourcePath = resource.getPath();
+                if (null != resourcePath) {
+                    if (null == basePath) {
+                        basePath = resourcePath;
+                    }
+                    else {
+                        String[] baseParts = basePath.split("/");
+                        String[] resourceParts = resourcePath.split("/");
+                        basePath = "";
+                        int smallerLength = Math.min(baseParts.length, resourceParts.length);
+                        for (int i = 0; i < smallerLength && baseParts[i].equals(resourceParts[i]); ++i) {
+                            if (baseParts[i].length() > 0) {
+                                basePath += "/" + baseParts[i];
+                            }
+                        }
+                    }
+                }
+            }
+            api.setMount(basePath);
+        }
+
         // use command-line --scope value to set the scope on which to filter the generated documentation
         if (!scope.equals("all")) {
             HashSet<String> requestedScopes = new HashSet<String>(Arrays.asList(new String[]{scope}));
