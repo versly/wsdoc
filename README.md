@@ -19,7 +19,7 @@ Currently, wsdoc is available in source format only. To install, you'll need mvn
     cd wsdoc
     mvn install
 
-Once you've done this, the wsdoc jar will be available in your local Maven repository, probably at ~/.m2/repository/org/versly/versly-wsdoc/1.0-SNAPSHOT/versly-wsdoc-1.0-SNAPSHOT.jar
+Once you've done this, the wsdoc jar will be available in your local Maven repository, probably at ~/.m2/repository/org/versly/versly-wsdoc/1.1-SNAPSHOT/versly-wsdoc-1.1-SNAPSHOT.jar
 
 <a id="running"/>
 #### Running wsdoc
@@ -39,6 +39,8 @@ Often, a single REST API is implemented across a number of web archives. As a re
     java org.versly.rest.wsdoc.RestDocAssembler *.war *.ser
 
 4\. Enjoy the output at web-service-api.html
+
+Note, with release 1.1-SNAPSHOT, wsdoc requires a Java 8 runtime at annotations processing time.  This will not impose any requirements, however, on the source version or target runtime of the processed Java code.
 
 <a id="samples"/>
 #### Sample Input and Output
@@ -277,7 +279,7 @@ be subsequently augmented with text that describes the semantics of each trait.
                     <dependency>
                         <groupId>org.versly</groupId>
                         <artifactId>versly-wsdoc</artifactId>
-                        <version>1.0-SNAPSHOT</version>
+                        <version>1.1-SNAPSHOT</version>
                         <scope>compile</scope>
                     </dependency>
                 </dependencies>

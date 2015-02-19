@@ -6,7 +6,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface DocumentationRestApi {
     String id() default "(default)";
-    String mount() default "/";
+    String mount() default "";
     String title() default "";
     String version() default "";
 }
