@@ -58,7 +58,7 @@ import static org.apache.commons.lang3.StringUtils.join;
 //   - plural RequestMapping value support (i.e., two paths bound to one method)
 //   - support for methods not marked with @RequestMapping whose class does have a @RequestMapping annotation
 @SupportedAnnotationTypes({"org.springframework.web.bind.annotation.RequestMapping", "javax.ws.rs.Path"})
-@SupportedSourceVersion(SourceVersion.RELEASE_6)
+@SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class AnnotationProcessor extends AbstractProcessor {
 
     private RestDocumentation _docs = new RestDocumentation();
