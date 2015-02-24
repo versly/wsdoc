@@ -86,11 +86,10 @@ public class RestDocAssembler {
         this(outputFileName, "html");
     }
 
-    List<String> writeDocumentation(List<RestDocumentation> docs, Iterable<Pattern> excludePatterns, String scope)
-        throws IOException, ClassNotFoundException, TemplateException {
-        List<String> filesWritten = new ArrayList<String>();
-        
-        // combine APIs from the REST docs into one map, merging those with matching identifiers
+    /**
+     * combine APIs from the REST docs into one map, merging those APIs with matching identifiers
+     */
+    private Collection<RestDocumentation.RestApi> mergeApis(List<RestDocumentation> docs) {
         Map<String,RestDocumentation.RestApi> aggregatedApis = new LinkedHashMap<String,RestDocumentation.RestApi>();
         for (RestDocumentation doc : docs) {
             for (RestDocumentation.RestApi api : doc.getApis()) {
@@ -102,15 +101,23 @@ public class RestDocAssembler {
                 }
             }
         }
+        return aggregatedApis.values();
+    }
+
+    /**
+     * Filter out APIs based on user provided exclude patterns and selected scope (scope of 'all' implies no filtering).
+     */
+    private Collection<RestDocumentation.RestApi> filterApis(
+            Collection<RestDocumentation.RestApi> apis, Iterable<Pattern> excludePatterns, String scope) {
 
         // filter doc objects by client provided exclude patterns
         Collection<RestDocumentation.RestApi> filteredApis = null;
         if (excludePatterns != null) {
             filteredApis = new LinkedList<RestDocumentation.RestApi>();
-            for (RestDocumentation.RestApi api : aggregatedApis.values())
+            for (RestDocumentation.RestApi api : apis)
                 filteredApis.add(api.filter(excludePatterns));
         } else {
-            filteredApis = aggregatedApis.values();
+            filteredApis = apis;
         }
 
         // use command-line --scope value to filter the generated documentation
@@ -141,17 +148,22 @@ public class RestDocAssembler {
                 }
             }
         }
+        
+        return filteredApis;
+    }
 
-        // derive the common base URI for all resources of each API and declare that the API mount
-        for (RestDocumentation.RestApi api : filteredApis) {
+    /**
+     * derive the common base URI for all resources in each API and declare that the API mount point.
+     */
+    private void deriveBaseURIs(Collection<RestDocumentation.RestApi> apis) {
+        for (RestDocumentation.RestApi api : apis) {
             String basePath = null;
             for (RestDocumentation.RestApi.Resource resource : api.getResources()) {
                 String resourcePath = resource.getPath();
                 if (null != resourcePath) {
                     if (null == basePath) {
                         basePath = resourcePath;
-                    }
-                    else {
+                    } else {
                         String[] baseParts = basePath.split("/");
                         String[] resourceParts = resourcePath.split("/");
                         basePath = "";
@@ -166,13 +178,27 @@ public class RestDocAssembler {
             }
             api.setMount(basePath);
         }
+    }
+
+    List<String> writeDocumentation(List<RestDocumentation> docs, Iterable<Pattern> excludePatterns, String scope)
+        throws IOException, ClassNotFoundException, TemplateException {
+        List<String> filesWritten = new ArrayList<String>();
+        
+        // combine APIs from the REST docs into one map, merging those with matching identifiers
+        Collection<RestDocumentation.RestApi> apis = mergeApis(docs);
+
+        // filter out APIs based on exclude patterns and selected publishing scope
+        apis = filterApis(apis, excludePatterns, scope);
+
+        // derive the common base URI for all resources of each API and declare that the API mount
+        deriveBaseURIs(apis);
 
         Configuration conf = new Configuration();
         conf.setClassForTemplateLoading(RestDocAssembler.class, "");
         conf.setObjectWrapper(new DefaultObjectWrapper());
         Writer out = null;
         try {
-            for (RestDocumentation.RestApi api : filteredApis) {
+            for (RestDocumentation.RestApi api : apis) {
                 Template template = conf.getTemplate(_outputTemplate);
                 Map<String, RestDocumentation.RestApi> root = new HashMap<String, RestDocumentation.RestApi>();
                 root.put("api", api);
