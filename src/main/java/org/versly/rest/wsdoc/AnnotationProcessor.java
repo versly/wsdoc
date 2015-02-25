@@ -18,6 +18,7 @@ package org.versly.rest.wsdoc;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
 import org.apache.commons.lang3.StringUtils;
@@ -829,6 +830,7 @@ public class AnnotationProcessor extends AbstractProcessor {
         if (dtoClass != null) {
             try {
                 ObjectMapper m = new ObjectMapper();
+                m.enable(SerializationFeature.WRITE_ENUMS_USING_TO_STRING);
                 m.registerModule(new JodaModule());
                 SchemaFactoryWrapper visitor = new SchemaFactoryWrapper();
                 m.acceptJsonFormatVisitor(m.constructType(dtoClass), visitor);
