@@ -20,11 +20,11 @@ public class AuthorizationScopes {
     }
 
     /**
-     * A controller with two authorization scopes, one at class level, one at method level
+     * A controller with three authorization scopes, two at class level, one at method level.
      */
     @RestApiMountPoint("/twoscopes")
     @RequestMapping("/api/v1")
-    @AuthorizationScope("two_scope_service:write")
+    @AuthorizationScope( { "two_scope_service:write", "two_scope_service:admin" } )
     public static class TwoScopeController {
 
         @AuthorizationScope("two_scope_service:read")
