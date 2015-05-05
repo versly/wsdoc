@@ -220,7 +220,7 @@ public class RestDocumentation implements Serializable {
         public class Resource implements Serializable {
 
             private String path;
-            private Collection<Method> _methods = new LinkedList<Method>();
+            private Map<String, Method> _methods = new LinkedHashMap();
             private Resource _parent;
             private Collection<Resource> _children = new LinkedList<Resource>();
 
@@ -233,7 +233,7 @@ public class RestDocumentation implements Serializable {
             }
 
             public Collection<Method> getRequestMethodDocs() {
-                return _methods;
+                return _methods.values();
             }
 
             public Resource getParent() {
@@ -253,18 +253,21 @@ public class RestDocumentation implements Serializable {
             /**
              * Creates and returns a new {@link Method} instance, and adds it to
              * the current resource location. If this is invoked multiple times
-             * with the same argument, multiple distinct {@link Method} objects
+             * with the same argument, the same {@link Method} object
              * will be returned.
              */
             public Method newMethodDocumentation(String meth) {
+                if (_methods.containsKey(meth)) {
+                    return _methods.get(meth);
+                }
                 Method method = new Method(meth);
-                _methods.add(method);
+                _methods.put(meth, method);
                 return method;
             }
 
             public UrlFields getResourceUrlSubstitutions() {
                 UrlFields aggregateUrlFields = new UrlFields();
-                for (Method method : _methods) {
+                for (Method method : _methods.values()) {
                     UrlFields fields = method.getMethodSpecificUrlSubstitutions();
                     aggregateUrlFields.getFields().putAll(fields.getFields());
                 }

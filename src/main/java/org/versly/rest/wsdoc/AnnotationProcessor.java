@@ -141,7 +141,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 
         for (final String basePath : getClassLevelUrlPaths(cls, implementationSupport)) {
             for (final String requestPath : implementationSupport.getRequestPaths(executableElement, cls)) {
-                final String fullPath = Utils.joinPaths(basePath, requestPath);
+                String fullPath = Utils.joinPaths(basePath, requestPath);
                 String meth;
                 try {
                     meth = implementationSupport.getRequestMethod(executableElement, cls);
@@ -152,6 +152,10 @@ public class AnnotationProcessor extends AbstractProcessor {
                             "error processing element: " + ex.getMessage(), executableElement);
                     continue;
                 }
+
+                // both spring and jersey permit colon delimited regexes in path annotations which are not compatible with RAML
+                // which expects resource identifiers to comply with RFC-6570 URI template semantics - so remove regex portion
+                fullPath = fullPath.replaceAll(":.*}", "}");
 
                 // set documentation and metadata on api
                 RestDocumentation.RestApi api = null;

@@ -33,10 +33,9 @@ ${api.indentedApiTraits(4)}
 
 <#--
   -- write out a RAML resource path.
-  -- Note, we strip off regex expressions because RAML requires the path to be a valid URI template.
   -->
 <#macro write_resource resource depth>
-<#if (depth > 0)><#list 1..depth as i> </#list></#if>${resource.pathLeaf?replace(":.*}", "}", "r")}:
+<#if (depth > 0)><#list 1..depth as i> </#list></#if>${resource.pathLeaf}:
 <@write_uri_parameters resource=resource depth=depth+4 />
 <@write_resource_parts resource=resource depth=depth+4/>
 
