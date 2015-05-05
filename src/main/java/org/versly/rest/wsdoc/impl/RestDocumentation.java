@@ -336,7 +336,6 @@ public class RestDocumentation implements Serializable {
                             sb.append("]");
                         }
                         return sb.toString();
-//                        return Arrays.toString(_authScopes.toArray());
                     }
                     return null;
                 }
