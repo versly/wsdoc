@@ -180,29 +180,47 @@ public class AnnotationProcessor extends AbstractProcessor {
                 RestDocumentation.RestApi.Resource.Method method = resource.newMethodDocumentation(meth);
                 method.setCommentText(processingEnv.getElementUtils().getDocComment(executableElement));
 
-                // set scope on method (scopes is non-scalar, methods can be part of multiple scopes)
-                HashSet<String> scopes = new HashSet<String>();
-                DocumentationScope clsScopes = cls.getAnnotation(DocumentationScope.class);
-                if (null != clsScopes) {
-                    scopes.addAll(Arrays.asList(clsScopes.value()));
+                // set documentation scope on method (doc scope is non-scalar, methods can be part of multiple doc scopes)
+                {
+                    HashSet<String> docScopes = new HashSet<String>();
+                    DocumentationScope clsDocScopes = cls.getAnnotation(DocumentationScope.class);
+                    if (null != clsDocScopes) {
+                        docScopes.addAll(Arrays.asList(clsDocScopes.value()));
+                    }
+                    DocumentationScope methodDocScopes = executableElement.getAnnotation(DocumentationScope.class);
+                    if (null != methodDocScopes) {
+                        docScopes.addAll(Arrays.asList(methodDocScopes.value()));
+                    }
+                    method.setDocScopes(docScopes);
                 }
-                DocumentationScope methodScopes = executableElement.getAnnotation(DocumentationScope.class);
-                if (null != methodScopes) {
-                    scopes.addAll(Arrays.asList(methodScopes.value()));
+                
+                // set authorization scope on method (auth scope is non-scalar, methods can have multiple auth scopes)
+                {
+                    HashSet<String> authScopes = new HashSet<String>();
+                    AuthorizationScope clsAuthScopes = cls.getAnnotation(AuthorizationScope.class);
+                    if (null != clsAuthScopes) {
+                        authScopes.addAll(Arrays.asList(clsAuthScopes.value()));
+                    }
+                    AuthorizationScope methodAuthScopes = executableElement.getAnnotation(AuthorizationScope.class);
+                    if (null != methodAuthScopes) {
+                        authScopes.addAll(Arrays.asList(methodAuthScopes.value()));
+                    }
+                    method.setAuthScopes(authScopes);
                 }
-                method.setScopes(scopes);
 
                 // set traits on method (traits is non-scalar, methods may have multiple traits)
-                HashSet<String> traits = new HashSet<String>();
-                DocumentationTraits clsTraits = cls.getAnnotation(DocumentationTraits.class);
-                if (null != clsTraits) {
-                    traits.addAll(Arrays.asList(clsTraits.value()));
+                {
+                    HashSet<String> traits = new HashSet<String>();
+                    DocumentationTraits clsTraits = cls.getAnnotation(DocumentationTraits.class);
+                    if (null != clsTraits) {
+                        traits.addAll(Arrays.asList(clsTraits.value()));
+                    }
+                    DocumentationTraits methodTraits = executableElement.getAnnotation(DocumentationTraits.class);
+                    if (null != methodTraits) {
+                        traits.addAll(Arrays.asList(methodTraits.value()));
+                    }
+                    method.setTraits(traits);
                 }
-                DocumentationTraits methodTraits = executableElement.getAnnotation(DocumentationTraits.class);
-                if (null != methodTraits) {
-                    traits.addAll(Arrays.asList(methodTraits.value()));
-                }
-                method.setTraits(traits);
                 
                 // add method's traits as included with overall API traits (used in RAML for uniform documentation)
                 api.getTraits().addAll(method.getTraits());

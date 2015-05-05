@@ -133,7 +133,7 @@ public class RestDocAssembler {
                     RestDocumentation.RestApi.Resource resource = resIter.next();
                     Iterator<RestDocumentation.RestApi.Resource.Method> methIter = resource.getRequestMethodDocs().iterator();
                     while (methIter.hasNext()) {
-                        HashSet<String> scopes = methIter.next().getScopes();
+                        HashSet<String> scopes = methIter.next().getDocScopes();
                         scopes.retainAll(requestedScopes);
                         if (scopes.isEmpty()) {
                             methIter.remove();

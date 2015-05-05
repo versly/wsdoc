@@ -277,8 +277,9 @@ public class RestDocumentation implements Serializable {
             public class Method implements Serializable {
 
                 private String _meth;
-                private HashSet<String> _scopes;
+                private HashSet<String> _docScopes;
                 private HashSet<String> _traits;
+                private HashSet<String> _authScopes;
                 private JsonType _requestBody;
                 private UrlFields _urlSubstitutions = new UrlFields();
                 private UrlFields _urlParameters = new UrlFields();
@@ -290,12 +291,12 @@ public class RestDocumentation implements Serializable {
                 private String _responseExample;
                 private String _requestExample;
 
-                public HashSet<String> getScopes() {
-                    return _scopes;
+                public HashSet<String> getDocScopes() {
+                    return _docScopes;
                 }
 
-                public void setScopes(HashSet<String> scopes) {
-                    this._scopes = scopes;
+                public void setDocScopes(HashSet<String> scopes) {
+                    this._docScopes = scopes;
                 }
 
                 public HashSet<String> getTraits() {
@@ -313,6 +314,35 @@ public class RestDocumentation implements Serializable {
 
                 public void setTraits(HashSet<String> traits) {
                     this._traits = traits;
+                }
+
+                public HashSet<String> getAuthScopes() {
+                    return _authScopes;
+                }
+
+                public String getAuthScopesAsString() {
+                    if (null != _authScopes && _authScopes.size() > 0) {
+                        StringBuilder sb = new StringBuilder();
+                        sb.append("[");
+                        for (String authScope : _authScopes) {
+                            sb.append("\"");
+                            sb.append(authScope);
+                            sb.append("\",");
+                        }
+                        if (sb.length() > 1) {
+                            sb.setCharAt(sb.length() - 1, ']');
+                        }
+                        else {
+                            sb.append("]");
+                        }
+                        return sb.toString();
+//                        return Arrays.toString(_authScopes.toArray());
+                    }
+                    return null;
+                }
+                
+                public void setAuthScopes(HashSet<String> _authScopes) {
+                    this._authScopes = _authScopes;
                 }
 
                 public String getResponseSchema() {

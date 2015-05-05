@@ -19,6 +19,12 @@ documentation:
 ${api.indentedApiDocumentationText(10)}
 </#if>
 
+securitySchemes:
+    - oauth_2_0:
+        description: |
+            This REST endpoint supports OAuth 2.0 for authenticating client requests.
+        type: OAuth 2.0
+
 <#if api.getTraits()?size gt 0>
 traits:
 ${api.indentedApiTraits(4)}
@@ -66,6 +72,10 @@ ${api.indentedApiTraits(4)}
 <@write_description methodDoc=methodDoc depth=depth+4/>
 </#if>
   
+<#if methodDoc.authScopesAsString??>
+<@write_auth_scopes methodDoc=methodDoc depth=depth+4/>
+</#if>
+
 <@write_traits methodDoc=methodDoc depth=depth+4/>
 
 <@write_parameters methodDoc=methodDoc depth=depth+4/>
@@ -83,6 +93,13 @@ ${api.indentedApiTraits(4)}
 <#macro write_description methodDoc depth>
 <#list 1..depth as i> </#list>description: |
 ${methodDoc.indentedCommentText(depth+4)}
+</#macro>
+
+<#--
+  -- write out method auth scopes
+  -->
+<#macro write_auth_scopes methodDoc depth>
+<#list 1..depth as i> </#list>securedBy: [ oauth_2_0: { scopes: ${methodDoc.authScopesAsString} } ]
 </#macro>
 
 <#--
