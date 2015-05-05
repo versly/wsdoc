@@ -21,9 +21,10 @@ ${api.indentedApiDocumentationText(10)}
 
 securitySchemes:
     - oauth_2_0:
-        description: |
-            This REST endpoint supports OAuth 2.0 for authenticating client requests.
         type: OAuth 2.0
+        settings:
+            accessTokenUri: TBD
+            authorizationUri: TBD
 
 <#if api.getTraits()?size gt 0>
 traits:
