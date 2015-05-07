@@ -210,7 +210,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 
                 // set traits on method (traits is non-scalar, methods may have multiple traits)
                 {
-                    HashSet<String> traits = new HashSet<String>();
+                    HashSet<String> traits = new HashSet<String>(method.getDocScopes());
                     DocumentationTraits clsTraits = cls.getAnnotation(DocumentationTraits.class);
                     if (null != clsTraits) {
                         traits.addAll(Arrays.asList(clsTraits.value()));
