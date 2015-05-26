@@ -19,6 +19,13 @@ documentation:
 ${api.indentedApiDocumentationText(10)}
 </#if>
 
+securitySchemes:
+    - oauth_2_0:
+        type: OAuth 2.0
+        settings:
+            accessTokenUri: TBD
+            authorizationUri: TBD
+
 <#if api.getTraits()?size gt 0>
 traits:
 ${api.indentedApiTraits(4)}
@@ -33,10 +40,9 @@ ${api.indentedApiTraits(4)}
 
 <#--
   -- write out a RAML resource path.
-  -- Note, we strip off regex expressions because RAML requires the path to be a valid URI template.
   -->
 <#macro write_resource resource depth>
-<#if (depth > 0)><#list 1..depth as i> </#list></#if>${resource.pathLeaf?replace(":.*}", "}", "r")}:
+<#if (depth > 0)><#list 1..depth as i> </#list></#if>${resource.pathLeaf}:
 <@write_uri_parameters resource=resource depth=depth+4 />
 <@write_resource_parts resource=resource depth=depth+4/>
 
@@ -67,6 +73,10 @@ ${api.indentedApiTraits(4)}
 <@write_description methodDoc=methodDoc depth=depth+4/>
 </#if>
   
+<#if methodDoc.authScopesAsString??>
+<@write_auth_scopes methodDoc=methodDoc depth=depth+4/>
+</#if>
+
 <@write_traits methodDoc=methodDoc depth=depth+4/>
 
 <@write_parameters methodDoc=methodDoc depth=depth+4/>
@@ -84,6 +94,13 @@ ${api.indentedApiTraits(4)}
 <#macro write_description methodDoc depth>
 <#list 1..depth as i> </#list>description: |
 ${methodDoc.indentedCommentText(depth+4)}
+</#macro>
+
+<#--
+  -- write out method auth scopes
+  -->
+<#macro write_auth_scopes methodDoc depth>
+<#list 1..depth as i> </#list>securedBy: [ oauth_2_0: { scopes: ${methodDoc.authScopesAsString} } ]
 </#macro>
 
 <#--

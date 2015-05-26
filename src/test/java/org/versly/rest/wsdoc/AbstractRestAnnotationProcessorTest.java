@@ -451,5 +451,56 @@ public abstract class AbstractRestAnnotationProcessorTest {
         AssertJUnit.assertEquals("resource /experimentaldeprecated3 should include deprecated", "deprecated", iter2.next());
     }
 
+    @Test
+    public void authScopeDocs() {
+        processResource("AuthorizationScopes.java", "raml", "all");
+        AssertJUnit.assertEquals("AuthorizationScopes should have produced exactly 1 results document", 1, output.size());
+        Map.Entry<String,String> entry = output.entrySet().iterator().next();
+        AssertJUnit.assertTrue("expected file named AuthorizationScopes.raml",
+                entry.getKey().endsWith("AuthorizationScopes.raml"));
+        Raml raml = new RamlDocumentBuilder().build(entry.getValue(), "http://example.com");
+        AssertJUnit.assertNotNull("RAML not parseable", raml);
+        List<DocumentationItem> documentation = raml.getDocumentation();
+        Resource resource = raml.getResource("/default/api/v1/default");
+        AssertJUnit.assertNotNull("RAML has no default controller", resource);
+        Action action = resource.getAction(ActionType.GET);
+        AssertJUnit.assertNotNull("RAML default controller has no get action", action);
+        List<SecurityReference> secRef = action.getSecuredBy();
+        AssertJUnit.assertNotNull("RAML has no default security reference list", secRef);
+        AssertJUnit.assertTrue("RAML default controller has a security reference", secRef.size() == 0);
+
+        resource = raml.getResource("/twoscopes/api/v1/twoscope");
+        AssertJUnit.assertNotNull("RAML has no twoscope controller", resource);
+        action = resource.getAction(ActionType.GET);
+        AssertJUnit.assertNotNull("RAML twoscope controller has no get action", action);
+        secRef = action.getSecuredBy();
+        AssertJUnit.assertNotNull("RAML has no twoscope security reference list", secRef);
+        AssertJUnit.assertTrue("RAML twoscope controller get does not have a security reference", secRef.size() == 1);
+        AssertJUnit.assertEquals("RAML twoscope controller get does not have the expected security reference", "oauth_2_0", secRef.get(0).getName());
+        Map<String, List<String>> parameters = secRef.get(0).getParameters();
+        AssertJUnit.assertNotNull("RAML twoscope secref does not have parameters", parameters);
+        AssertJUnit.assertEquals("RAML twoscope secref parameters map does not contain one entry", 1, parameters.size());
+        List<String> scopes = parameters.get("scopes");
+        AssertJUnit.assertNotNull("RAML twoscope secref parameters map does not contain scopes", scopes);
+        AssertJUnit.assertTrue("RAML twoscope secref parameters does not include two_scope_service:read scope", scopes.contains("two_scope_service:read"));
+        AssertJUnit.assertTrue("RAML twoscope secref parameters does not include two_scope_service:write scope", scopes.contains("two_scope_service:write"));
+        AssertJUnit.assertTrue("RAML twoscope secref parameters does not include two_scope_service:admin scope", scopes.contains("two_scope_service:admin"));
+
+        action = resource.getAction(ActionType.POST);
+        AssertJUnit.assertNotNull("RAML twoscope controller has no post action", action);
+        secRef = action.getSecuredBy();
+        AssertJUnit.assertNotNull("RAML has no twoscope security reference list", secRef);
+        AssertJUnit.assertTrue("RAML twoscope controller get does not have a security reference", secRef.size() == 1);
+        AssertJUnit.assertEquals("RAML twoscope controller get does not have the expected security reference", "oauth_2_0", secRef.get(0).getName());
+        parameters = secRef.get(0).getParameters();
+        AssertJUnit.assertNotNull("RAML twoscope secref does not have parameters", parameters);
+        AssertJUnit.assertEquals("RAML twoscope secref parameters map does not contain one entry", 1, parameters.size());
+        scopes = parameters.get("scopes");
+        AssertJUnit.assertNotNull("RAML twoscope secref parameters map does not contain scopes", scopes);
+        AssertJUnit.assertTrue("RAML twoscope secref parameters includes two_scope_service:read scope", !scopes.contains("two_scope_service:read"));
+        AssertJUnit.assertTrue("RAML twoscope secref parameters does not include two_scope_service:write scope", scopes.contains("two_scope_service:write"));
+        AssertJUnit.assertTrue("RAML twoscope secref parameters does not include two_scope_service:admin scope", scopes.contains("two_scope_service:admin"));
+    }
+
     protected abstract String getPackageToTest();
 }

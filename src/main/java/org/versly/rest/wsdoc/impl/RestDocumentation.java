@@ -220,7 +220,7 @@ public class RestDocumentation implements Serializable {
         public class Resource implements Serializable {
 
             private String path;
-            private Collection<Method> _methods = new LinkedList<Method>();
+            private Map<String, Method> _methods = new LinkedHashMap();
             private Resource _parent;
             private Collection<Resource> _children = new LinkedList<Resource>();
 
@@ -233,7 +233,7 @@ public class RestDocumentation implements Serializable {
             }
 
             public Collection<Method> getRequestMethodDocs() {
-                return _methods;
+                return _methods.values();
             }
 
             public Resource getParent() {
@@ -253,18 +253,21 @@ public class RestDocumentation implements Serializable {
             /**
              * Creates and returns a new {@link Method} instance, and adds it to
              * the current resource location. If this is invoked multiple times
-             * with the same argument, multiple distinct {@link Method} objects
+             * with the same argument, the same {@link Method} object
              * will be returned.
              */
             public Method newMethodDocumentation(String meth) {
+                if (_methods.containsKey(meth)) {
+                    return _methods.get(meth);
+                }
                 Method method = new Method(meth);
-                _methods.add(method);
+                _methods.put(meth, method);
                 return method;
             }
 
             public UrlFields getResourceUrlSubstitutions() {
                 UrlFields aggregateUrlFields = new UrlFields();
-                for (Method method : _methods) {
+                for (Method method : _methods.values()) {
                     UrlFields fields = method.getMethodSpecificUrlSubstitutions();
                     aggregateUrlFields.getFields().putAll(fields.getFields());
                 }
@@ -274,8 +277,9 @@ public class RestDocumentation implements Serializable {
             public class Method implements Serializable {
 
                 private String _meth;
-                private HashSet<String> _scopes;
+                private HashSet<String> _docScopes;
                 private HashSet<String> _traits;
+                private HashSet<String> _authScopes;
                 private JsonType _requestBody;
                 private UrlFields _urlSubstitutions = new UrlFields();
                 private UrlFields _urlParameters = new UrlFields();
@@ -287,12 +291,12 @@ public class RestDocumentation implements Serializable {
                 private String _responseExample;
                 private String _requestExample;
 
-                public HashSet<String> getScopes() {
-                    return _scopes;
+                public HashSet<String> getDocScopes() {
+                    return _docScopes;
                 }
 
-                public void setScopes(HashSet<String> scopes) {
-                    this._scopes = scopes;
+                public void setDocScopes(HashSet<String> scopes) {
+                    this._docScopes = scopes;
                 }
 
                 public HashSet<String> getTraits() {
@@ -310,6 +314,34 @@ public class RestDocumentation implements Serializable {
 
                 public void setTraits(HashSet<String> traits) {
                     this._traits = traits;
+                }
+
+                public HashSet<String> getAuthScopes() {
+                    return _authScopes;
+                }
+
+                public String getAuthScopesAsString() {
+                    if (null != _authScopes && _authScopes.size() > 0) {
+                        StringBuilder sb = new StringBuilder();
+                        sb.append("[");
+                        for (String authScope : _authScopes) {
+                            sb.append("\"");
+                            sb.append(authScope);
+                            sb.append("\",");
+                        }
+                        if (sb.length() > 1) {
+                            sb.setCharAt(sb.length() - 1, ']');
+                        }
+                        else {
+                            sb.append("]");
+                        }
+                        return sb.toString();
+                    }
+                    return null;
+                }
+                
+                public void setAuthScopes(HashSet<String> _authScopes) {
+                    this._authScopes = _authScopes;
                 }
 
                 public String getResponseSchema() {
