@@ -68,9 +68,9 @@
         </dependency>
 
         <dependency>
-          <groupId>org.apache.commons</groupId>
-          <artifactId>commons-lang3</artifactId>
-          <version>3.1</version>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.1</version>
         </dependency>
 
 
@@ -131,7 +131,34 @@
         </dependency>
     </dependencies>
 
+    <profiles>
+        <!-- the services profile includes jar metadata to automate service(s) loading -->
+        <profile>
+            <id>services</id>
+            <build>
+                <resources>
+                    <resource>
+                        <directory>src/main/resources</directory>
+                        <includes>
+                            <include>META-INF/services/*</include>
+                        </includes>
+                    </resource>
+                </resources>
+            </build>
+        </profile>
+    </profiles>
+
     <build>
+        <!-- do not include automated service(s) loading by default -->
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <excludes>
+                    <exclude>META-INF/services/*</exclude>
+                </excludes>
+            </resource>
+        </resources>
+
         <plugins>
             <!-- Compile defaults to 1.3! Gotta override -->
             <plugin>
