@@ -33,6 +33,7 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 import javax.lang.model.util.AbstractTypeVisitor6;
 import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import javax.tools.FileObject;
@@ -229,9 +230,34 @@ public class AnnotationProcessor extends AbstractProcessor {
                 buildParameterData(executableElement, method, implementationSupport);
                 
                 // set response entity data information on method
-                buildResponseFormat(executableElement.getReturnType(), method);
+                buildResponseFormat(unwrapReturnType(executableElement.getReturnType()), method);
             }
         }
+    }
+    
+    private TypeMirror unwrapReturnType(TypeMirror originalReturnType) {
+    	if(originalReturnType.getKind() != TypeKind.DECLARED) {
+    		return originalReturnType;
+    	}
+    	
+    	DeclaredType declaredType = (DeclaredType)originalReturnType;
+    	if(declaredType.getTypeArguments().size() == 0) {
+    		return originalReturnType;
+    	}
+    	
+    	TypeElement element = (TypeElement) declaredType.asElement();
+    	
+    	// For Spring's Async Support
+    	if("org.springframework.web.context.request.async.DeferredResult".equalsIgnoreCase(element.getQualifiedName().toString())) {
+    		return declaredType.getTypeArguments().get(0);
+    	}
+    	
+    	// For Spring's Async Support
+    	if("java.util.concurrent.Callable".equalsIgnoreCase(element.getQualifiedName().toString())) {
+    		return declaredType.getTypeArguments().get(0);
+    	}
+    	
+    	return originalReturnType;
     }
 
     private void buildParameterData(ExecutableElement executableElement, RestDocumentation.RestApi.Resource.Method doc,
@@ -553,9 +579,23 @@ public class AnnotationProcessor extends AbstractProcessor {
                     primitive.setRestrictions(enumConstants);
                     return primitive;
                 } else {
+                	JsonType mappedType = mapDeclaredType(declaredType, element);
+                	if(mappedType != null) {
+                		return mappedType;
+                	}
                     return buildType(declaredType, element);
                 }
             }
+        }
+        
+        private JsonType mapDeclaredType(DeclaredType declaredType, TypeElement element) {
+        	
+        	// built-in non-primitive types are typically serialized to string
+        	if(element.getQualifiedName().toString().startsWith("java.")) {
+        		return new JsonPrimitive(String.class.getName());
+        	}
+        	
+        	return null;
         }
 
         private JsonType acceptOrRecurse(Void o, TypeMirror type) {
@@ -655,8 +695,13 @@ public class AnnotationProcessor extends AbstractProcessor {
             for (TypeMirror generic : type.getTypeArguments()) {
                 if (generic instanceof DeclaredType)
                     concreteTypes.add((DeclaredType) generic);
-                else
+                else if(generic.getKind() == TypeKind.ARRAY) {
+                	ArrayType arrayType = (ArrayType) generic;
+                	return new JsonArray(acceptOrRecurse(null, arrayType.getComponentType()));
+                }
+                else {
                     concreteTypes.add(_typeArguments.get(((TypeVariable) generic).asElement().getSimpleName()));
+                }
             }
             _typeRecursionDetector.add(_type.toString());
             Collection<String> types = new HashSet<String>(_typeRecursionDetector);
