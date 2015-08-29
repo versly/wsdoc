@@ -252,22 +252,24 @@ be subsequently augmented with text that describes the semantics of each trait.
 
 The `@AuthorizationScope` annotation may be used to assign one or more OAuth2 authorization scopes to a given endpoint
 handler or to an entire controller.  For example, a controller may be annotated to permit authorization for all contained
-endpoint handlers based on one of several scopes declared at the class level, such as `two_scope_service:write` and
-`two_scope_service:admin`.  It may then also permit authorization for particular contained endpoint handlers based on
-additional scopes declared at the method level, such as `two_scope_service:read`.  This might look as follows.
+endpoint handlers based on one of several scopes declared at the class level, such as `two_scope_service:read` and
+`two_scope_service:admin`.  It may alternatively permit authorization for particular contained endpoint handlers based on
+ scopes declared at the method level, such as `two_scope_service:write`.  This might look as follows.
 
-    @AuthorizationScope( { "two_scope_service:write", "two_scope_service:admin" } )
+    @AuthorizationScope( { "two_scope_service:read", "two_scope_service:admin" } )
     public static class TwoScopeController {
 
-        @AuthorizationScope("two_scope_service:read")
-        @RequestMapping(value = "/twoscope", method = RequestMethod.GET)
+        @AuthorizationScope("two_scope_service:write")
+        @RequestMapping(value = "/twoscope", method = RequestMethod.POST)
         public void get() {
         }
 
-        @RequestMapping(value = "/twoscope", method = RequestMethod.POST)
+        @RequestMapping(value = "/twoscope", method = RequestMethod.GET)
         public void post() {
         }
     }
+
+Note that method-level declarations will override class-level declarations.
 
 <a id="maven"/>
 #### wsdoc in a Maven build environment
