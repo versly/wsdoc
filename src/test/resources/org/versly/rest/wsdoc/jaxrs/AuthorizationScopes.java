@@ -26,16 +26,16 @@ public class AuthorizationScopes {
      */
     @RestApiMountPoint("/twoscopes")
     @Path("/api/v1")
-    @AuthorizationScope( { "two_scope_service:write", "two_scope_service:admin" } )
+    @AuthorizationScope( { "two_scope_service:read", "two_scope_service:admin" } )
     public static class TwoScopeController {
 
-        @AuthorizationScope("two_scope_service:read")
-        @GET
+        @AuthorizationScope("two_scope_service:write")
+        @POST
         @Path("/twoscope")
         public void get() {
         }
 
-        @POST
+        @GET
         @Path("/twoscope")
         public void post() {
         }
