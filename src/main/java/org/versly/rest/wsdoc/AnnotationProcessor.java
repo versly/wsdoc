@@ -197,13 +197,15 @@ public class AnnotationProcessor extends AbstractProcessor {
                 // set authorization scope on method (auth scope is non-scalar, methods can have multiple auth scopes)
                 {
                     HashSet<String> authScopes = new HashSet<String>();
-                    AuthorizationScope clsAuthScopes = cls.getAnnotation(AuthorizationScope.class);
-                    if (null != clsAuthScopes) {
-                        authScopes.addAll(Arrays.asList(clsAuthScopes.value()));
-                    }
                     AuthorizationScope methodAuthScopes = executableElement.getAnnotation(AuthorizationScope.class);
                     if (null != methodAuthScopes) {
                         authScopes.addAll(Arrays.asList(methodAuthScopes.value()));
+                    }
+                    else {
+                        AuthorizationScope clsAuthScopes = cls.getAnnotation(AuthorizationScope.class);
+                        if (null != clsAuthScopes) {
+                            authScopes.addAll(Arrays.asList(clsAuthScopes.value()));
+                        }
                     }
                     method.setAuthScopes(authScopes);
                 }
@@ -211,13 +213,15 @@ public class AnnotationProcessor extends AbstractProcessor {
                 // set traits on method (traits is non-scalar, methods may have multiple traits)
                 {
                     HashSet<String> traits = new HashSet<String>(method.getDocScopes());
-                    DocumentationTraits clsTraits = cls.getAnnotation(DocumentationTraits.class);
-                    if (null != clsTraits) {
-                        traits.addAll(Arrays.asList(clsTraits.value()));
-                    }
                     DocumentationTraits methodTraits = executableElement.getAnnotation(DocumentationTraits.class);
                     if (null != methodTraits) {
                         traits.addAll(Arrays.asList(methodTraits.value()));
+                    }
+                    else {
+                        DocumentationTraits clsTraits = cls.getAnnotation(DocumentationTraits.class);
+                        if (null != clsTraits) {
+                            traits.addAll(Arrays.asList(clsTraits.value()));
+                        }
                     }
                     method.setTraits(traits);
                 }

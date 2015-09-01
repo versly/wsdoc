@@ -24,16 +24,16 @@ public class AuthorizationScopes {
      */
     @RestApiMountPoint("/twoscopes")
     @RequestMapping("/api/v1")
-    @AuthorizationScope( { "two_scope_service:write", "two_scope_service:admin" } )
+    @AuthorizationScope( { "two_scope_service:read", "two_scope_service:admin" } )
     public static class TwoScopeController {
 
-        @AuthorizationScope("two_scope_service:read")
-        @RequestMapping(value = "/twoscope", method = RequestMethod.GET)
-        public void get() {
-        }
-
+        @AuthorizationScope("two_scope_service:write")
         @RequestMapping(value = "/twoscope", method = RequestMethod.POST)
         public void post() {
+        }
+
+        @RequestMapping(value = "/twoscope", method = RequestMethod.GET)
+        public void get() {
         }
     }
 }

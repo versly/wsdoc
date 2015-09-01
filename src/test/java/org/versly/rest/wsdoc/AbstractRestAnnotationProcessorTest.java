@@ -471,7 +471,7 @@ public abstract class AbstractRestAnnotationProcessorTest {
 
         resource = raml.getResource("/twoscopes/api/v1/twoscope");
         AssertJUnit.assertNotNull("RAML has no twoscope controller", resource);
-        action = resource.getAction(ActionType.GET);
+        action = resource.getAction(ActionType.POST);
         AssertJUnit.assertNotNull("RAML twoscope controller has no get action", action);
         secRef = action.getSecuredBy();
         AssertJUnit.assertNotNull("RAML has no twoscope security reference list", secRef);
@@ -482,11 +482,11 @@ public abstract class AbstractRestAnnotationProcessorTest {
         AssertJUnit.assertEquals("RAML twoscope secref parameters map does not contain one entry", 1, parameters.size());
         List<String> scopes = parameters.get("scopes");
         AssertJUnit.assertNotNull("RAML twoscope secref parameters map does not contain scopes", scopes);
-        AssertJUnit.assertTrue("RAML twoscope secref parameters does not include two_scope_service:read scope", scopes.contains("two_scope_service:read"));
         AssertJUnit.assertTrue("RAML twoscope secref parameters does not include two_scope_service:write scope", scopes.contains("two_scope_service:write"));
-        AssertJUnit.assertTrue("RAML twoscope secref parameters does not include two_scope_service:admin scope", scopes.contains("two_scope_service:admin"));
+        AssertJUnit.assertTrue("RAML twoscope secref parameter includes two_scope_service:read scope", !scopes.contains("two_scope_service:read"));
+        AssertJUnit.assertTrue("RAML twoscope secref parameters includes two_scope_service:admin scope", !scopes.contains("two_scope_service:admin"));
 
-        action = resource.getAction(ActionType.POST);
+        action = resource.getAction(ActionType.GET);
         AssertJUnit.assertNotNull("RAML twoscope controller has no post action", action);
         secRef = action.getSecuredBy();
         AssertJUnit.assertNotNull("RAML has no twoscope security reference list", secRef);
@@ -497,8 +497,8 @@ public abstract class AbstractRestAnnotationProcessorTest {
         AssertJUnit.assertEquals("RAML twoscope secref parameters map does not contain one entry", 1, parameters.size());
         scopes = parameters.get("scopes");
         AssertJUnit.assertNotNull("RAML twoscope secref parameters map does not contain scopes", scopes);
-        AssertJUnit.assertTrue("RAML twoscope secref parameters includes two_scope_service:read scope", !scopes.contains("two_scope_service:read"));
-        AssertJUnit.assertTrue("RAML twoscope secref parameters does not include two_scope_service:write scope", scopes.contains("two_scope_service:write"));
+        AssertJUnit.assertTrue("RAML twoscope secref parameters does not include two_scope_service:read scope", scopes.contains("two_scope_service:read"));
+        AssertJUnit.assertTrue("RAML twoscope secref parameters includes two_scope_service:write scope", !scopes.contains("two_scope_service:write"));
         AssertJUnit.assertTrue("RAML twoscope secref parameters does not include two_scope_service:admin scope", scopes.contains("two_scope_service:admin"));
     }
 
