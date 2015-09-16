@@ -17,13 +17,16 @@
 package org.versly.rest.wsdoc.impl;
 
 import org.apache.commons.lang3.StringUtils;
+import org.versly.rest.wsdoc.DocumentationRestApi;
 
 import java.io.*;
 import java.util.*;
 import java.util.regex.Pattern;
 
 public class RestDocumentation implements Serializable {
+    private static final long serialVersionUID = -3416760457544073264L;
     public static final String DEFAULT_API = "default";
+
     private Map<String, RestApi> _apis = new LinkedHashMap();
 
     public RestApi getRestApi(String apiBaseUrl) {
@@ -35,7 +38,7 @@ public class RestDocumentation implements Serializable {
     public Collection<RestApi> getApis() {
         return _apis.values();
     }
-    
+
     /**
      * Read and return a serialized {@link RestDocumentation} instance from <code>in</code>,
      * as serialized by {@link #toStream}.
@@ -84,6 +87,7 @@ public class RestDocumentation implements Serializable {
     }
     
     public class RestApi implements Serializable {
+        private static final long serialVersionUID = 5665219205108618731L;
         public static final String DEFAULT_IDENTIFIER = "(default)";
         
         private Map<String, Resource> _resources = new LinkedHashMap();
@@ -96,6 +100,14 @@ public class RestDocumentation implements Serializable {
 
         public RestApi(String identifier) {
             _identifier = identifier;
+        }
+
+        public Object readResolve() throws ObjectStreamException {
+            _identifier = Utils.fillTemplate(_identifier);
+            _apiMount = Utils.fillTemplate(_apiMount);
+            _apiTitle = Utils.fillTemplate(_apiTitle);
+            _apiVersion = Utils.fillTemplate(_apiVersion);
+            return this;
         }
 
         public String getIdentifier() {
@@ -218,6 +230,7 @@ public class RestDocumentation implements Serializable {
         }
         
         public class Resource implements Serializable {
+            private static final long serialVersionUID = -3436348850301436626L;
 
             private String path;
             private Map<String, Method> _methods = new LinkedHashMap();
@@ -272,6 +285,11 @@ public class RestDocumentation implements Serializable {
                     aggregateUrlFields.getFields().putAll(fields.getFields());
                 }
                 return aggregateUrlFields;
+            }
+
+            private Object readResolve() throws ObjectStreamException {
+                path = Utils.fillTemplate(path);
+                return this;
             }
 
             public class Method implements Serializable {
