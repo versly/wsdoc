@@ -502,5 +502,23 @@ public abstract class AbstractRestAnnotationProcessorTest {
         AssertJUnit.assertTrue("RAML twoscope secref parameters does not include two_scope_service:admin scope", scopes.contains("two_scope_service:admin"));
     }
 
+    @Test
+    public void docTemplate() {
+        String mountPoint = "/foo";
+        Utils.addTemplateValue(DocumentationRestApi.ID_TEMPLATE, "fooID");
+        Utils.addTemplateValue(DocumentationRestApi.MOUNT_TEMPLATE, mountPoint);
+        processResource("ApiLevelTemplateDocs.java", "raml", "all");
+        Map.Entry<String, String> entry = output.entrySet().iterator().next();
+                entry.getKey();
+        AssertJUnit.assertTrue("expected file named AuthorizationScopes.raml",
+                entry.getKey().endsWith("ApiLevelTemplateDocs-fooID.raml"));
+        Raml raml = new RamlDocumentBuilder().build(entry.getValue(), "http://example.com");
+        AssertJUnit.assertNotNull("RAML not parseable", raml);
+        List<DocumentationItem> documentation = raml.getDocumentation();
+        AssertJUnit.assertEquals("RAML baseUri is incorrect", mountPoint, raml.getBaseUri());
+        Resource resource = raml.getResource(mountPoint);
+        AssertJUnit.assertNotNull("Cannot find resource related to:" + mountPoint, resource);
+    }
+
     protected abstract String getPackageToTest();
 }

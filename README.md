@@ -271,6 +271,27 @@ endpoint handlers based on one of several scopes declared at the class level, su
 
 Note that method-level declarations will override class-level declarations.
 
+* Using templates in REST documentation
+
+In cases where REST mount-point, description etc. are not available during the annotation processing phase, a user can annotate such values with special markers:
+
+    @DocumentationRestApi(
+            id = DocumentationRestApi.ID_TEMPLATE,
+            title = DocumentationRestApi.TITLE_TEMPLATE,
+            version = DocumentationRestApi.VERSION_TEMPLATE,
+            mount = DocumentationRestApi.MOUNT_TEMPLATE)
+    public class RestApi4 {
+    }
+
+During documentation generation, the user can pass in the actual values as follows:
+
+    java org.versly.rest.wsdoc.RestDocAssembler \
+            --template-id rest4 \
+            --template-title "REST API 4" \
+            --template-version v1 \
+            --template-mount /restapi4/api \
+            *.ser
+
 <a id="maven"/>
 #### wsdoc in a Maven build environment
 

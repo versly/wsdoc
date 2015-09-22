@@ -40,6 +40,10 @@ public class RestDocAssembler {
         throws IOException, ClassNotFoundException, TemplateException {
         Arguments arguments = new Arguments();
         new JCommander(arguments, args);
+        Utils.addTemplateValue(DocumentationRestApi.MOUNT_TEMPLATE, arguments.mountTemplateValue);
+        Utils.addTemplateValue(DocumentationRestApi.ID_TEMPLATE, arguments.idTemplateValue);
+        Utils.addTemplateValue(DocumentationRestApi.TITLE_TEMPLATE, arguments.titleTemplateValue);
+        Utils.addTemplateValue(DocumentationRestApi.VERSION_TEMPLATE, arguments.versionTemplateValue);
 
         List<RestDocumentation> docs = new LinkedList<RestDocumentation>();
         for (String input : arguments.inputs) {
@@ -251,5 +255,17 @@ public class RestDocAssembler {
         
         @Parameter(names = { "-s", "--scope" }, description = "Publication scope for output (e.g. public, private, etc) or \"all\"")
         String scope = "all";
+
+        @Parameter(names = { "--template-mount" }, description = "Mount point to use when filling templates.")
+        String mountTemplateValue = "";
+
+        @Parameter(names = { "--template-id" }, description = "Id to use when filling templates.")
+        String  idTemplateValue = "";
+
+        @Parameter(names = { "--template-title" }, description = "Title to use when filling templates.")
+        String  titleTemplateValue = "";
+
+        @Parameter(names = { "--template-version" }, description = "Version to use when filling templates.")
+        String  versionTemplateValue = "";
     }
 }
