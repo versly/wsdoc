@@ -16,8 +16,14 @@
 
 package org.versly.rest.wsdoc.impl;
 
+import org.versly.rest.wsdoc.DocumentationRestApi;
+
+import java.util.HashMap;
+import java.util.Map;
+
 public class Utils {
     public static final String SERIALIZED_RESOURCE_LOCATION = "org.versly.rest.wsdoc.web-service-api.ser";
+    private static Map<String,String> templateStrings = new HashMap<String, String>();
 
     public static String joinPaths(String lhs, String rhs) {
         // Mike Rawlins 2013-03-15 Don't append slash if right hand side is empty
@@ -36,5 +42,26 @@ public class Utils {
             rhs = rhs.substring(0, rhs.length() - 1);
 
         return lhs + "/" + rhs;
+    }
+
+    public static void addTemplateValue(String key, String value) {
+        templateStrings.put(key, value);
+    }
+
+    private static String getTemplateValue(String key) {
+        String value = templateStrings.get(key);
+        return value != null ? value : "";
+    }
+
+    public static String fillTemplate(String value) {
+        if (value == null) return value;
+        return value.replace(DocumentationRestApi.MOUNT_TEMPLATE,
+                getTemplateValue(DocumentationRestApi.MOUNT_TEMPLATE))
+                .replace(DocumentationRestApi.ID_TEMPLATE,
+                        getTemplateValue(DocumentationRestApi.ID_TEMPLATE))
+                .replace(DocumentationRestApi.TITLE_TEMPLATE,
+                        getTemplateValue(DocumentationRestApi.TITLE_TEMPLATE))
+                .replace(DocumentationRestApi.VERSION_TEMPLATE,
+                        getTemplateValue(DocumentationRestApi.VERSION_TEMPLATE));
     }
 }
