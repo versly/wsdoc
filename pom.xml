@@ -24,7 +24,7 @@
     <groupId>org.versly</groupId>
     <artifactId>versly-wsdoc</artifactId>
     <packaging>jar</packaging>
-    <version>1.1.006</version>
+    <version>1.1.007</version>
     <url>http://github.com/versly/wsdoc</url>
 
     <repositories>
@@ -66,14 +66,6 @@
             <artifactId>freemarker</artifactId>
             <version>2.3.16</version>
         </dependency>
-
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.1</version>
-        </dependency>
-
-
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>servlet-api</artifactId>
@@ -103,9 +95,15 @@
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
-            <version>6.1.1</version>
+            <version>6.8.8</version>
             <scope>test</scope>
-        </dependency>
+               <exclusions>
+               <exclusion>
+                   <artifactId>snakeyaml</artifactId>
+                   <groupId>org.yaml</groupId>
+                </exclusion>
+             </exclusions>
+         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-jsonSchema</artifactId>
@@ -164,6 +162,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.3</version>
                 <configuration>
                     <compilerArgument>-proc:none</compilerArgument>
                     <source>1.6</source>
