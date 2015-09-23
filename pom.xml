@@ -24,7 +24,7 @@
     <groupId>org.versly</groupId>
     <artifactId>versly-wsdoc</artifactId>
     <packaging>jar</packaging>
-    <version>1.1.006</version>
+    <version>1.1.007</version>
     <url>http://github.com/versly/wsdoc</url>
 
     <repositories>
