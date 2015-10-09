@@ -90,6 +90,12 @@
                                 Note: this endpoint expects a multipart request body.
                             </div>
                         </#if>
+                        
+                        <#if methodDoc.websocket>
+                            <div class="multipart-notice">
+                                Note: this is a websocket endpoint.
+                            </div>
+                        </#if>
 
                         <#assign subs=methodDoc.urlSubstitutions.fields>
                         <#if (subs?keys?size > 0)>
