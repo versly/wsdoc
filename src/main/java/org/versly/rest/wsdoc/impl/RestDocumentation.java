@@ -286,6 +286,7 @@ public class RestDocumentation implements Serializable {
                 private JsonType _responseBody;
                 private String _commentText;
                 private boolean _isMultipartRequest;
+                private boolean _isWebsocket;
                 private String _requestSchema;
                 private String _responseSchema;
                 private String _responseExample;
@@ -452,6 +453,14 @@ public class RestDocumentation implements Serializable {
 
                 public void setMultipartRequest(boolean multipart) {
                     _isMultipartRequest = multipart;
+                }
+                
+                public boolean isWebsocket() {
+                    return _isWebsocket;
+                }
+
+                public void setWebsocket(boolean websocket) {
+                    _isWebsocket = websocket;
                 }
 
                 /**

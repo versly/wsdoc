@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -38,6 +39,7 @@ import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -270,6 +272,7 @@ public class AnnotationProcessor extends AbstractProcessor {
         // for each entry listed in this list. I expect that this might be the same for @RequestMapping.headers
 
         scanForSpringMVCMultipart(executableElement, doc);
+        scanForWebsocket(executableElement, doc);
         buildPathVariables(executableElement, doc, implementationSupport);
         buildUrlParameters(executableElement, doc, implementationSupport);
         buildPojoQueryParameters(executableElement, doc, implementationSupport);
@@ -284,6 +287,16 @@ public class AnnotationProcessor extends AbstractProcessor {
             TypeMirror varType = var.asType();
             if (varType.toString().startsWith(MultipartHttpServletRequest.class.getName())) {
                 doc.setMultipartRequest(true);
+                return;
+            }
+        }
+    }
+    
+    private void scanForWebsocket(ExecutableElement executableElement, RestDocumentation.RestApi.Resource.Method doc) {
+        for (VariableElement var : executableElement.getParameters()) {
+            TypeMirror varType = var.asType();
+            if (varType.toString().equalsIgnoreCase("org.atmosphere.cpr.AtmosphereResource")) {
+                doc.setWebsocket(true);
                 return;
             }
         }
@@ -781,7 +794,7 @@ public class AnnotationProcessor extends AbstractProcessor {
     public interface RestImplementationSupport {
         Class<? extends Annotation> getMappingAnnotationType();
 
-        String[] getRequestPaths(ExecutableElement executableElement, TypeElement contextClass);
+		String[] getRequestPaths(ExecutableElement executableElement, TypeElement contextClass);
 
         String[] getRequestPaths(TypeElement cls);
 

@@ -1,15 +1,18 @@
 package org.versly.rest.wsdoc.impl;
 
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.versly.rest.wsdoc.AnnotationProcessor;
-
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.versly.rest.wsdoc.AnnotationProcessor;
 
 public class SpringMVCRestImplementationSupport implements AnnotationProcessor.RestImplementationSupport {
 
@@ -67,12 +70,29 @@ public class SpringMVCRestImplementationSupport implements AnnotationProcessor.R
      */
     @Override
     public String getPojoRequestParam(VariableElement var) {
-        if (getRequestParam(var) == null && getPathVariable(var) == null && !var.asType().toString().startsWith("org.springframework")) {
+        if (getRequestParam(var) == null && getPathVariable(var) == null && !ignorePojo(var)) {
             return ""; // No annotations to parse
         } else {
             return null;
         }
 
+    }
+    
+    private boolean ignorePojo(VariableElement var)
+    {
+    	// Spring Types
+    	if(var.asType().toString().startsWith("org.springframework"))
+    	{
+    		return true;
+    	}
+    	
+    	// Atmosphere Types
+    	if(var.asType().toString().startsWith("org.atmosphere"))
+    	{
+    		return true;
+    	}
+    	
+    	return false;
     }
 
 

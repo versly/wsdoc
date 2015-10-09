@@ -4,6 +4,8 @@ import org.versly.rest.wsdoc.AnnotationProcessor;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import javax.lang.model.element.ExecutableElement;
