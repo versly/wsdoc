@@ -89,6 +89,8 @@ public class AnnotationProcessor extends AbstractProcessor {
         Collection<String> processedPackageNames = new LinkedHashSet<String>();
         processElements(roundEnvironment, processedPackageNames, new SpringMVCRestImplementationSupport());
         processElements(roundEnvironment, processedPackageNames, new JaxRSRestImplementationSupport());
+        processElements(roundEnvironment, processedPackageNames, new JavaEEWebsocketImplementationSupport());
+        
         _docs.postProcess();
 
         if (_docs.getApis().size() > 0) {
