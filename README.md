@@ -13,13 +13,23 @@ Automatically generate up-to-date documentation for your REST API.
 <a id="installation"/>
 #### Installation
 
-Currently, wsdoc is available in source format only. To install, you'll need mvn and java and whatnot:
+Currently, wsdoc is available in source format only. To install, you'll need mvn and Java 1.8 (or later) and whatnot:
 
     git clone git@github.com:versly/wsdoc.git
     cd wsdoc
     mvn install
 
 Once you've done this, the wsdoc jar will be available in your local Maven repository, probably at ~/.m2/repository/org/versly/versly-wsdoc/1.1-SNAPSHOT/versly-wsdoc-1.1-SNAPSHOT.jar
+
+Note, the Java 1.8 requirement is necessary to accommodate instructions to the annotation processor to recognize Java types introduced in 1.8.  If you intend to use wsdoc to document code that does not utilize newer types, a one-line change in AnnotationProcessor.java can be made.  Specifically, locate this line in AnnotationProcessor.java:
+
+    @SupportedSourceVersion(SourceVersion.RELEASE_8)
+
+and change it to something like:
+
+    @SupportedSourceVersion(SourceVersion.RELEASE_X)
+
+where "RELEASE_X" reflects the version of Java your build environment uses (e.g. "RELEASE_7").
 
 <a id="running"/>
 #### Running wsdoc
