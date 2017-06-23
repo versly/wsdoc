@@ -33,6 +33,41 @@ public class JaxRSRestAnnotationProcessorTest extends AbstractRestAnnotationProc
     }
 
     @Test
+    public void assertClassPathOnly() {
+        for (String format : _outputFormats) {
+            processResource("ClassPathOnly.java", format, "all");
+            AssertJUnit.assertTrue(
+                    "expected 'classPathOnly' in doc string; got: \n" + defaultApiOutput,
+                    defaultApiOutput.contains("classPathOnly"));
+            if (format.equals("html")) {
+                AssertJUnit.assertTrue(
+                        "expected 'classPathOnly_GET' in doc string; got: \n" + defaultApiOutput,
+                        defaultApiOutput.contains("classPathOnly_GET"));
+            }
+        }
+    }
+
+    @Test
+    public void assertNoPath() {
+        for (String format : _outputFormats) {
+            processResource("NoPath.java", format, "all");
+            if (format.equals("html")) {
+                AssertJUnit.assertTrue(
+                        "expected '_GET' in doc string; got: \n" + defaultApiOutput,
+                        defaultApiOutput.contains("_GET"));
+            }
+            if (format.equals("raml")) {
+                AssertJUnit.assertTrue(
+                        "expected 'baseUri: /' in doc string; got: \n" + defaultApiOutput,
+                        defaultApiOutput.contains("baseUri: /"));
+                AssertJUnit.assertTrue(
+                        "expected 'get:' in doc string; got: \n" + defaultApiOutput,
+                        defaultApiOutput.contains("get:"));
+            }
+        }
+    }
+
+    @Test
     public void assertRequestBody() {
         processResource("PostWithRequestBody.java", "html", "all");
 

@@ -21,6 +21,14 @@ public class AllMethods {
     public void allMethodsDelete() {
     }
 
+    @RequestMapping(value = "/allMethodsHead", method = RequestMethod.HEAD)
+    public void allMethodsHead() {
+    }
+
+    @RequestMapping(value = "/allMethodsOptions", method = RequestMethod.OPTIONS)
+    public void allMethodsOptions() {
+    }
+
     @RequestMapping(value = "/allMethodsPatch", method = RequestMethod.PATCH)
     public void allMethodsPatch() {
     }
