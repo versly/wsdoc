@@ -4,6 +4,7 @@ import org.versly.rest.wsdoc.AnnotationProcessor;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.lang.model.element.ExecutableElement;
@@ -19,17 +20,23 @@ import javax.ws.rs.QueryParam;
 
 public class JaxRSRestImplementationSupport implements AnnotationProcessor.RestImplementationSupport {
     @Override
-    public Class<? extends Annotation> getMappingAnnotationType() {
-        return Path.class;
+    public ArrayList<Class<? extends Annotation>> getMappingAnnotationTypes() {
+        return new ArrayList<Class<? extends Annotation>>(Arrays.asList(Path.class, GET.class, PUT.class, POST.class, DELETE.class));
     }
 
     @Override
     public String[] getRequestPaths(ExecutableElement executableElement, TypeElement contextClass) {
         Path anno = executableElement.getAnnotation(Path.class);
         if (anno == null)
-            throw new IllegalStateException(String.format(
+            if(executableElement.getAnnotation(GET.class) == null &&
+                executableElement.getAnnotation(PUT.class) == null &&
+                executableElement.getAnnotation(POST.class) == null &&
+                executableElement.getAnnotation(DELETE.class) == null)
+                throw new IllegalStateException(String.format(
                     "The Path annotation for %s.%s is not parseable. Exactly one value is required.",
                     contextClass.getQualifiedName(), executableElement.getSimpleName()));
+            else
+                return new String[] { "" };
         else
             return new String[] { anno.value() };
     }

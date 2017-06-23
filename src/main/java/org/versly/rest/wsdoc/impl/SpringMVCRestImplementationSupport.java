@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.versly.rest.wsdoc.AnnotationProcessor;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -14,8 +16,8 @@ import javax.lang.model.element.VariableElement;
 public class SpringMVCRestImplementationSupport implements AnnotationProcessor.RestImplementationSupport {
 
     @Override
-    public Class<? extends Annotation> getMappingAnnotationType() {
-        return RequestMapping.class;
+    public ArrayList<Class<? extends Annotation>> getMappingAnnotationTypes() {
+        return new ArrayList<Class<? extends Annotation>>(Arrays.asList(RequestMapping.class));
     }
 
     @Override
