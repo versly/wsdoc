@@ -4,13 +4,18 @@ import org.versly.rest.wsdoc.AnnotationProcessor;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.HEAD;
+import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -24,13 +29,23 @@ public class JaxRSRestImplementationSupport implements AnnotationProcessor.RestI
     }
 
     @Override
+    public Set<Class<? extends Annotation>> getExtendedMappingAnnotationTypes() {
+        return new HashSet<Class<? extends Annotation>>(Arrays.asList(Path.class, GET.class, PUT.class, POST.class, DELETE.class, HEAD.class, OPTIONS.class));
+    }
+
+    @Override
     public String[] getRequestPaths(ExecutableElement executableElement, TypeElement contextClass) {
         Path anno = executableElement.getAnnotation(Path.class);
-        if (anno == null)
+        if (anno == null) {
+            for (Class<? extends Annotation> a : getExtendedMappingAnnotationTypes()) {
+                if (executableElement.getAnnotation(a) != null) {
+                    return new String[] { "" };
+                }
+            }
             throw new IllegalStateException(String.format(
                     "The Path annotation for %s.%s is not parseable. Exactly one value is required.",
                     contextClass.getQualifiedName(), executableElement.getSimpleName()));
-        else
+        } else
             return new String[] { anno.value() };
     }
 
@@ -51,10 +66,12 @@ public class JaxRSRestImplementationSupport implements AnnotationProcessor.RestI
         gatherMethod(executableElement, methods, PUT.class);
         gatherMethod(executableElement, methods, POST.class);
         gatherMethod(executableElement, methods, DELETE.class);
+        gatherMethod(executableElement, methods, HEAD.class);
+        gatherMethod(executableElement, methods, OPTIONS.class);
 
         if (methods.size() != 1)
             throw new IllegalStateException(String.format(
-                "The method annotation for %s.%s is not parseable. Exactly one request method (GET/POST/PUT/DELETE) is required. Found: %s",
+                "The method annotation for %s.%s is not parseable. Exactly one request method (GET/POST/PUT/DELETE/HEAD/OPTIONS) is required. Found: %s",
                 contextClass.getQualifiedName(), executableElement.getSimpleName(), methods));
 
         return methods.get(0);

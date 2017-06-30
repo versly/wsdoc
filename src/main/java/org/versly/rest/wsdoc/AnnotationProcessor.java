@@ -58,7 +58,7 @@ import static org.apache.commons.lang3.StringUtils.join;
 //   - MethodNameResolver
 //   - plural RequestMapping value support (i.e., two paths bound to one method)
 //   - support for methods not marked with @RequestMapping whose class does have a @RequestMapping annotation
-@SupportedAnnotationTypes({"org.springframework.web.bind.annotation.RequestMapping", "javax.ws.rs.Path"})
+@SupportedAnnotationTypes({"org.springframework.web.bind.annotation.RequestMapping", "javax.ws.rs.Path", "javax.ws.rs.GET", "javax.ws.rs.PUT", "javax.ws.rs.POST", "javax.ws.rs.DELETE", "javax.ws.rs.HEAD", "javax.ws.rs.OPTIONS"})
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class AnnotationProcessor extends AbstractProcessor {
 
@@ -119,11 +119,13 @@ public class AnnotationProcessor extends AbstractProcessor {
                                  Collection<String> processedPackageNames,
                                  RestImplementationSupport implementationSupport) {
 
-    	for (Element e : roundEnvironment.getElementsAnnotatedWith(implementationSupport.getMappingAnnotationType())) {
+        for (Class<? extends Annotation> a : implementationSupport.getExtendedMappingAnnotationTypes()) {
+            for (Element e : roundEnvironment.getElementsAnnotatedWith(a)) {
 
-        	if (e instanceof ExecutableElement) {
-        		addPackageName(processedPackageNames, e);
-                processRequestMappingMethod((ExecutableElement) e, implementationSupport);
+                if (e instanceof ExecutableElement) {
+                    addPackageName(processedPackageNames, e);
+                    processRequestMappingMethod((ExecutableElement) e, implementationSupport);
+                }
             }
         }
     }
@@ -739,6 +741,8 @@ public class AnnotationProcessor extends AbstractProcessor {
 
     public interface RestImplementationSupport {
         Class<? extends Annotation> getMappingAnnotationType();
+
+        Set<Class<? extends Annotation>> getExtendedMappingAnnotationTypes();
 
         String[] getRequestPaths(ExecutableElement executableElement, TypeElement contextClass);
 

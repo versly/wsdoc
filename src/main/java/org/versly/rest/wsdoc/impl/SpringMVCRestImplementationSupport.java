@@ -6,6 +6,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.versly.rest.wsdoc.AnnotationProcessor;
 
 import java.lang.annotation.Annotation;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -16,6 +19,11 @@ public class SpringMVCRestImplementationSupport implements AnnotationProcessor.R
     @Override
     public Class<? extends Annotation> getMappingAnnotationType() {
         return RequestMapping.class;
+    }
+
+    @Override
+    public Set<Class<? extends Annotation>> getExtendedMappingAnnotationTypes() {
+        return new HashSet<Class<? extends Annotation>>(Arrays.asList(RequestMapping.class));
     }
 
     @Override

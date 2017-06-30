@@ -73,6 +73,7 @@ public abstract class AbstractRestAnnotationProcessorTest {
             for (String line = null; (line = reader.readLine()) != null; ) {
                 fileContent += line + "\n";
             }
+            reader.close();
             output.put(fileWritten, fileContent);
             if (fileWritten.equals(outputFile)) {
                 defaultApiOutput = fileContent;
@@ -196,6 +197,12 @@ public abstract class AbstractRestAnnotationProcessorTest {
             AssertJUnit.assertTrue(
                     "expected 'allMethodsDelete' in doc string; got: \n" + defaultApiOutput,
                     defaultApiOutput.contains("allMethodsDelete"));
+            AssertJUnit.assertTrue(
+                    "expected 'allMethodsHead' in doc string; got: \n" + defaultApiOutput,
+                    defaultApiOutput.contains("allMethodsHead"));
+            AssertJUnit.assertTrue(
+                    "expected 'allMethodsOptions' in doc string; got: \n" + defaultApiOutput,
+                    defaultApiOutput.contains("allMethodsOptions"));
         }
     }
 
