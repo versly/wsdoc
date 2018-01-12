@@ -17,6 +17,7 @@
 package org.versly.rest.wsdoc;
 
 import freemarker.template.TemplateException;
+import org.testng.Assert;
 import org.testng.AssertJUnit;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -97,6 +98,15 @@ public class SpringMVCRestAnnotationProcessorTest extends AbstractRestAnnotation
         processResource("genericdomain/WildcardController.java", "html", "all");
         AssertJUnit.assertTrue("expected 'wildcardType' in docs; got: \n" + defaultApiOutput,
                 defaultApiOutput.contains(">wildcardType<"));
+    }
+
+    @Test
+    public void assertAsync() {
+        processResource("genericdomain/AsyncController.java", "html", "all");
+        AssertJUnit.assertFalse("expected no AsyncWebTask fields in docs; got: \n" + defaultApiOutput,
+                defaultApiOutput.contains(">callable<"));
+        AssertJUnit.assertTrue("expected 'childField' in docs; got: \n" + defaultApiOutput,
+                defaultApiOutput.contains(">childField<"));
     }
 
     public static void main(String[] args) throws IOException, URISyntaxException {

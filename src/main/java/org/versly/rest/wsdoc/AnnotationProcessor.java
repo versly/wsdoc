@@ -24,6 +24,7 @@ import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.context.request.async.WebAsyncTask;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.versly.rest.wsdoc.impl.*;
 
@@ -429,9 +430,18 @@ public class AnnotationProcessor extends AbstractProcessor {
     }
 
     private void buildResponseFormat(TypeMirror type, RestDocumentation.RestApi.Resource.Method doc) {
+        type = convertAsyncResponseTypes(type);
         doc.setResponseBody(jsonTypeFromTypeMirror(type, new HashSet<String>()));
         doc.setResponseSchema(jsonSchemaFromTypeMirror(type));
         doc.setResponseExample(exampleFromJsonType(doc.getResponseBody()));
+    }
+
+    private TypeMirror convertAsyncResponseTypes(TypeMirror type) {
+        if (type.toString().startsWith(WebAsyncTask.class.getName())) {
+            return ((DeclaredType) type).getTypeArguments().get(0);
+        } else {
+            return type;
+        }
     }
 
     private String[] getClassLevelUrlPaths(TypeElement cls, RestImplementationSupport implementationSupport) {
