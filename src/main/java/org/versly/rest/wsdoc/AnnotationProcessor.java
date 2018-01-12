@@ -659,10 +659,16 @@ public class AnnotationProcessor extends AbstractProcessor {
             List<DeclaredType> concreteTypes = new ArrayList<DeclaredType>();
 
             for (TypeMirror generic : type.getTypeArguments()) {
-                if (generic instanceof DeclaredType)
+                if (generic instanceof DeclaredType) {
                     concreteTypes.add((DeclaredType) generic);
-                else
+                } else if (generic instanceof TypeVariable) {
                     concreteTypes.add(_typeArguments.get(((TypeVariable) generic).asElement().getSimpleName()));
+                } else {
+                    _processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING,
+                        String.format(
+                            "wsdoc encountered an unsupported generics construct while processing type %s. Generic: %s",
+                            type, generic));
+                }
             }
             _typeRecursionDetector.add(_type.toString());
             Collection<String> types = new HashSet<String>(_typeRecursionDetector);

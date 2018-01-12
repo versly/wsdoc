@@ -92,6 +92,13 @@ public class SpringMVCRestAnnotationProcessorTest extends AbstractRestAnnotation
         }
     }
 
+    @Test
+    public void assertWildcardTypes() {
+        processResource("genericdomain/WildcardController.java", "html", "all");
+        AssertJUnit.assertTrue("expected 'wildcardType' in docs; got: \n" + defaultApiOutput,
+                defaultApiOutput.contains(">wildcardType<"));
+    }
+
     public static void main(String[] args) throws IOException, URISyntaxException {
         File dir = new File(args[0]);
         for (int i = 1; i < args.length; i++) {
