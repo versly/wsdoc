@@ -7,7 +7,7 @@ import org.versly.rest.wsdoc.model.WildcardTypeReferrer;
 public class WildcardController {
 
     /**
-     * Retrieves the parent
+     * Retrieves a field that has a wildcard in its nested fields
      */
     @RequestMapping(value = "/foo", method = RequestMethod.GET)
     public WildcardTypeReferrer getFoo() {
