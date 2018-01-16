@@ -369,3 +369,16 @@ During documentation generation, the user can pass in the actual values as follo
 #### License
 
 wsdoc is licensed under the Apache Software License v2. The text of the license is available here: http://www.apache.org/licenses/LICENSE-2.0.html
+
+<a id="releasing"/>
+#### Releasing
+
+Take care to update the version number to be a SNAPSHOT or a non-SNAPSHOT as appropriate. 
+Please build a commit that has the non-SNAPSHOT version, so we have it for posterity.
+
+To deploy, do the following:
+
+    mvn clean && mvn deploy -P release
+
+This assumes that you've got gpg keys set up locally, and your `~/.m2/settings.xml` has 
+credentials for the Sonatype repo.
