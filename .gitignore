@@ -1,5 +1,8 @@
 target
+bin
+test-output
 *.iml
 *.ipr
 *.iws
 .idea
+.classpath

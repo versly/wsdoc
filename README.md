@@ -62,7 +62,7 @@ Note, with release 1.1-SNAPSHOT, wsdoc requires a Java 8 runtime at annotations 
 <a id="limitations"/>
 #### Limitations
 
-* wsdoc is currently limited to REST endpoints identified via the [Spring 3 web bind annotations](http://blog.springsource.com/2009/03/08/rest-in-spring-3-mvc/) (@RequestMapping and whatnot).
+* wsdoc is currently limited to REST endpoints identified via [Spring 3 web bind annotations](http://blog.springsource.com/2009/03/08/rest-in-spring-3-mvc/) or [JaxRs endpoints](https://github.com/eclipse-ee4j/jaxrs-api) (@RequestMapping and @Path).
 
 * wsdoc needs access to your sources to extract JavaDoc comments. If you package your DTOs in a separate compilation unit than your controllers using a build tool like mvn, the sources for those compilation units might not be available. So, wsdoc will not find the comments and will therefore not include them in the generated output. This can be resolved by providing additional source locations to apt.
 
@@ -280,6 +280,19 @@ endpoint handlers based on one of several scopes declared at the class level, su
     }
 
 Note that method-level declarations will override class-level declarations.
+
+* Override generated response object
+
+Sometimes it is neccesary for APIs to return generic response objects such as `javax.ws.rs.core.Response` with the actual response object wrapped as an entity. In these cases the `@ReturnType` annotation can be used to manually specify the expected response object:
+
+    @POST
+    @Path("genericResponsePost")
+    @ReturnType(Customer.class)
+    public Response genericResponsePost(final CustomerPOST customerPost) {
+        return Response.created(customerService(customerPost)).build();
+    }
+
+When the documentation is generated for the example above, the response object schema generation will use `Customer.class` class instead of the generic `Response.class`.
 
 * Using templates in REST documentation
 
