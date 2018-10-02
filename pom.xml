@@ -24,7 +24,7 @@
     <groupId>org.versly</groupId>
     <artifactId>versly-wsdoc</artifactId>
     <packaging>jar</packaging>
-    <version>1.1.011-SNAPSHOT</version>
+    <version>1.1.012-SNAPSHOT</version>
     <url>http://github.com/versly/wsdoc</url>
 
     <licenses>
@@ -57,15 +57,15 @@
         <!-- Spring MVC -->
         <dependency>
             <groupId>org.springframework</groupId>
-            <artifactId>spring-web</artifactId>
-            <version>3.2.13.RELEASE</version>
+            <artifactId>spring-webmvc</artifactId>
+            <version>5.0.9.RELEASE</version>
         </dependency>
 
         <!-- JAX-RS -->
         <dependency>
             <groupId>javax.ws.rs</groupId>
-            <artifactId>jsr311-api</artifactId>
-            <version>1.1.1</version>
+            <artifactId>javax.ws.rs-api</artifactId>
+            <version>2.1.1</version>
         </dependency>
 
         <dependency>
@@ -246,8 +246,8 @@
                 <version>3.3</version>
                 <configuration>
                     <compilerArgument>-proc:none</compilerArgument>
-                    <source>1.6</source>
-                    <target>1.6</target>
+                    <source>1.8</source>
+                    <target>1.8</target>
                 </configuration>
             </plugin>
 

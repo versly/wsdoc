@@ -16,36 +16,79 @@
 
 package org.versly.rest.wsdoc;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.joda.JodaModule;
-import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.context.request.async.WebAsyncTask;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
-import org.versly.rest.wsdoc.impl.*;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+import static org.apache.commons.lang3.StringUtils.join;
 
-import javax.annotation.processing.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
-import javax.lang.model.element.*;
-import javax.lang.model.type.*;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ErrorType;
+import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.MirroredTypeException;
+import javax.lang.model.type.NoType;
+import javax.lang.model.type.NullType;
+import javax.lang.model.type.PrimitiveType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.AbstractTypeVisitor6;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.lang.annotation.Annotation;
-import java.util.*;
+import javax.ws.rs.core.Response;
 
-import static org.apache.commons.lang3.StringUtils.isNotEmpty;
-import static org.apache.commons.lang3.StringUtils.join;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.context.request.async.WebAsyncTask;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.servlet.ModelAndView;
+import org.versly.rest.wsdoc.impl.JaxRSRestImplementationSupport;
+import org.versly.rest.wsdoc.impl.JsonArray;
+import org.versly.rest.wsdoc.impl.JsonDict;
+import org.versly.rest.wsdoc.impl.JsonObject;
+import org.versly.rest.wsdoc.impl.JsonPrimitive;
+import org.versly.rest.wsdoc.impl.JsonRecursiveObject;
+import org.versly.rest.wsdoc.impl.JsonType;
+import org.versly.rest.wsdoc.impl.RestDocumentation;
+import org.versly.rest.wsdoc.impl.SpringMVCRestImplementationSupport;
+import org.versly.rest.wsdoc.impl.Utils;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.joda.JodaModule;
+import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
 
 /**
  * Generates an HTML documentation file describing the REST / JSON endpoints as defined with the
@@ -229,6 +272,9 @@ public class AnnotationProcessor extends AbstractProcessor {
                     method.setTraits(traits);
                 }
                 
+                // set response object if annotated
+                TypeMirror type = getTypeFromAnnotation(executableElement);
+
                 // add method's traits as included with overall API traits (used in RAML for uniform documentation)
                 api.getTraits().addAll(method.getTraits());
                 
@@ -236,9 +282,31 @@ public class AnnotationProcessor extends AbstractProcessor {
                 buildParameterData(executableElement, method, implementationSupport);
                 
                 // set response entity data information on method
-                buildResponseFormat(executableElement.getReturnType(), method);
+                buildResponseFormat(type, method);
             }
         }
+    }
+
+    private static TypeMirror getTypeFromAnnotation(final ExecutableElement executableElement) {
+        ReturnType returnType = executableElement.getAnnotation(ReturnType.class);
+        TypeMirror type = executableElement.getReturnType();
+        if (null != returnType) {
+            try {
+                returnType.value();
+            } catch (MirroredTypeException mte) {
+                type = mte.getTypeMirror();
+            }
+
+            if (!executableElement.getReturnType().equals(type)
+                    && (!ModelAndView.class.getName().equals(executableElement.getReturnType().toString())
+                            && !Response.class.getName().equals(executableElement.getReturnType().toString()))) {
+                throw new UnsupportedOperationException(String.format(
+                        "@ReturnType annotated class [%s] cannot be used on methods that do not return generic responses; actual response must be either [%s] or [%s] but was [%s]",
+                        type, ModelAndView.class.getName(), Response.class.getName(),
+                        executableElement.getReturnType()));
+            }
+        }
+        return type;
     }
 
     private void buildParameterData(ExecutableElement executableElement, RestDocumentation.RestApi.Resource.Method doc,
@@ -579,7 +647,6 @@ public class AnnotationProcessor extends AbstractProcessor {
         }
 
         private JsonType buildType(DeclaredType declaredType, TypeElement element) {
-
             if (_typeRecursionDetector.contains(declaredType.toString()))
                 return new JsonRecursiveObject(element.getSimpleName().toString());
 
@@ -608,10 +675,10 @@ public class AnnotationProcessor extends AbstractProcessor {
             // Spring-MVC and JAX-RS both support methods that return a builder object
             // that contains the real underlying response payload. These should not be
             // expressed as response values.
-            if ("org.springframework.web.servlet.ModelAndView".equals(element.getQualifiedName().toString())) {
+            if (ModelAndView.class.getName().equals(element.getQualifiedName().toString())) {
                 return;
             }
-            if ("javax.ws.rs.core.Response".equals(element.getQualifiedName().toString())) {
+            if (Response.class.getName().equals(element.getQualifiedName().toString())) {
                 return;
             }
 
