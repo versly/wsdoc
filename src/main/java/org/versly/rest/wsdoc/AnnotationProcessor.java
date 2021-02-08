@@ -81,7 +81,7 @@ import org.versly.rest.wsdoc.impl.JsonPrimitive;
 import org.versly.rest.wsdoc.impl.JsonRecursiveObject;
 import org.versly.rest.wsdoc.impl.JsonType;
 import org.versly.rest.wsdoc.impl.RestDocumentation;
-import org.versly.rest.wsdoc.impl.SpringMVCRestImplementationSupport;
+import org.versly.rest.wsdoc.impl.SpringMVC43RestImplementationSupport;
 import org.versly.rest.wsdoc.impl.Utils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -102,7 +102,10 @@ import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
 //   - MethodNameResolver
 //   - plural RequestMapping value support (i.e., two paths bound to one method)
 //   - support for methods not marked with @RequestMapping whose class does have a @RequestMapping annotation
-@SupportedAnnotationTypes({"org.springframework.web.bind.annotation.RequestMapping", "javax.ws.rs.Path", "javax.ws.rs.GET", "javax.ws.rs.PUT", "javax.ws.rs.POST", "javax.ws.rs.DELETE", "javax.ws.rs.HEAD", "javax.ws.rs.OPTIONS"})
+@SupportedAnnotationTypes({"org.springframework.web.bind.annotation.RequestMapping", "org.springframework.web.bind.annotation.GetMapping",
+                           "org.springframework.web.bind.annotation.PostMapping", "org.springframework.web.bind.annotation.PatchMapping",
+                           "org.springframework.web.bind.annotation.DeleteMapping", "org.springframework.web.bind.annotation.PutMapping",
+                           "javax.ws.rs.Path", "javax.ws.rs.GET", "javax.ws.rs.PUT", "javax.ws.rs.POST", "javax.ws.rs.DELETE", "javax.ws.rs.HEAD", "javax.ws.rs.OPTIONS"})
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class AnnotationProcessor extends AbstractProcessor {
 
@@ -128,8 +131,8 @@ public class AnnotationProcessor extends AbstractProcessor {
             return true;
 
         Collection<String> processedPackageNames = new LinkedHashSet<String>();
-        processElements(roundEnvironment, processedPackageNames, new SpringMVCRestImplementationSupport());
         processElements(roundEnvironment, processedPackageNames, new JaxRSRestImplementationSupport());
+        processElements(roundEnvironment, processedPackageNames, new SpringMVC43RestImplementationSupport());
         _docs.postProcess();
 
         if (_docs.getApis().size() > 0) {
