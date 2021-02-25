@@ -109,6 +109,33 @@ public class SpringMVCRestAnnotationProcessorTest extends AbstractRestAnnotation
                 defaultApiOutput.contains(">childField<"));
     }
 
+    @Test
+    public void assertSpring43ComposedAnnotationController() {
+
+        super.assertAllMethods();
+
+        for (String format : _outputFormats) {
+
+            processResource("Spring43ComposedAnnotationController.java", format, "all");
+
+            AssertJUnit.assertTrue(
+                "expected 'theGetMethod' in doc string; got: \n" + defaultApiOutput,
+                defaultApiOutput.contains("theGetMethod"));
+            AssertJUnit.assertTrue(
+                "expected 'thePostMethod' in doc string; got: \n" + defaultApiOutput,
+                defaultApiOutput.contains("thePostMethod"));
+            AssertJUnit.assertTrue(
+                "expected 'thePutMethod' in doc string; got: \n" + defaultApiOutput,
+                defaultApiOutput.contains("thePutMethod"));
+            AssertJUnit.assertTrue(
+                "expected 'theDeleteMethod' in doc string; got: \n" + defaultApiOutput,
+                defaultApiOutput.contains("theDeleteMethod"));
+            AssertJUnit.assertTrue(
+                "expected 'thePatchMethod' in doc string; got: \n" + defaultApiOutput,
+                defaultApiOutput.contains("thePatchMethod"));
+        }
+    }
+
     public static void main(String[] args) throws IOException, URISyntaxException {
         File dir = new File(args[0]);
         for (int i = 1; i < args.length; i++) {

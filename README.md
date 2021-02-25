@@ -62,8 +62,8 @@ Note, with release 1.1-SNAPSHOT, wsdoc requires a Java 8 runtime at annotations 
 <a id="limitations"/>
 #### Limitations
 
-* wsdoc is currently limited to REST endpoints identified via [Spring 3 web bind annotations](http://blog.springsource.com/2009/03/08/rest-in-spring-3-mvc/) or [JaxRs endpoints](https://github.com/eclipse-ee4j/jaxrs-api) (@RequestMapping and @Path).
-
+* wsdoc is currently limited to REST endpoints identified via [Spring 4.3 web bind annotations](https://docs.spring.io/spring-framework/docs/4.3.0.RELEASE/spring-framework-reference/htmlsingle/#mvc-ann-requestmapping) or [JaxRs endpoints](https://github.com/eclipse-ee4j/jaxrs-api) (@RequestMapping, @GetMapping, @PostMapping, @PutMapping, @PatchMapping, @DeleteMapping, and @Path).
+  
 * wsdoc needs access to your sources to extract JavaDoc comments. If you package your DTOs in a separate compilation unit than your controllers using a build tool like mvn, the sources for those compilation units might not be available. So, wsdoc will not find the comments and will therefore not include them in the generated output. This can be resolved by providing additional source locations to apt.
 
 * We've made a bunch of JSON-related assumptions about how you want your DTOs to be represented. None of the Jackson annotations (except @JsonIgnore) are considered, so you're pretty much left with a simple bean transformation.
