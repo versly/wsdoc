@@ -300,6 +300,17 @@ public abstract class AbstractRestAnnotationProcessorTest {
     }
 
     @Test
+    public void assertUriFirstParameterValidation() {
+        processResource("UriFirstParameterValidation.java", "raml", "all");
+        Raml raml = new RamlDocumentBuilder().build(defaultApiOutput, "http://example.com");
+        AssertJUnit.assertNotNull("RAML not parseable", raml);
+        Resource resource = raml.getResource("/$base-service.server.api-path/api/v1/group/{id}/participant");
+        AssertJUnit.assertNotNull("Resource /$base-service.server.api-path/api/v1/group/{id}/participant", resource);
+        UriParameter id = resource.getUriParameters().get("id");
+        AssertJUnit.assertNotNull("Resource /$base-service.server.api-path/api/v1/group/{id}/participant has no id URI parameter", id);
+    }
+
+    @Test
     public void testEnumsTypesQueryForRaml() {
         processResource("RestDocEndpoint.java", "raml", "all");
         Raml raml = new RamlDocumentBuilder().build(defaultApiOutput, "http://example.com");
