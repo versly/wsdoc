@@ -204,7 +204,18 @@ public class AnnotationProcessor extends AbstractProcessor {
 
                 // both spring and jersey permit colon delimited regexes in path annotations which are not compatible with RAML
                 // which expects resource identifiers to comply with RFC-6570 URI template semantics - so remove regex portion
-                fullPath = fullPath.replaceAll(":.*}", "}");
+                String[] splitedPath = fullPath.split("/");
+                if (splitedPath != null && splitedPath.length > 0) {
+                    for (int splitedPathIndex = 0; splitedPathIndex < splitedPath.length; splitedPathIndex++) {
+                        splitedPath[splitedPathIndex] = splitedPath[splitedPathIndex].replaceAll(":.*}", "}");
+                        if (splitedPathIndex==1 && splitedPath[splitedPathIndex] != null) {
+                            // According to RFC-6570 URI template semantics, 1st parameter cannot be a variable
+                            // Spring programs can have a variable as 1st parameter e.g. "${spring.application.name}/api/v1"
+                            splitedPath[splitedPathIndex] = splitedPath[splitedPathIndex].replaceAll("[{}]", "");
+                        }
+                    }
+                    fullPath = String.join("/", splitedPath);
+                }
 
                 // set documentation and metadata on api
                 RestDocumentation.RestApi api = null;
