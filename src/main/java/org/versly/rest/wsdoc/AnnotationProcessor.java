@@ -32,6 +32,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -604,6 +605,12 @@ public class AnnotationProcessor extends AbstractProcessor {
 
         @Override
         public JsonType visitDeclared(DeclaredType declaredType, Void o) {
+            // Transparently replace Optional<T> with T. This is specifically
+            // to support Jackson's Optional handling implemented in Jdk8Module.
+            if (isInstanceOf(declaredType, Optional.class)) {
+                TypeParameterElement elem = ((TypeElement) declaredType.asElement()).getTypeParameters().get(0);
+                return visit(elem.asType());
+            }
 
             if (_typeRecursionDetector.contains(declaredType.toString()))
                 return new JsonRecursiveObject(declaredType.asElement().getSimpleName().toString());
