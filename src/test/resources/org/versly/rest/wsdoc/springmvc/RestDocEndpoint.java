@@ -67,6 +67,12 @@ public class RestDocEndpoint {
         return null;
     }
 
+    @RequestMapping(value="optional", method = RequestMethod.POST)
+    public void optionalFieldInRequestBody(HttpServletRequest req,
+                               @RequestBody ValueWithOptional optional)
+    {
+    }
+
     @RequestMapping(value="recursiveParam", method = RequestMethod.POST)
     public void recursiveParam(HttpServletRequest req,
                                @RequestParam("recursive") ValueWithRecursion recursive)
@@ -132,6 +138,18 @@ public class RestDocEndpoint {
         }
 
         public void setOther(ValueWithRecursion other) {
+        }
+    }
+
+    public class ValueWithOptional {
+        /**
+         * this field may be omitted!
+         */
+        public Optional<String> getOptionalfield() {
+            return null;
+        }
+
+        public void setOptionalfield(Optional<String> other) {
         }
     }
 

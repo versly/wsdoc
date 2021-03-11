@@ -83,6 +83,16 @@ public class SpringMVCRestAnnotationProcessorTest extends AbstractRestAnnotation
     }
 
     @Test
+    public void assertOptionalIsNotTraversedInto() {
+        processResource("RestDocEndpoint.java", "html", "all");
+        AssertJUnit.assertFalse(
+                "'present' field (member field of Optional class) should not be in results",
+                defaultApiOutput.contains("present"));
+        AssertJUnit.assertTrue(defaultApiOutput,
+                defaultApiOutput.contains("optionalfield"));
+    }
+
+    @Test
     public void assertAllMethods() {
         super.assertAllMethods();
         for (String format : _outputFormats) {
