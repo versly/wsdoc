@@ -107,7 +107,7 @@ import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
                            "org.springframework.web.bind.annotation.PostMapping", "org.springframework.web.bind.annotation.PatchMapping",
                            "org.springframework.web.bind.annotation.DeleteMapping", "org.springframework.web.bind.annotation.PutMapping",
                            "javax.ws.rs.Path", "javax.ws.rs.GET", "javax.ws.rs.PUT", "javax.ws.rs.POST", "javax.ws.rs.DELETE", "javax.ws.rs.HEAD", "javax.ws.rs.OPTIONS"})
-@SupportedSourceVersion(SourceVersion.RELEASE_8)
+@SupportedSourceVersion(SourceVersion.RELEASE_11)
 public class AnnotationProcessor extends AbstractProcessor {
 
     private RestDocumentation _docs = new RestDocumentation();
