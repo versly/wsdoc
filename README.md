@@ -21,7 +21,7 @@ Currently, wsdoc is available in source format only. To install, you'll need mvn
 
 Once you've done this, the wsdoc jar will be available in your local Maven repository, probably at ~/.m2/repository/org/versly/versly-wsdoc/1.1-SNAPSHOT/versly-wsdoc-1.1-SNAPSHOT.jar
 
-Note, the Java 1.8 or greater requirement is necessary to accommodate instructions to the annotation processor to recognize Java types introduced in 1.8. The current supported source version is Java 11. If you intend to use wsdoc to document code that does not utilize newer types, a one-line change in AnnotationProcessor.java can be made.  Specifically, locate this line in AnnotationProcessor.java:
+Note, the current supported source version is Java 11. If you intend to use wsdoc to document code that does not utilize newer types, a one-line change in AnnotationProcessor.java can be made.  Specifically, locate this line in AnnotationProcessor.java:
 
     @SupportedSourceVersion(SourceVersion.RELEASE_11)
 
