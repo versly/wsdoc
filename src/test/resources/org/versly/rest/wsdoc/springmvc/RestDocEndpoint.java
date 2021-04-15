@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.versly.rest.wsdoc.RestApiMountPoint;
 import org.versly.rest.wsdoc.model.ParameterizedTypeReferrer;
+import org.versly.rest.wsdoc.model.ValueWithOptional;
 
 @RestApiMountPoint("/mount")
 @RequestMapping("/api/v1")
@@ -138,18 +139,6 @@ public class RestDocEndpoint {
         }
 
         public void setOther(ValueWithRecursion other) {
-        }
-    }
-
-    public class ValueWithOptional {
-        /**
-         * this field may be omitted!
-         */
-        public Optional<String> getOptionalfield() {
-            return null;
-        }
-
-        public void setOptionalfield(Optional<String> other) {
         }
     }
 
