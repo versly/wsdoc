@@ -90,6 +90,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 
 /**
  * Generates an HTML documentation file describing the REST / JSON endpoints as defined with the
@@ -966,6 +967,7 @@ public class AnnotationProcessor extends AbstractProcessor {
                 ObjectMapper m = new ObjectMapper();
                 m.enable(SerializationFeature.WRITE_ENUMS_USING_TO_STRING);
                 m.registerModule(new JodaModule());
+                m.registerModule(new Jdk8Module());
                 SchemaFactoryWrapper visitor = new SchemaFactoryWrapper();
                 m.acceptJsonFormatVisitor(m.constructType(dtoClass), visitor);
                 serializedSchema = m.writeValueAsString(visitor.finalSchema());
